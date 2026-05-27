@@ -3,7 +3,7 @@ import { PageHeader, Section, Badge, DataTable } from "@/components/ui-kit";
 import { students } from "@/lib/mockData";
 import { useState } from "react";
 
-export const Route = createFileRoute("/_app/grading")({
+export const Route = createFileRoute("/app/grading")({
   head: () => ({ meta: [{ title: "Grading — GlobalEdu" }] }),
   component: GradingPage,
 });

@@ -3,7 +3,7 @@ import { PageHeader, Section, StatCard } from "@/components/ui-kit";
 import { teacherClasses } from "@/lib/mockData";
 import { Video, Users, Clock } from "lucide-react";
 
-export const Route = createFileRoute("/_app/teacher-classes")({
+export const Route = createFileRoute("/app/teacher-classes")({
   head: () => ({ meta: [{ title: "My Classes — GlobalEdu" }] }),
   component: TeacherClassesPage,
 });

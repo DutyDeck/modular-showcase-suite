@@ -3,7 +3,7 @@ import { PageHeader, Section, Badge } from "@/components/ui-kit";
 import { aiInsights } from "@/lib/mockData";
 import { Sparkles, Bot, BrainCircuit, TrendingUp } from "lucide-react";
 
-export const Route = createFileRoute("/_app/ai-insights")({
+export const Route = createFileRoute("/app/ai-insights")({
   head: () => ({ meta: [{ title: "AI Insights — GlobalEdu" }] }),
   component: AiPage,
 });

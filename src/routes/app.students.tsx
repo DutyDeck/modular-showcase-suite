@@ -3,7 +3,7 @@ import { PageHeader, Section, DataTable, Badge } from "@/components/ui-kit";
 import { students } from "@/lib/mockData";
 import { Plus, Download, Filter } from "lucide-react";
 
-export const Route = createFileRoute("/_app/students")({
+export const Route = createFileRoute("/app/students")({
   head: () => ({ meta: [{ title: "Students — GlobalEdu" }] }),
   component: StudentsPage,
 });

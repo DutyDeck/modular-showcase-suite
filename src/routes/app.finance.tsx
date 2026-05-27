@@ -3,7 +3,7 @@ import { PageHeader, Section, StatCard, DataTable, Badge } from "@/components/ui
 import { invoices } from "@/lib/mockData";
 import { Wallet, TrendingUp, CreditCard, Receipt } from "lucide-react";
 
-export const Route = createFileRoute("/_app/finance")({
+export const Route = createFileRoute("/app/finance")({
   head: () => ({ meta: [{ title: "Finance — GlobalEdu" }] }),
   component: FinancePage,
 });

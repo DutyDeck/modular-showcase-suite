@@ -3,7 +3,7 @@ import { PageHeader, Section, DataTable, Badge } from "@/components/ui-kit";
 import { platformUsers } from "@/lib/mockData";
 import { ShieldCheck, Plus } from "lucide-react";
 
-export const Route = createFileRoute("/_app/users")({
+export const Route = createFileRoute("/app/users")({
   head: () => ({ meta: [{ title: "Users & Roles — GlobalEdu" }] }),
   component: UsersPage,
 });

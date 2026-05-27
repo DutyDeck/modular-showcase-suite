@@ -4,7 +4,7 @@ import { messages } from "@/lib/mockData";
 import { Send, MessageSquare } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/_app/messages")({
+export const Route = createFileRoute("/app/messages")({
   head: () => ({ meta: [{ title: "Messages — GlobalEdu" }] }),
   component: MessagesPage,
 });

@@ -4,7 +4,7 @@ import { marketplaceCourses } from "@/lib/mockData";
 import { Star, Users, Search } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/_app/marketplace")({
+export const Route = createFileRoute("/app/marketplace")({
   head: () => ({ meta: [{ title: "Marketplace — GlobalEdu" }] }),
   component: MarketplacePage,
 });

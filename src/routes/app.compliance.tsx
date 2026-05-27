@@ -3,7 +3,7 @@ import { PageHeader, Section, Badge } from "@/components/ui-kit";
 import { auditLog } from "@/lib/mockData";
 import { ShieldCheck, FileLock2 } from "lucide-react";
 
-export const Route = createFileRoute("/_app/compliance")({
+export const Route = createFileRoute("/app/compliance")({
   head: () => ({ meta: [{ title: "Compliance — GlobalEdu" }] }),
   component: CompliancePage,
 });

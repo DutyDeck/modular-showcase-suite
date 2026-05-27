@@ -3,7 +3,7 @@ import { PageHeader, Section, StatCard, MiniBars } from "@/components/ui-kit";
 import { revenueTrend, attendanceTrend } from "@/lib/mockData";
 import { Download, FileBarChart, TrendingUp, Users, DollarSign } from "lucide-react";
 
-export const Route = createFileRoute("/_app/reports")({
+export const Route = createFileRoute("/app/reports")({
   head: () => ({ meta: [{ title: "Reports & BI — GlobalEdu" }] }),
   component: ReportsPage,
 });

@@ -3,7 +3,7 @@ import { PageHeader, Section, Badge } from "@/components/ui-kit";
 import { children } from "@/lib/mockData";
 import { Baby } from "lucide-react";
 
-export const Route = createFileRoute("/_app/children")({
+export const Route = createFileRoute("/app/children")({
   head: () => ({ meta: [{ title: "My Children — GlobalEdu" }] }),
   component: ChildrenPage,
 });

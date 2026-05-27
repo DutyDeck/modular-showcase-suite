@@ -3,7 +3,7 @@ import { PageHeader, Section, Badge } from "@/components/ui-kit";
 import { courses, assignments } from "@/lib/mockData";
 import { PlayCircle, FileText, MessageCircle, Video, BookOpen } from "lucide-react";
 
-export const Route = createFileRoute("/_app/lms")({
+export const Route = createFileRoute("/app/lms")({
   head: () => ({ meta: [{ title: "Learning Management — GlobalEdu" }] }),
   component: LmsPage,
 });

@@ -3,7 +3,7 @@ import { PageHeader, Section, Badge } from "@/components/ui-kit";
 import { useAuth } from "@/lib/auth";
 import { roleLabel } from "@/lib/menus";
 
-export const Route = createFileRoute("/_app/profile")({
+export const Route = createFileRoute("/app/profile")({
   head: () => ({ meta: [{ title: "My Profile — GlobalEdu" }] }),
   component: ProfilePage,
 });

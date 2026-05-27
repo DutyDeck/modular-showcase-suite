@@ -10,7 +10,7 @@ import {
   invoices, aiInsights, students, tenants, leads, teacherClasses, children,
 } from "@/lib/mockData";
 
-export const Route = createFileRoute("/_app/")({
+export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [{ title: "Dashboard — GlobalEdu" }] }),
   component: Dashboard,
 });

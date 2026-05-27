@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, Section, Badge, MiniBars } from "@/components/ui-kit";
 import { grades } from "@/lib/mockData";
 
-export const Route = createFileRoute("/_app/grades")({
+export const Route = createFileRoute("/app/grades")({
   head: () => ({ meta: [{ title: "Grades — GlobalEdu" }] }),
   component: GradesPage,
 });

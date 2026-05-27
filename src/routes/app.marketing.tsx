@@ -3,7 +3,7 @@ import { PageHeader, Section, StatCard, DataTable, Badge } from "@/components/ui
 import { leads } from "@/lib/mockData";
 import { TrendingUp, Users, Target, Megaphone } from "lucide-react";
 
-export const Route = createFileRoute("/_app/marketing")({
+export const Route = createFileRoute("/app/marketing")({
   head: () => ({ meta: [{ title: "Marketing & CRM — GlobalEdu" }] }),
   component: MarketingPage,
 });

@@ -3,7 +3,7 @@ import { PageHeader, Section, StatCard, DataTable, Badge, MiniBars } from "@/com
 import { attendanceToday, attendanceTrend } from "@/lib/mockData";
 import { QrCode, MapPin, ScanFace, Radio } from "lucide-react";
 
-export const Route = createFileRoute("/_app/attendance")({
+export const Route = createFileRoute("/app/attendance")({
   head: () => ({ meta: [{ title: "Attendance — GlobalEdu" }] }),
   component: AttendancePage,
 });
