@@ -7,15 +7,21 @@ export interface DemoUser {
   name: string;
   role: Role;
   avatar: string;
+  photo: string;
   institution: string;
+  tagline: string;
   meta?: Record<string, string>;
 }
 
+// Deterministic, free, no-auth avatar service
+const avatar = (seed: string) =>
+  `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundType=gradientLinear&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+
 export const demoUsers: DemoUser[] = [
-  { id: "u1", email: "student@demo.com", password: "demo", name: "Aarav Perera", role: "student", avatar: "AP", institution: "Global Coaching Hub", meta: { grade: "Grade 12", batch: "Science-A" } },
-  { id: "u2", email: "parent@demo.com", password: "demo", name: "Nimal Perera", role: "parent", avatar: "NP", institution: "Global Coaching Hub", meta: { children: "2" } },
-  { id: "u3", email: "teacher@demo.com", password: "demo", name: "Dr. Saman Silva", role: "teacher", avatar: "SS", institution: "Global Coaching Hub", meta: { subject: "Physics" } },
-  { id: "u4", email: "admin@demo.com", password: "demo", name: "Priya Kumar", role: "admin", avatar: "PK", institution: "Platform HQ", meta: { tenants: "248" } },
+  { id: "u1", email: "student@demo.com", password: "demo", name: "Aarav Perera", role: "student", avatar: "AP", photo: avatar("Aarav-Perera"), institution: "Global Coaching Hub", tagline: "Grade 12 · Science stream · GPA 3.8", meta: { grade: "Grade 12", batch: "Science-A" } },
+  { id: "u2", email: "parent@demo.com", password: "demo", name: "Nimal Perera", role: "parent", avatar: "NP", photo: avatar("Nimal-Perera"), institution: "Global Coaching Hub", tagline: "Parent of 2 · Engaged guardian", meta: { children: "2" } },
+  { id: "u3", email: "teacher@demo.com", password: "demo", name: "Dr. Saman Silva", role: "teacher", avatar: "SS", photo: avatar("Saman-Silva"), institution: "Global Coaching Hub", tagline: "Physics faculty · 12 yrs experience", meta: { subject: "Physics" } },
+  { id: "u4", email: "admin@demo.com", password: "demo", name: "Priya Kumar", role: "admin", avatar: "PK", photo: avatar("Priya-Kumar"), institution: "Platform HQ", tagline: "Platform admin · 248 tenants", meta: { tenants: "248" } },
 ];
 
 export const students = [

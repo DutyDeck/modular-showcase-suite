@@ -117,9 +117,12 @@ export function AppShell() {
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
             </button>
             <div className="flex items-center gap-2 pl-3 border-l">
-              <div className="h-9 w-9 rounded-full bg-gradient-brand text-white flex items-center justify-center text-xs font-semibold">
-                {user.avatar}
-              </div>
+              <img
+                src={user.photo}
+                alt={user.name}
+                className="h-9 w-9 rounded-full ring-2 ring-primary/20 bg-muted object-cover"
+              />
+            </div>
               <div className="leading-tight hidden sm:block">
                 <div className="text-sm font-medium">{user.name}</div>
                 <div className="text-[11px] text-muted-foreground">{user.email}</div>
