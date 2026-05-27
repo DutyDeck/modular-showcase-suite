@@ -72,8 +72,8 @@ function LoginPage() {
 
         <div className="relative">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-white/15 backdrop-blur-md ring-1 ring-white/30 flex items-center justify-center shadow-2xl">
-              <GraduationCap className="h-6 w-6" />
+            <div className="h-12 w-12 rounded-2xl bg-white p-1.5 ring-1 ring-white/40 shadow-2xl flex items-center justify-center">
+              <img src={logoUrl} alt="GlobalEdu logo" width={40} height={40} className="h-full w-full object-contain" />
             </div>
             <div>
               <div className="font-bold text-lg tracking-tight">GlobalEdu</div>
