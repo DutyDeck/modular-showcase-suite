@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState, Outlet } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Icons from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { menusByRole, roleLabel } from "@/lib/menus";
@@ -16,10 +16,11 @@ export function AppShell() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(true);
 
-  if (!user) {
-    if (typeof window !== "undefined") navigate({ to: "/login" });
-    return null;
-  }
+  useEffect(() => {
+    if (!user) navigate({ to: "/login" });
+  }, [user, navigate]);
+
+  if (!user) return null;
 
   const items = menusByRole[user.role];
   const groups: Record<string, typeof items> = {};
