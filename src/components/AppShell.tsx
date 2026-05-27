@@ -4,6 +4,7 @@ import * as Icons from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { menusByRole, roleLabel } from "@/lib/menus";
 import { cn } from "@/lib/utils";
+import logoUrl from "@/assets/globaledu-logo.png";
 
 function Icon({ name, className }: { name: string; className?: string }) {
   const Cmp = (Icons as any)[name] ?? Icons.Circle;
