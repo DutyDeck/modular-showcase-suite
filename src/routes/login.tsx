@@ -243,17 +243,49 @@ function LoginPage() {
 
             <div className="grid grid-cols-4 gap-2">
               {[
-                { n: "Google", c: "text-[#4285F4]" },
-                { n: "Microsoft", c: "text-[#00A4EF]" },
-                { n: "Apple", c: "text-foreground" },
-                { n: "SSO", c: "text-primary" },
+                {
+                  n: "Google",
+                  icon: (
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                      <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.44c-.28 1.48-1.12 2.73-2.39 3.58v2.98h3.86c2.26-2.09 3.58-5.17 3.58-8.8z"/>
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.93l-3.86-2.98c-1.07.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/>
+                      <path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"/>
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/>
+                    </svg>
+                  ),
+                },
+                {
+                  n: "Microsoft",
+                  icon: (
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                      <path fill="#F25022" d="M1 1h10v10H1z"/>
+                      <path fill="#7FBA00" d="M13 1h10v10H13z"/>
+                      <path fill="#00A4EF" d="M1 13h10v10H1z"/>
+                      <path fill="#FFB900" d="M13 13h10v10H13z"/>
+                    </svg>
+                  ),
+                },
+                {
+                  n: "Apple",
+                  icon: (
+                    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-foreground" aria-hidden="true">
+                      <path d="M17.05 12.7c-.03-2.78 2.27-4.12 2.37-4.18-1.29-1.89-3.3-2.15-4.02-2.18-1.71-.17-3.34 1.01-4.21 1.01-.87 0-2.21-.98-3.63-.96-1.87.03-3.6 1.09-4.56 2.76-1.94 3.37-.5 8.36 1.4 11.1.93 1.34 2.04 2.85 3.49 2.79 1.4-.06 1.93-.91 3.63-.91 1.69 0 2.17.91 3.65.88 1.51-.03 2.46-1.37 3.39-2.71 1.07-1.56 1.51-3.07 1.54-3.15-.03-.02-2.95-1.13-2.98-4.45zM14.28 4.57c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.74-3.26 1.67-.71.82-1.34 2.15-1.17 3.42 1.24.09 2.51-.63 3.28-1.55z"/>
+                    </svg>
+                  ),
+                },
+                {
+                  n: "SSO",
+                  icon: <span className="text-xs font-bold text-primary">SSO</span>,
+                },
               ].map((p) => (
                 <button
                   key={p.n}
                   type="button"
-                  className="h-11 rounded-lg border bg-card text-xs font-semibold hover:bg-muted hover:border-primary/40 transition-all shadow-soft"
+                  aria-label={`Continue with ${p.n}`}
+                  title={`Continue with ${p.n}`}
+                  className="h-11 rounded-lg border bg-card hover:bg-muted hover:border-primary/40 transition-all shadow-soft flex items-center justify-center"
                 >
-                  <span className={p.c}>{p.n === "SSO" ? "SSO" : p.n[0]}</span>
+                  {p.icon}
                 </button>
               ))}
             </div>
