@@ -122,7 +122,6 @@ export function AppShell() {
                 alt={user.name}
                 className="h-9 w-9 rounded-full ring-2 ring-primary/20 bg-muted object-cover"
               />
-            </div>
               <div className="leading-tight hidden sm:block">
                 <div className="text-sm font-medium">{user.name}</div>
                 <div className="text-[11px] text-muted-foreground">{user.email}</div>
