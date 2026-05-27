@@ -39,9 +39,13 @@ export function AppShell() {
         )}
       >
         <div className="h-16 flex items-center gap-3 px-4 border-b border-sidebar-border">
-          <div className="h-9 w-9 rounded-lg bg-gradient-brand flex items-center justify-center font-bold text-white shrink-0">
-            G
-          </div>
+          <img
+            src={logoUrl}
+            alt="GlobalEdu logo"
+            width={36}
+            height={36}
+            className="h-9 w-9 shrink-0 drop-shadow"
+          />
           {open && (
             <div className="leading-tight">
               <div className="font-semibold text-sm">GlobalEdu</div>
