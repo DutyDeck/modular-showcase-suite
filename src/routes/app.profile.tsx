@@ -16,9 +16,12 @@ function ProfilePage() {
       <PageHeader title="My Profile" subtitle="Manage your global student identity and preferences." />
       <Section>
         <div className="flex items-start gap-5">
-          <div className="h-20 w-20 rounded-2xl bg-gradient-brand text-white flex items-center justify-center text-2xl font-bold shadow-elegant">
-            {user.avatar}
-          </div>
+          <img
+            src={user.photo}
+            alt={user.name}
+            className="h-20 w-20 rounded-2xl ring-2 ring-primary/20 bg-muted object-cover shadow-elegant"
+          />
+
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold">{user.name}</h2>

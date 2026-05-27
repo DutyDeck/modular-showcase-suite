@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState, Outlet } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Icons from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { menusByRole, roleLabel } from "@/lib/menus";
@@ -16,10 +16,11 @@ export function AppShell() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(true);
 
-  if (!user) {
-    if (typeof window !== "undefined") navigate({ to: "/login" });
-    return null;
-  }
+  useEffect(() => {
+    if (!user) navigate({ to: "/login" });
+  }, [user, navigate]);
+
+  if (!user) return null;
 
   const items = menusByRole[user.role];
   const groups: Record<string, typeof items> = {};
@@ -117,9 +118,11 @@ export function AppShell() {
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
             </button>
             <div className="flex items-center gap-2 pl-3 border-l">
-              <div className="h-9 w-9 rounded-full bg-gradient-brand text-white flex items-center justify-center text-xs font-semibold">
-                {user.avatar}
-              </div>
+              <img
+                src={user.photo}
+                alt={user.name}
+                className="h-9 w-9 rounded-full ring-2 ring-primary/20 bg-muted object-cover"
+              />
               <div className="leading-tight hidden sm:block">
                 <div className="text-sm font-medium">{user.name}</div>
                 <div className="text-[11px] text-muted-foreground">{user.email}</div>
