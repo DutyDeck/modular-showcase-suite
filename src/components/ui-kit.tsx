@@ -126,9 +126,9 @@ export function DataTable<T extends Record<string, any>>({
   rows,
   renderCell,
 }: {
-  columns: { key: keyof T & string; label: string; className?: string }[];
+  columns: { key: string; label: string; className?: string }[];
   rows: T[];
-  renderCell?: (row: T, key: string) => ReactNode;
+  renderCell?: (row: any, key: string) => ReactNode;
 }) {
   return (
     <div className="overflow-x-auto -mx-5">
@@ -147,7 +147,7 @@ export function DataTable<T extends Record<string, any>>({
             <tr key={i} className="border-b last:border-b-0 hover:bg-muted/40 transition-colors">
               {columns.map((c) => (
                 <td key={c.key} className={cn("px-5 py-3", c.className)}>
-                  {renderCell ? renderCell(row, c.key) : String(row[c.key] ?? "")}
+                  {renderCell ? renderCell(row, c.key) : String((row as any)[c.key] ?? "")}
                 </td>
               ))}
             </tr>
