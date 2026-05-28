@@ -18,7 +18,7 @@ import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import { Plus, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/app/tenants")({
-  head: () => ({ meta: [{ title: "Tenants — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Tenants — One Edu" }] }),
   component: TenantsPage,
 });
 

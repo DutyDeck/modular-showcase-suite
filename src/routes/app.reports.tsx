@@ -5,7 +5,7 @@ import { Download, FileBarChart, TrendingUp, Users, DollarSign } from "lucide-re
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/reports")({
-  head: () => ({ meta: [{ title: "Reports & BI — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Reports & BI — One Edu" }] }),
   component: ReportsPage,
 });
 
@@ -15,7 +15,7 @@ function ReportsPage() {
       <PageHeader
         title="Reporting & Business Intelligence"
         subtitle="Academic, financial and operational dashboards."
-        actions={<Button variant="outline" onClick={() => toast.success("Generating PDF export…")}><Download className="h-4 w-4" />Export PDF</Button>}
+        actions={<Button variant="outline" onClick={() => toast.success("Generating PDF exportâ€¦")}><Download className="h-4 w-4" />Export PDF</Button>}
       />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Revenue YTD" value="$486K" icon={<DollarSign className="h-5 w-5" />} accent="success" />
@@ -37,10 +37,10 @@ function ReportsPage() {
             "Compliance Audit Summary",
             "AI Risk Predictions",
           ].map((r) => (
-            <button key={r} onClick={() => toast.info(`Building "${r}"…`)} className="p-4 rounded-lg border bg-card text-left hover:border-primary hover:shadow-soft transition-all">
+            <button key={r} onClick={() => toast.info(`Building "${r}"â€¦`)} className="p-4 rounded-lg border bg-card text-left hover:border-primary hover:shadow-soft transition-all">
               <FileBarChart className="h-4 w-4 text-primary mb-2" />
               <div className="text-sm font-medium">{r}</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">Generate · Schedule · Share</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">Generate Â· Schedule Â· Share</div>
             </button>
           ))}
         </div>

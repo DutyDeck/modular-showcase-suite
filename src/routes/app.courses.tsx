@@ -16,7 +16,7 @@ import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import { Star, Users, Clock, Plus, Search, BookOpen, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/app/courses")({
-  head: () => ({ meta: [{ title: "Courses — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Courses — One Edu" }] }),
   component: CoursesPage,
 });
 
@@ -119,7 +119,7 @@ function CoursesPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search courses by title, code, teacher…"
+            placeholder="Search courses by title, code, teacherâ€¦"
             className="h-10 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -183,7 +183,7 @@ function CoursesPage() {
                     <span className="font-semibold">{c.credits}</span>
                   </div>
                   <button
-                    onClick={() => toast.info(`Opening ${c.title} workspace…`)}
+                    onClick={() => toast.info(`Opening ${c.title} workspaceâ€¦`)}
                     className="text-xs px-3 py-1.5 rounded-md bg-primary/10 text-primary font-medium hover:bg-primary/15"
                   >
                     Manage

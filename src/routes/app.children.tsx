@@ -4,7 +4,7 @@ import { children } from "@/lib/mockData";
 import { Baby } from "lucide-react";
 
 export const Route = createFileRoute("/app/children")({
-  head: () => ({ meta: [{ title: "My Children — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "My Children — One Edu" }] }),
   component: ChildrenPage,
 });
 
@@ -24,7 +24,7 @@ function ChildrenPage() {
                   <h3 className="font-semibold truncate">{c.name}</h3>
                   <Badge tone="success">Active</Badge>
                 </div>
-                <div className="text-xs text-muted-foreground">{c.grade} · ID {c.id}</div>
+                <div className="text-xs text-muted-foreground">{c.grade} Â· ID {c.id}</div>
                 <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4 pt-4 border-t text-center">
                   <div><div className="text-lg sm:text-xl font-bold">{c.attendance}%</div><div className="text-[10px] text-muted-foreground uppercase tracking-wider">Attendance</div></div>
                   <div><div className="text-lg sm:text-xl font-bold">{c.gpa}</div><div className="text-[10px] text-muted-foreground uppercase tracking-wider">GPA</div></div>

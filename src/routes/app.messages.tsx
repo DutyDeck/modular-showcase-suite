@@ -6,7 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/messages")({
-  head: () => ({ meta: [{ title: "Messages — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Messages — One Edu" }] }),
   component: MessagesPage,
 });
 
@@ -69,7 +69,7 @@ function MessagesPage() {
                     {msg.preview}
                   </div>
                   <div className="text-[10px] text-muted-foreground mt-1">
-                    {msg.time} · {msg.role}
+                    {msg.time} Â· {msg.role}
                   </div>
                 </button>
               </li>
@@ -108,7 +108,7 @@ function MessagesPage() {
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && send()}
-                placeholder="Type a message…"
+                placeholder="Type a messageâ€¦"
                 className="flex-1 h-10 px-3 rounded-md border bg-background text-sm outline-none focus:ring-2 focus:ring-ring"
               />
               <button
@@ -120,7 +120,7 @@ function MessagesPage() {
               </button>
             </div>
             <div className="flex items-center gap-2 mt-3 text-[11px] text-muted-foreground">
-              <MessageSquare className="h-3 w-3" /> Also delivers via Email · SMS · WhatsApp based on recipient preferences
+              <MessageSquare className="h-3 w-3" /> Also delivers via Email Â· SMS Â· WhatsApp based on recipient preferences
             </div>
           </Section>
         )}

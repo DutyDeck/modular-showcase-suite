@@ -18,7 +18,7 @@ import { Plus, Upload, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/app/assignments")({
-  head: () => ({ meta: [{ title: "Assignments — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Assignments — One Edu" }] }),
   component: AssignmentsPage,
 });
 

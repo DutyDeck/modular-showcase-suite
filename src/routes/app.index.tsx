@@ -12,7 +12,7 @@ import {
 import { useCollection } from "@/lib/store";
 
 export const Route = createFileRoute("/app/")({
-  head: () => ({ meta: [{ title: "Dashboard — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — One Edu" }] }),
   component: Dashboard,
 });
 
@@ -27,7 +27,7 @@ function Dashboard() {
              style={{ backgroundImage: "radial-gradient(circle at 80% 10%, white 0%, transparent 35%)" }} />
         <div className="relative">
           <div className="text-xs uppercase tracking-wider opacity-80">{user.institution}</div>
-          <h1 className="text-2xl md:text-3xl font-bold mt-1">Welcome back, {user.name.split(" ")[0]} 👋</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mt-1">Welcome back, {user.name.split(" ")[0]} ðŸ‘‹</h1>
           <p className="text-sm opacity-85 mt-1 max-w-xl">
             Here's what's happening across your {user.role === "admin" ? "platform" : "workspace"} today.
           </p>
@@ -62,7 +62,7 @@ function StudentDash() {
               <li key={a.id} className="py-3 flex items-center justify-between">
                 <div>
                   <div className="text-sm font-medium">{a.title}</div>
-                  <div className="text-xs text-muted-foreground">{a.course} · Due {a.due}</div>
+                  <div className="text-xs text-muted-foreground">{a.course} Â· Due {a.due}</div>
                 </div>
                 <Badge tone={a.status === "Pending" ? "warning" : a.status === "Graded" ? "success" : "info"}>{a.status}</Badge>
               </li>
@@ -133,7 +133,7 @@ function TeacherDash() {
               <li key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
                 <div>
                   <div className="font-medium text-sm">{c.name}</div>
-                  <div className="text-xs text-muted-foreground">{c.batch} · {c.students} students · {c.room}</div>
+                  <div className="text-xs text-muted-foreground">{c.batch} Â· {c.students} students Â· {c.room}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs font-medium">{c.nextSession}</div>
@@ -190,8 +190,8 @@ function AdminDash() {
           {students.filter(s => s.risk !== "low").map((s) => (
             <li key={s.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
               <div>
-                <div className="font-medium text-sm">{s.name} <span className="text-muted-foreground text-xs">· {s.grade}</span></div>
-                <div className="text-xs text-muted-foreground">Attendance {s.attendance}% · GPA {s.gpa}</div>
+                <div className="font-medium text-sm">{s.name} <span className="text-muted-foreground text-xs">Â· {s.grade}</span></div>
+                <div className="text-xs text-muted-foreground">Attendance {s.attendance}% Â· GPA {s.gpa}</div>
               </div>
               <Badge tone={s.risk === "high" ? "destructive" : "warning"}>{s.risk.toUpperCase()} RISK</Badge>
             </li>

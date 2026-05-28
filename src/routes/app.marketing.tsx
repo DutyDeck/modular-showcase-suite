@@ -18,7 +18,7 @@ import { useCollection, addItem, updateItem, type Lead } from "@/lib/store";
 import { TrendingUp, Users, Target, Megaphone, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/app/marketing")({
-  head: () => ({ meta: [{ title: "Marketing & CRM — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Marketing & CRM — One Edu" }] }),
   component: MarketingPage,
 });
 
@@ -68,7 +68,7 @@ function MarketingPage() {
     const order = STAGES;
     const next = order[Math.min(order.indexOf(stage) + 1, order.length - 1)];
     updateItem("leads", (l) => l.name === name, { stage: next });
-    toast.success(`${name} → ${next}`);
+    toast.success(`${name} â†’ ${next}`);
   };
 
   return (

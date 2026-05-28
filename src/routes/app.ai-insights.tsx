@@ -5,7 +5,7 @@ import { Sparkles, Bot, BrainCircuit, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/ai-insights")({
-  head: () => ({ meta: [{ title: "AI Insights — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "AI Insights — One Edu" }] }),
   component: AiPage,
 });
 
@@ -21,7 +21,7 @@ function AiPage() {
             <h3 className="text-xl font-bold">Edu-AI Copilot</h3>
             <p className="text-sm opacity-90 mt-1">"Hi! I've analyzed your cohort. 12 students need intervention this week — want me to draft personalized messages and propose intervention plans?"</p>
             <div className="mt-3 flex gap-2 flex-wrap">
-              <button onClick={() => toast.success("Drafting 12 personalized messages…")} className="bg-white text-primary px-4 py-2 rounded-md text-xs font-semibold">Draft messages</button>
+              <button onClick={() => toast.success("Drafting 12 personalized messagesâ€¦")} className="bg-white text-primary px-4 py-2 rounded-md text-xs font-semibold">Draft messages</button>
               <button onClick={() => toast.info("Intervention plan generated")} className="bg-white/15 text-white px-4 py-2 rounded-md text-xs font-medium">Show plan</button>
             </div>
           </div>
@@ -53,7 +53,7 @@ function AiPage() {
             <div key={m} className="p-4 rounded-lg border text-center">
               <Bot className="h-5 w-5 mx-auto text-primary mb-2" />
               <div className="text-sm font-medium">{m}</div>
-              <div className="text-[10px] text-success mt-1">● Active</div>
+              <div className="text-[10px] text-success mt-1">â— Active</div>
             </div>
           ))}
         </div>

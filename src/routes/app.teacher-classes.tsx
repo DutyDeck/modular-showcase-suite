@@ -5,7 +5,7 @@ import { Video, Users, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/teacher-classes")({
-  head: () => ({ meta: [{ title: "My Classes — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "My Classes — One Edu" }] }),
   component: TeacherClassesPage,
 });
 
@@ -29,7 +29,7 @@ function TeacherClassesPage() {
               <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />{c.nextSession}</div>
               <div className="flex items-center gap-2"><Video className="h-4 w-4 text-primary" />{c.room}</div>
             </div>
-            <button onClick={() => toast.success(`Launching ${c.name}…`)} className="w-full mt-4 h-9 rounded-md bg-primary text-primary-foreground text-sm flex items-center justify-center gap-2"><Video className="h-4 w-4" />Start Class</button>
+            <button onClick={() => toast.success(`Launching ${c.name}â€¦`)} className="w-full mt-4 h-9 rounded-md bg-primary text-primary-foreground text-sm flex items-center justify-center gap-2"><Video className="h-4 w-4" />Start Class</button>
           </Section>
         ))}
       </div>

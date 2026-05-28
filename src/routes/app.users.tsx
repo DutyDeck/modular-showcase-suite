@@ -18,7 +18,7 @@ import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import { ShieldCheck, Plus, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/app/users")({
-  head: () => ({ meta: [{ title: "Users & Roles — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Users & Roles — One Edu" }] }),
   component: UsersPage,
 });
 
@@ -74,7 +74,7 @@ function UsersPage() {
     <div className="space-y-6">
       <PageHeader
         title="Identity & Access Management"
-        subtitle="RBAC + ABAC · SSO · Microsoft Entra ID · MFA across the platform."
+        subtitle="RBAC + ABAC Â· SSO Â· Microsoft Entra ID Â· MFA across the platform."
         actions={
           <>
             <Button variant="outline" onClick={importer.onOpen}>
@@ -98,7 +98,7 @@ function UsersPage() {
               <ShieldCheck className="h-5 w-5 text-success" />
               <div>
                 <div className="text-sm font-medium">{p}</div>
-                <div className="text-[10px] text-success">● Enabled</div>
+                <div className="text-[10px] text-success">â— Enabled</div>
               </div>
             </div>
           ),

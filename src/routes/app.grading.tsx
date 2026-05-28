@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Send } from "lucide-react";
 
 export const Route = createFileRoute("/app/grading")({
-  head: () => ({ meta: [{ title: "Grading — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Grading — One Edu" }] }),
   component: GradingPage,
 });
 
@@ -48,7 +48,7 @@ function GradingPage() {
           </Button>
         }
       />
-      <Section title="Physics Mid-Term · PHY-12 · 42 submissions">
+      <Section title="Physics Mid-Term Â· PHY-12 Â· 42 submissions">
         <DataTable
           columns={[
             { key: "id", label: "ID" },
@@ -73,7 +73,7 @@ function GradingPage() {
               );
             if (key === "action")
               return published[row.id] ? (
-                <span className="text-xs text-success font-medium">● Published</span>
+                <span className="text-xs text-success font-medium">â— Published</span>
               ) : (
                 <button
                   onClick={() => publish(row.id, row.name)}

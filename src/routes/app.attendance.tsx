@@ -19,7 +19,7 @@ import { attendanceTrend } from "@/lib/mockData";
 import { QrCode, MapPin, ScanFace, Radio, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/app/attendance")({
-  head: () => ({ meta: [{ title: "Attendance — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Attendance — One Edu" }] }),
   component: AttendancePage,
 });
 
@@ -76,7 +76,7 @@ function AttendancePage() {
     <div className="space-y-6">
       <PageHeader
         title="Attendance Management"
-        subtitle="QR · GPS · Facial recognition · RFID/NFC unified."
+        subtitle="QR Â· GPS Â· Facial recognition Â· RFID/NFC unified."
         actions={
           <Button onClick={mark.onOpen}>
             <Plus className="h-4 w-4" />
@@ -186,7 +186,7 @@ function AttendancePage() {
             onChange={(e) => setForm({ ...form, studentId: e.target.value })}
             options={students.map((s) => ({
               value: s.id,
-              label: `${s.name} · ${s.id}`,
+              label: `${s.name} Â· ${s.id}`,
             }))}
           />
         </Field>

@@ -19,7 +19,7 @@ import { Avatar } from "@/components/Avatar";
 import { Plus, Download, Filter, Search, Trash2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/app/students")({
-  head: () => ({ meta: [{ title: "Students — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Students — One Edu" }] }),
   component: StudentsPage,
 });
 
@@ -157,7 +157,7 @@ function StudentsPage() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by name, ID, parent…"
+                placeholder="Search by name, ID, parentâ€¦"
                 className="h-9 w-full sm:w-72 rounded-md border bg-background pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
             </div>

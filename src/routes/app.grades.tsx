@@ -3,7 +3,7 @@ import { PageHeader, Section, Badge, MiniBars } from "@/components/ui-kit";
 import { grades } from "@/lib/mockData";
 
 export const Route = createFileRoute("/app/grades")({
-  head: () => ({ meta: [{ title: "Grades — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Grades — One Edu" }] }),
   component: GradesPage,
 });
 

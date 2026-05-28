@@ -55,14 +55,14 @@ export function AppShell() {
         <div className="h-16 flex items-center gap-3 px-4 border-b border-sidebar-border">
           <img
             src={logoUrl}
-            alt="GlobalEdu logo"
+            alt="One Edu logo"
             width={36}
             height={36}
             className="h-9 w-9 shrink-0 drop-shadow"
           />
           {open && (
             <div className="leading-tight flex-1 min-w-0">
-              <div className="font-semibold text-sm truncate">GlobalEdu</div>
+              <div className="font-semibold text-sm truncate">One Edu</div>
               <div className="text-[10px] uppercase tracking-wider opacity-60">
                 Super App
               </div>
@@ -197,9 +197,9 @@ export function AppShell() {
               <Icons.Search className="h-4 w-4 text-muted-foreground" />
               <input
                 className="bg-transparent outline-none flex-1 text-sm"
-                placeholder="Search students, courses, invoices…"
+                placeholder="Search students, courses, invoicesâ€¦"
               />
-              <kbd className="text-[10px] text-muted-foreground border rounded px-1">⌘K</kbd>
+              <kbd className="text-[10px] text-muted-foreground border rounded px-1">âŒ˜K</kbd>
             </div>
             <button
               className="relative h-9 w-9 rounded-md hover:bg-muted flex items-center justify-center"

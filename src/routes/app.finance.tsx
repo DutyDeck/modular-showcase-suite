@@ -18,11 +18,11 @@ import { useCollection, addItem, updateItem, nextId, type Invoice } from "@/lib/
 import { Wallet, TrendingUp, CreditCard, Receipt, Plus, Check } from "lucide-react";
 
 export const Route = createFileRoute("/app/finance")({
-  head: () => ({ meta: [{ title: "Finance — GlobalEdu" }] }),
+  head: () => ({ meta: [{ title: "Finance — One Edu" }] }),
   component: FinancePage,
 });
 
-const METHODS = ["Visa •••• 4242", "PayPal", "Stripe", "Razorpay", "PayHere", "Bank transfer"];
+const METHODS = ["Visa â€¢â€¢â€¢â€¢ 4242", "PayPal", "Stripe", "Razorpay", "PayHere", "Bank transfer"];
 
 function FinancePage() {
   const invoices = useCollection("invoices");
@@ -193,7 +193,7 @@ function FinancePage() {
               className="p-4 rounded-lg border text-center text-sm font-medium"
             >
               {p}
-              <div className="text-[10px] text-success mt-1">● Connected</div>
+              <div className="text-[10px] text-success mt-1">â— Connected</div>
             </div>
           ))}
         </div>
@@ -250,7 +250,7 @@ function FinancePage() {
           if (!v) setPayTarget(null);
         }}
         title={`Pay ${payTarget?.id ?? ""}`}
-        description={payTarget ? `${payTarget.desc} · $${payTarget.amount}` : ""}
+        description={payTarget ? `${payTarget.desc} Â· $${payTarget.amount}` : ""}
         onSubmit={submitPayment}
         submitLabel={`Pay $${payTarget?.amount ?? 0}`}
       >
