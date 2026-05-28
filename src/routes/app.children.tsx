@@ -25,7 +25,7 @@ function ChildrenPage() {
           return (
             <Section key={c.id}>
               <div className="flex items-start gap-3 sm:gap-4">
-                <Avatar name={c.name} size={56} className="shrink-0" />
+                <Avatar name={c.name} seed={c.id} size={56} className="shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <h3 className="font-semibold truncate">{c.name}</h3>

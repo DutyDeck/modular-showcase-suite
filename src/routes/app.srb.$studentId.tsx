@@ -119,7 +119,7 @@ function SrbStudentPage() {
       <Section className="!p-0 overflow-hidden">
         <div className="bg-gradient-hero text-white p-5 sm:p-6">
           <div className="flex items-start gap-4">
-            <Avatar name={student.name} size={64} className="ring-2 ring-white/40" />
+            <Avatar name={student.name} seed={student.id} size={64} className="ring-2 ring-white/40" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xl sm:text-2xl font-bold truncate">{student.name}</h2>

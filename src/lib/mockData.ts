@@ -31,6 +31,67 @@ export const students = [
   { id: "S-1006", name: "Hiruni Senanayake", grade: "Grade 11", batch: "Science-A", attendance: 91, gpa: 3.6, status: "Active", parent: "Dilani Senanayake", risk: "low" },
   { id: "S-1007", name: "Kavindu Rathnayake", grade: "Grade 12", batch: "Commerce-A", attendance: 84, gpa: 3.2, status: "Active", parent: "Mahesh Rathnayake", risk: "low" },
   { id: "S-1008", name: "Lasitha De Silva", grade: "Grade 10", batch: "Science-A", attendance: 79, gpa: 3.0, status: "Active", parent: "Suresh De Silva", risk: "medium" },
+  // ---- Extended roster (realistic class sizes — 10-14 students per batch) ----
+  // Science-A · Grade 12
+  { id: "S-1010", name: "Imesha Karunaratne", grade: "Grade 12", batch: "Science-A", attendance: 92, gpa: 3.7, status: "Active", parent: "Pradeep Karunaratne", risk: "low" },
+  { id: "S-1011", name: "Pasindu Wickramasinghe", grade: "Grade 12", batch: "Science-A", attendance: 87, gpa: 3.4, status: "Active", parent: "Chamara Wickramasinghe", risk: "low" },
+  { id: "S-1012", name: "Sandeepa Liyanage", grade: "Grade 12", batch: "Science-A", attendance: 95, gpa: 3.8, status: "Active", parent: "Ruwan Liyanage", risk: "low" },
+  { id: "S-1013", name: "Bhanuka Dissanayake", grade: "Grade 12", batch: "Science-A", attendance: 81, gpa: 3.1, status: "Active", parent: "Janaka Dissanayake", risk: "medium" },
+  { id: "S-1014", name: "Nuwan Senarathne", grade: "Grade 12", batch: "Science-A", attendance: 89, gpa: 3.5, status: "Active", parent: "Sampath Senarathne", risk: "low" },
+  { id: "S-1015", name: "Tushari Munasinghe", grade: "Grade 12", batch: "Science-A", attendance: 93, gpa: 3.7, status: "Active", parent: "Bandula Munasinghe", risk: "low" },
+  { id: "S-1016", name: "Roshan Karunaratne", grade: "Grade 12", batch: "Science-A", attendance: 76, gpa: 2.9, status: "Active", parent: "Lakmal Karunaratne", risk: "medium" },
+  { id: "S-1017", name: "Niluka Hettiarachchi", grade: "Grade 12", batch: "Science-A", attendance: 90, gpa: 3.6, status: "Active", parent: "Rohan Hettiarachchi", risk: "low" },
+  { id: "S-1018", name: "Sachini Goonewardene", grade: "Grade 12", batch: "Science-A", attendance: 97, gpa: 3.9, status: "Active", parent: "Nisha Goonewardene", risk: "low" },
+  { id: "S-1019", name: "Arjun Mehta", grade: "Grade 12", batch: "Science-A", attendance: 84, gpa: 3.3, status: "Active", parent: "Vikram Mehta", risk: "low" },
+
+  // Science-B · Grade 10
+  { id: "S-1020", name: "Kavya Subramaniam", grade: "Grade 10", batch: "Science-B", attendance: 88, gpa: 3.4, status: "Active", parent: "Karthik Subramaniam", risk: "low" },
+  { id: "S-1021", name: "Dhanuka Rajapakse", grade: "Grade 10", batch: "Science-B", attendance: 73, gpa: 2.8, status: "Active", parent: "Sunethra Rajapakse", risk: "medium" },
+  { id: "S-1022", name: "Prabath Kumarasinghe", grade: "Grade 10", batch: "Science-B", attendance: 91, gpa: 3.6, status: "Active", parent: "Tilak Kumarasinghe", risk: "low" },
+  { id: "S-1023", name: "Meera Iyer", grade: "Grade 10", batch: "Science-B", attendance: 94, gpa: 3.8, status: "Active", parent: "Suresh Iyer", risk: "low" },
+  { id: "S-1024", name: "Chamath Abeysekera", grade: "Grade 10", batch: "Science-B", attendance: 68, gpa: 2.5, status: "At Risk", parent: "Wijaya Abeysekera", risk: "high" },
+  { id: "S-1025", name: "Hashini Wijesundara", grade: "Grade 10", batch: "Science-B", attendance: 89, gpa: 3.5, status: "Active", parent: "Lalith Wijesundara", risk: "low" },
+  { id: "S-1026", name: "Tharindu Ekanayake", grade: "Grade 10", batch: "Science-B", attendance: 82, gpa: 3.2, status: "Active", parent: "Indra Ekanayake", risk: "low" },
+  { id: "S-1027", name: "Vihanga Samaratunga", grade: "Grade 10", batch: "Science-B", attendance: 96, gpa: 3.9, status: "Active", parent: "Manel Samaratunga", risk: "low" },
+  { id: "S-1028", name: "Yasiru Ratnaweera", grade: "Grade 10", batch: "Science-B", attendance: 78, gpa: 3.0, status: "Active", parent: "Damayanthi Ratnaweera", risk: "medium" },
+  { id: "S-1029", name: "Anjali Patel", grade: "Grade 10", batch: "Science-B", attendance: 86, gpa: 3.4, status: "Active", parent: "Rakesh Patel", risk: "low" },
+  { id: "S-1030", name: "Raveen Wijewardena", grade: "Grade 10", batch: "Science-B", attendance: 71, gpa: 2.7, status: "Active", parent: "Chandana Wijewardena", risk: "medium" },
+
+  // Commerce-A · Grade 12
+  { id: "S-1031", name: "Dilini Amarasinghe", grade: "Grade 12", batch: "Commerce-A", attendance: 92, gpa: 3.6, status: "Active", parent: "Senaka Amarasinghe", risk: "low" },
+  { id: "S-1032", name: "Asela Wickramaratne", grade: "Grade 12", batch: "Commerce-A", attendance: 85, gpa: 3.3, status: "Active", parent: "Ananda Wickramaratne", risk: "low" },
+  { id: "S-1033", name: "Pooja Krishnan", grade: "Grade 12", batch: "Commerce-A", attendance: 94, gpa: 3.7, status: "Active", parent: "Ravi Krishnan", risk: "low" },
+  { id: "S-1034", name: "Charith Nanayakkara", grade: "Grade 12", batch: "Commerce-A", attendance: 79, gpa: 3.0, status: "Active", parent: "Sumith Nanayakkara", risk: "medium" },
+  { id: "S-1035", name: "Yashodhara Pieris", grade: "Grade 12", batch: "Commerce-A", attendance: 88, gpa: 3.4, status: "Active", parent: "Asanga Pieris", risk: "low" },
+  { id: "S-1036", name: "Janith Gunatilake", grade: "Grade 12", batch: "Commerce-A", attendance: 75, gpa: 2.8, status: "Active", parent: "Wasantha Gunatilake", risk: "medium" },
+  { id: "S-1037", name: "Sanduni Marasinghe", grade: "Grade 12", batch: "Commerce-A", attendance: 96, gpa: 3.8, status: "Active", parent: "Niranjan Marasinghe", risk: "low" },
+  { id: "S-1038", name: "Rohan Sharma", grade: "Grade 12", batch: "Commerce-A", attendance: 83, gpa: 3.2, status: "Active", parent: "Vinod Sharma", risk: "low" },
+  { id: "S-1039", name: "Madushika Jayasekera", grade: "Grade 12", batch: "Commerce-A", attendance: 91, gpa: 3.5, status: "Active", parent: "Chandika Jayasekera", risk: "low" },
+  { id: "S-1040", name: "Tharaka Wickrematunge", grade: "Grade 12", batch: "Commerce-A", attendance: 87, gpa: 3.4, status: "Active", parent: "Roshani Wickrematunge", risk: "low" },
+
+  // Commerce-B · Grade 11
+  { id: "S-1041", name: "Ishini Gomes", grade: "Grade 11", batch: "Commerce-B", attendance: 90, gpa: 3.5, status: "Active", parent: "Felix Gomes", risk: "low" },
+  { id: "S-1042", name: "Dilshan Karunatilake", grade: "Grade 11", batch: "Commerce-B", attendance: 67, gpa: 2.4, status: "At Risk", parent: "Saroja Karunatilake", risk: "high" },
+  { id: "S-1043", name: "Nimesha Bandaranayake", grade: "Grade 11", batch: "Commerce-B", attendance: 84, gpa: 3.2, status: "Active", parent: "Indika Bandaranayake", risk: "low" },
+  { id: "S-1044", name: "Kasun Rajakaruna", grade: "Grade 11", batch: "Commerce-B", attendance: 78, gpa: 3.0, status: "Active", parent: "Champika Rajakaruna", risk: "medium" },
+  { id: "S-1045", name: "Sithara Embuldeniya", grade: "Grade 11", batch: "Commerce-B", attendance: 93, gpa: 3.7, status: "Active", parent: "Anura Embuldeniya", risk: "low" },
+  { id: "S-1046", name: "Praveen Rajan", grade: "Grade 11", batch: "Commerce-B", attendance: 81, gpa: 3.1, status: "Active", parent: "Mohan Rajan", risk: "low" },
+  { id: "S-1047", name: "Tharushi Kahawita", grade: "Grade 11", batch: "Commerce-B", attendance: 89, gpa: 3.5, status: "Active", parent: "Lalantha Kahawita", risk: "low" },
+  { id: "S-1048", name: "Ashan Premaratne", grade: "Grade 11", batch: "Commerce-B", attendance: 72, gpa: 2.7, status: "Active", parent: "Saman Premaratne", risk: "medium" },
+  { id: "S-1049", name: "Devni Wickramanayake", grade: "Grade 11", batch: "Commerce-B", attendance: 95, gpa: 3.8, status: "Active", parent: "Anoma Wickramanayake", risk: "low" },
+  { id: "S-1050", name: "Sahan Liyanagamage", grade: "Grade 11", batch: "Commerce-B", attendance: 86, gpa: 3.3, status: "Active", parent: "Buddhika Liyanagamage", risk: "low" },
+
+  // Arts-A · Grade 12
+  { id: "S-1051", name: "Anushka Wijegunaratne", grade: "Grade 12", batch: "Arts-A", attendance: 92, gpa: 3.6, status: "Active", parent: "Chinthaka Wijegunaratne", risk: "low" },
+  { id: "S-1052", name: "Kithmin Perera", grade: "Grade 12", batch: "Arts-A", attendance: 88, gpa: 3.4, status: "Active", parent: "Chamari Perera", risk: "low" },
+  { id: "S-1053", name: "Diluni Sirisena", grade: "Grade 12", batch: "Arts-A", attendance: 94, gpa: 3.7, status: "Active", parent: "Rajitha Sirisena", risk: "low" },
+  { id: "S-1054", name: "Maleesha Jayatissa", grade: "Grade 12", batch: "Arts-A", attendance: 83, gpa: 3.2, status: "Active", parent: "Upali Jayatissa", risk: "low" },
+  { id: "S-1055", name: "Heshan Wickramage", grade: "Grade 12", batch: "Arts-A", attendance: 76, gpa: 2.9, status: "Active", parent: "Niranjan Wickramage", risk: "medium" },
+  { id: "S-1056", name: "Saritha Devraj", grade: "Grade 12", batch: "Arts-A", attendance: 91, gpa: 3.5, status: "Active", parent: "Anil Devraj", risk: "low" },
+  { id: "S-1057", name: "Mihina Senarath", grade: "Grade 12", batch: "Arts-A", attendance: 85, gpa: 3.3, status: "Active", parent: "Padmini Senarath", risk: "low" },
+  { id: "S-1058", name: "Lakshan Edirisuriya", grade: "Grade 12", batch: "Arts-A", attendance: 79, gpa: 3.0, status: "Active", parent: "Kanchana Edirisuriya", risk: "medium" },
+  { id: "S-1059", name: "Tashmi Welikala", grade: "Grade 12", batch: "Arts-A", attendance: 96, gpa: 3.9, status: "Active", parent: "Buddhi Welikala", risk: "low" },
+  { id: "S-1060", name: "Rikitha Vidanapathirana", grade: "Grade 12", batch: "Arts-A", attendance: 89, gpa: 3.5, status: "Active", parent: "Sirimal Vidanapathirana", risk: "low" },
 ];
 
 export const courses = [

@@ -84,7 +84,7 @@ function SrbIndexPage() {
               className="rounded-xl border bg-card p-4 hover:border-primary hover:shadow-soft transition-all flex flex-col gap-3"
             >
               <div className="flex items-center gap-3">
-                <Avatar name={s.name} size={40} />
+                <Avatar name={s.name} seed={s.id} size={40} />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold truncate">{s.name}</div>
                   <div className="text-xs text-muted-foreground">
@@ -153,7 +153,7 @@ function ParentChildPicker() {
             params={{ studentId: c.id }}
             className="rounded-xl border bg-card p-5 hover:border-primary hover:shadow-soft transition-all flex items-center gap-4"
           >
-            <Avatar name={c.name} size={56} />
+            <Avatar name={c.name} seed={c.id} size={56} />
             <div className="flex-1 min-w-0">
               <div className="font-semibold">{c.name}</div>
               <div className="text-xs text-muted-foreground">{c.grade}</div>

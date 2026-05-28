@@ -194,7 +194,7 @@ function StudentsPage() {
             if (key === "name")
               return (
                 <div className="flex items-center gap-2">
-                  <Avatar name={row.name} size={28} />
+                  <Avatar name={row.name} seed={row.id} size={28} />
                   <span className="font-medium">{row.name}</span>
                 </div>
               );
