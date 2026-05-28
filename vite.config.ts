@@ -12,4 +12,15 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  nitro: {
+    preset: "netlify",
+    // Override Lovable's Cloudflare-shaped defaults so the function lands in
+    // .netlify/functions-internal/server/ and static assets land in dist/ —
+    // matches what Netlify's Nitro auto-detection expects.
+    output: {
+      dir: ".netlify/functions-internal",
+      serverDir: ".netlify/functions-internal/server",
+      publicDir: "dist",
+    },
+  },
 });
