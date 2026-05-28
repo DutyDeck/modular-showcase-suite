@@ -31,7 +31,7 @@ function ProfilePage() {
               <h2 className="text-xl font-bold">{user.name}</h2>
               <Badge tone="success">Verified</Badge>
             </div>
-            <div className="text-sm text-muted-foreground">{roleLabel[user.role]} Â· {user.institution}</div>
+            <div className="text-sm text-muted-foreground">{roleLabel[user.role]} · {user.institution}</div>
             <div className="grid sm:grid-cols-2 gap-3 mt-5 text-sm">
               <Field label="Email" value={user.email} />
               <Field label="Global Student ID" value={`GSID-${user.id.toUpperCase()}-2026`} />

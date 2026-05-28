@@ -5,6 +5,16 @@ import { useAuth } from "@/lib/auth";
 import { menusByRole, roleLabel } from "@/lib/menus";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/Avatar";
+import {
+  NotificationBell,
+  ThemeToggle,
+  LanguageSwitcher,
+  CurrencySwitcher,
+  ResetDemoButton,
+} from "@/components/HeaderControls";
+import { CommandPalette, useCommandPaletteHotkey } from "@/components/CommandPalette";
+import { CopilotDrawer, CopilotLauncher } from "@/components/CopilotDrawer";
+import { usePrefs } from "@/lib/prefs";
 import logoUrl from "@/assets/globaledu-logo.png";
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -16,6 +26,9 @@ export function AppShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { t } = usePrefs();
+  const palette = useCommandPaletteHotkey();
+  const [copilotOpen, setCopilotOpen] = useState(false);
   // Desktop sidebar collapsed/expanded state
   const [collapsed, setCollapsed] = useState(false);
   // Mobile drawer open/closed
@@ -103,7 +116,7 @@ export function AppShell() {
                         )}
                       >
                         <Icon name={item.icon} className="h-4 w-4 shrink-0" />
-                        {open && <span className="truncate">{item.label}</span>}
+                        {open && <span className="truncate">{t(item.label, item.label)}</span>}
                       </Link>
                     </li>
                   );
@@ -192,23 +205,33 @@ export function AppShell() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-sm w-72">
-              <Icons.Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                className="bg-transparent outline-none flex-1 text-sm"
-                placeholder="Search students, courses, invoicesâ€¦"
-              />
-              <kbd className="text-[10px] text-muted-foreground border rounded px-1">âŒ˜K</kbd>
-            </div>
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
-              className="relative h-9 w-9 rounded-md hover:bg-muted flex items-center justify-center"
-              aria-label="Notifications"
+              onClick={() => palette.setOpen(true)}
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-sm w-72 hover:bg-muted/80 transition-colors"
+              aria-label="Open command palette"
             >
-              <Icons.Bell className="h-4 w-4" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
+              <Icons.Search className="h-4 w-4 text-muted-foreground" />
+              <span className="flex-1 text-left text-muted-foreground text-xs">
+                Search or jump to…
+              </span>
+              <kbd className="text-[10px] text-muted-foreground border rounded px-1.5 py-0.5 font-mono">
+                ⌘K
+              </kbd>
             </button>
-            <div className="flex items-center gap-2 sm:pl-3 sm:border-l">
+            <button
+              onClick={() => palette.setOpen(true)}
+              className="lg:hidden h-9 w-9 rounded-md hover:bg-muted flex items-center justify-center"
+              aria-label="Open search"
+            >
+              <Icons.Search className="h-4 w-4" />
+            </button>
+            <LanguageSwitcher />
+            <CurrencySwitcher />
+            <ThemeToggle />
+            <NotificationBell />
+            <ResetDemoButton />
+            <div className="flex items-center gap-2 sm:pl-2 sm:ml-1 sm:border-l">
               <Avatar
                 name={user.name}
                 src={user.photo}
@@ -216,7 +239,7 @@ export function AppShell() {
                 tone="brand"
                 className="ring-2 ring-primary/20"
               />
-              <div className="leading-tight hidden md:block">
+              <div className="leading-tight hidden xl:block">
                 <div className="text-sm font-medium truncate max-w-[140px]">
                   {user.name}
                 </div>
@@ -243,6 +266,10 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+
+      <CommandPalette open={palette.open} onOpenChange={palette.setOpen} />
+      <CopilotLauncher onClick={() => setCopilotOpen(true)} />
+      <CopilotDrawer open={copilotOpen} onOpenChange={setCopilotOpen} />
     </div>
   );
 }

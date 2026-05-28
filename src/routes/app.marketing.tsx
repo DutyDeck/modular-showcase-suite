@@ -68,7 +68,7 @@ function MarketingPage() {
     const order = STAGES;
     const next = order[Math.min(order.indexOf(stage) + 1, order.length - 1)];
     updateItem("leads", (l) => l.name === name, { stage: next });
-    toast.success(`${name} â†’ ${next}`);
+    toast.success(`${name} → ${next}`);
   };
 
   return (

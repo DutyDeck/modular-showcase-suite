@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
@@ -16,7 +16,7 @@ import {
 import { useCollection, addItem, removeItem, nextId, type Student } from "@/lib/store";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import { Avatar } from "@/components/Avatar";
-import { Plus, Download, Filter, Search, Trash2, Upload } from "lucide-react";
+import { Plus, Download, Filter, Search, Trash2, Upload, NotebookPen } from "lucide-react";
 
 export const Route = createFileRoute("/app/students")({
   head: () => ({ meta: [{ title: "Students — One Edu" }] }),
@@ -157,7 +157,7 @@ function StudentsPage() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by name, ID, parentâ€¦"
+                placeholder="Search by name, ID, parent…"
                 className="h-9 w-full sm:w-72 rounded-md border bg-background pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -222,13 +222,24 @@ function StudentsPage() {
               );
             if (key === "_actions")
               return (
-                <button
-                  onClick={() => removeStudent(row.id)}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  aria-label={`Remove ${row.name}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-1 justify-end">
+                  <Link
+                    to="/app/srb/$studentId"
+                    params={{ studentId: row.id }}
+                    className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
+                    aria-label={`Open record book for ${row.name}`}
+                    title="Record Book"
+                  >
+                    <NotebookPen className="h-4 w-4" />
+                  </Link>
+                  <button
+                    onClick={() => removeStudent(row.id)}
+                    className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    aria-label={`Remove ${row.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               );
             return String(row[key]);
           }}

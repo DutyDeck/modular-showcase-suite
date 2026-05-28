@@ -87,7 +87,7 @@ function LoginPage() {
         <div className="relative space-y-8 max-w-lg">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur ring-1 ring-white/20 text-[11px] font-medium">
             <Sparkles className="h-3 w-3" />
-            New Â· AI-powered insights for every classroom
+            New · AI-powered insights for every classroom
           </div>
           <h1 className="text-5xl font-bold leading-[1.05] tracking-tight">
             One identity. <br />
@@ -106,7 +106,7 @@ function LoginPage() {
             {[
               { icon: Globe2, t: "Multi-tenant", s: "Global scale" },
               { icon: Sparkles, t: "AI-powered", s: "Predictive insights" },
-              { icon: Shield, t: "Compliant", s: "GDPR Â· FERPA" },
+              { icon: Shield, t: "Compliant", s: "GDPR · FERPA" },
             ].map(({ icon: I, t, s }) => (
               <div key={t} className="rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/15 p-3.5 hover:bg-white/15 transition-colors">
                 <I className="h-4 w-4 mb-2 opacity-90" />
@@ -119,7 +119,7 @@ function LoginPage() {
           {/* Live stats card */}
           <div className="rounded-2xl bg-white/10 backdrop-blur-xl ring-1 ring-white/20 p-5 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-[11px] uppercase tracking-wider opacity-70 font-semibold">Platform pulse Â· live</div>
+              <div className="text-[11px] uppercase tracking-wider opacity-70 font-semibold">Platform pulse · live</div>
               <span className="flex items-center gap-1.5 text-[10px]">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
                 Online
@@ -155,15 +155,15 @@ function LoginPage() {
                 ))}
               </div>
               "One Edu replaced 6 disconnected tools and gave us insight we'd never had."
-              <div className="opacity-70 mt-1 text-[11px]">— Dr. Anjali R., Principal Â· Horizon Academy</div>
+              <div className="opacity-70 mt-1 text-[11px]">— Dr. Anjali R., Principal · Horizon Academy</div>
             </div>
           </div>
         </div>
 
         <div className="relative text-[11px] opacity-60 flex items-center gap-4">
-          <span>Â© 2026 One Edu</span>
+          <span>© 2026 One Edu</span>
           <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> SOC 2 Type II</span>
-          <span>Â· 99.9% SLA</span>
+          <span>· 99.9% SLA</span>
         </div>
       </div>
 
@@ -234,7 +234,7 @@ function LoginPage() {
               disabled={loading}
               className="group w-full h-11 rounded-lg bg-gradient-brand text-white font-semibold text-sm hover:opacity-95 shadow-elegant transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {loading ? "Signing you inâ€¦" : "Sign in"}
+              {loading ? "Signing you in…" : "Sign in"}
               {!loading && <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />}
             </button>
 

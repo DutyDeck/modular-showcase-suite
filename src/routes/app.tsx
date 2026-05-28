@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 export const Route = createFileRoute("/app")({
   beforeLoad: () => {
     if (typeof window !== "undefined") {
-      const raw = localStorage.getItem("gsm.auth.user");
+      const raw = localStorage.getItem("oneedu.auth.user");
       if (!raw) throw redirect({ to: "/login" });
     }
   },

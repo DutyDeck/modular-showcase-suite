@@ -98,6 +98,57 @@
   --sidebar-ring: oklch(0.62 0.20 270);
 }
 
+.dark {
+  --background: oklch(0.14 0.02 265);
+  --foreground: oklch(0.96 0.005 250);
+
+  --card: oklch(0.19 0.025 265);
+  --card-foreground: oklch(0.96 0.005 250);
+  --popover: oklch(0.19 0.025 265);
+  --popover-foreground: oklch(0.96 0.005 250);
+
+  --primary: oklch(0.70 0.20 270);
+  --primary-foreground: oklch(0.13 0.04 265);
+  --primary-glow: oklch(0.78 0.18 285);
+
+  --secondary: oklch(0.24 0.03 265);
+  --secondary-foreground: oklch(0.92 0.02 255);
+
+  --muted: oklch(0.22 0.025 265);
+  --muted-foreground: oklch(0.68 0.02 255);
+
+  --accent: oklch(0.28 0.05 280);
+  --accent-foreground: oklch(0.94 0.04 280);
+
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --success: oklch(0.70 0.16 155);
+  --success-foreground: oklch(0.10 0.04 155);
+  --warning: oklch(0.78 0.16 75);
+  --warning-foreground: oklch(0.15 0.05 75);
+  --info: oklch(0.70 0.15 230);
+  --info-foreground: oklch(0.10 0.05 230);
+
+  --border: oklch(0.27 0.02 265);
+  --input: oklch(0.27 0.02 265);
+  --ring: oklch(0.70 0.20 270);
+
+  --gradient-brand: linear-gradient(135deg, oklch(0.55 0.20 265), oklch(0.65 0.22 295));
+  --gradient-hero: linear-gradient(135deg, oklch(0.36 0.20 265) 0%, oklch(0.44 0.22 290) 50%, oklch(0.54 0.18 320) 100%);
+  --gradient-card: linear-gradient(135deg, oklch(0.20 0.025 265) 0%, oklch(0.23 0.04 285) 100%);
+  --shadow-elegant: 0 10px 40px -10px oklch(0 0 0 / 0.45);
+  --shadow-soft: 0 2px 12px -2px oklch(0 0 0 / 0.25);
+
+  --sidebar: oklch(0.12 0.03 265);
+  --sidebar-foreground: oklch(0.90 0.02 255);
+  --sidebar-primary: oklch(0.70 0.20 270);
+  --sidebar-primary-foreground: oklch(0.13 0.04 265);
+  --sidebar-accent: oklch(0.22 0.04 270);
+  --sidebar-accent-foreground: oklch(0.96 0 0);
+  --sidebar-border: oklch(0.22 0.03 268);
+  --sidebar-ring: oklch(0.70 0.20 270);
+}
+
 @layer base {
   * { border-color: var(--color-border); }
   body {
@@ -120,4 +171,11 @@
     background-clip: text;
     color: transparent;
   }
+}
+
+@media print {
+  aside, header, nav, .print\\:hidden { display: none !important; }
+  main { padding: 0 !important; max-width: 100% !important; }
+  body { background: white !important; color: black !important; }
+  .printable { box-shadow: none !important; border: 0 !important; }
 }

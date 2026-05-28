@@ -157,3 +157,235 @@ export const revenueTrend = [
   { m: "Jan", v: 42 }, { m: "Feb", v: 51 }, { m: "Mar", v: 58 },
   { m: "Apr", v: 62 }, { m: "May", v: 71 }, { m: "Jun", v: 79 },
 ];
+
+export type SrbType =
+  | "homework"
+  | "behavior"
+  | "achievement"
+  | "health"
+  | "permission"
+  | "communication"
+  | "remark";
+
+export interface SrbReply {
+  id: string;
+  authorName: string;
+  authorRole: "teacher" | "parent" | "student" | "counselor" | "admin";
+  text: string;
+  at: string; // ISO
+}
+
+export interface SrbEntry {
+  id: string;
+  studentId: string;
+  studentName: string;
+  authorName: string;
+  authorRole: "teacher" | "parent" | "student" | "counselor" | "admin";
+  type: SrbType;
+  title: string;
+  body: string;
+  date: string; // ISO timestamp
+  pinned?: boolean;
+  requiresAck?: boolean;
+  ackBy?: string;
+  ackAt?: string;
+  replies?: SrbReply[];
+}
+
+const today = new Date();
+const d = (offsetDays: number, hour = 9, minute = 0): string => {
+  const x = new Date(today);
+  x.setDate(x.getDate() - offsetDays);
+  x.setHours(hour, minute, 0, 0);
+  return x.toISOString();
+};
+
+export const srbEntries: SrbEntry[] = [
+  {
+    id: "SRB-501",
+    studentId: "S-1001",
+    studentName: "Aarav Perera",
+    authorName: "Dr. Saman Silva",
+    authorRole: "teacher",
+    type: "permission",
+    title: "Field trip — Planetarium (Jun 14)",
+    body:
+      "We're visiting the Colombo Planetarium on Friday, 14 June, 8 AM – 1 PM. Please acknowledge before Wednesday. Bus departs from the main gate. Pack a snack and water bottle.",
+    date: d(0, 8, 12),
+    pinned: true,
+    requiresAck: true,
+    replies: [],
+  },
+  {
+    id: "SRB-502",
+    studentId: "S-1001",
+    studentName: "Aarav Perera",
+    authorName: "Dr. Saman Silva",
+    authorRole: "teacher",
+    type: "achievement",
+    title: "Top score in physics quiz",
+    body:
+      "Aarav scored 49/50 on this week's Quantum Mechanics quiz — class average was 36/50. Excellent grasp of wave-particle duality. Keep it up!",
+    date: d(1, 14, 30),
+    replies: [
+      {
+        id: "r1",
+        authorName: "Nimal Perera",
+        authorRole: "parent",
+        text: "Thank you for letting us know! We'll celebrate at dinner tonight.",
+        at: d(1, 18, 5),
+      },
+    ],
+    ackBy: "Nimal Perera",
+    ackAt: d(1, 18, 0),
+  },
+  {
+    id: "SRB-503",
+    studentId: "S-1001",
+    studentName: "Aarav Perera",
+    authorName: "Mrs. Lalani Perera",
+    authorRole: "teacher",
+    type: "homework",
+    title: "Chemistry: Lab report due Friday",
+    body:
+      "Write up the alkene addition experiment we did today. 2–3 pages with hand-drawn mechanisms. Due Friday 8 AM.",
+    date: d(2, 15, 0),
+    ackBy: "Nimal Perera",
+    ackAt: d(2, 19, 22),
+  },
+  {
+    id: "SRB-504",
+    studentId: "S-1001",
+    studentName: "Aarav Perera",
+    authorName: "Counselor Riya",
+    authorRole: "counselor",
+    type: "remark",
+    title: "Counseling check-in — June",
+    body:
+      "Had our monthly chat. Aarav is feeling positive about A/Ls and has joined the chess club. No concerns at this time.",
+    date: d(4, 11, 0),
+    replies: [],
+  },
+  {
+    id: "SRB-505",
+    studentId: "S-1001",
+    studentName: "Aarav Perera",
+    authorName: "Nimal Perera",
+    authorRole: "parent",
+    type: "communication",
+    title: "Aarav will be 15 min late tomorrow",
+    body:
+      "We have a dental appointment in the morning. Aarav will join the second period. Apologies for the late notice.",
+    date: d(3, 20, 30),
+    replies: [
+      {
+        id: "r2",
+        authorName: "Dr. Saman Silva",
+        authorRole: "teacher",
+        text: "Noted, no problem. I'll share the morning's notes with him.",
+        at: d(3, 21, 0),
+      },
+    ],
+  },
+  {
+    id: "SRB-506",
+    studentId: "S-1001",
+    studentName: "Aarav Perera",
+    authorName: "School Nurse",
+    authorRole: "admin",
+    type: "health",
+    title: "Routine vision screening — passed",
+    body: "Annual vision screening completed. Result: 20/20 both eyes. No further action.",
+    date: d(7, 10, 15),
+  },
+  {
+    id: "SRB-507",
+    studentId: "S-1001",
+    studentName: "Aarav Perera",
+    authorName: "Mr. Asanka Gunasekara",
+    authorRole: "teacher",
+    type: "behavior",
+    title: "Excellent group leadership",
+    body:
+      "Aarav led the maths problem-solving group today and helped two classmates understand integration. Strong collaborative behaviour.",
+    date: d(5, 13, 45),
+    ackBy: "Nimal Perera",
+    ackAt: d(5, 18, 22),
+  },
+  /* Tashi Perera — second child for the demo parent */
+  {
+    id: "SRB-510",
+    studentId: "S-1009",
+    studentName: "Tashi Perera",
+    authorName: "Ms. Chandrika Soysa",
+    authorRole: "teacher",
+    type: "homework",
+    title: "English: Read chapters 4–6 by Monday",
+    body:
+      "Reading assignment from 'The Giver'. Be ready to discuss the role of Sameness in the community.",
+    date: d(1, 16, 0),
+  },
+  {
+    id: "SRB-511",
+    studentId: "S-1009",
+    studentName: "Tashi Perera",
+    authorName: "Ms. Chandrika Soysa",
+    authorRole: "teacher",
+    type: "achievement",
+    title: "Story-writing competition: 2nd place",
+    body:
+      "Tashi's short story 'The Lantern Keeper' placed 2nd in the inter-school writing contest. A certificate will follow.",
+    date: d(6, 9, 30),
+    replies: [
+      {
+        id: "r3",
+        authorName: "Nimal Perera",
+        authorRole: "parent",
+        text: "🎉 So proud of her! Thank you for encouraging her.",
+        at: d(6, 12, 12),
+      },
+    ],
+    ackBy: "Nimal Perera",
+    ackAt: d(6, 12, 0),
+  },
+  {
+    id: "SRB-512",
+    studentId: "S-1009",
+    studentName: "Tashi Perera",
+    authorName: "Ms. Chandrika Soysa",
+    authorRole: "teacher",
+    type: "behavior",
+    title: "Disrupting class — June 5",
+    body:
+      "Tashi was chatting during the silent reading period and needed two reminders. Please have a brief conversation at home.",
+    date: d(8, 11, 0),
+    requiresAck: true,
+  },
+  /* A couple of entries for at-risk Tharindu for the teacher demo */
+  {
+    id: "SRB-520",
+    studentId: "S-1005",
+    studentName: "Tharindu Bandara",
+    authorName: "Dr. Saman Silva",
+    authorRole: "teacher",
+    type: "remark",
+    title: "Attendance concern — please call us",
+    body:
+      "Tharindu has missed 4 consecutive physics classes. Could we set up a parent-teacher call this week?",
+    date: d(2, 17, 30),
+    pinned: true,
+    requiresAck: true,
+  },
+  {
+    id: "SRB-521",
+    studentId: "S-1005",
+    studentName: "Tharindu Bandara",
+    authorName: "Counselor Riya",
+    authorRole: "counselor",
+    type: "communication",
+    title: "Wellness check-in scheduled",
+    body:
+      "I've blocked 30 minutes on Thursday at 11 AM for a check-in with Tharindu. Parents are welcome to join.",
+    date: d(3, 14, 0),
+  },
+];

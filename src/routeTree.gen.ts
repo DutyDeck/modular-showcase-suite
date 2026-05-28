@@ -17,8 +17,11 @@ import { Route as AppUsersRouteImport } from './routes/app.users'
 import { Route as AppTenantsRouteImport } from './routes/app.tenants'
 import { Route as AppTeacherClassesRouteImport } from './routes/app.teacher-classes'
 import { Route as AppStudentsRouteImport } from './routes/app.students'
+import { Route as AppSrbRouteImport } from './routes/app.srb'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
 import { Route as AppMigrationRouteImport } from './routes/app.migration'
 import { Route as AppMessagesRouteImport } from './routes/app.messages'
 import { Route as AppMarketplaceRouteImport } from './routes/app.marketplace'
@@ -30,9 +33,13 @@ import { Route as AppFinanceRouteImport } from './routes/app.finance'
 import { Route as AppCoursesRouteImport } from './routes/app.courses'
 import { Route as AppComplianceRouteImport } from './routes/app.compliance'
 import { Route as AppChildrenRouteImport } from './routes/app.children'
+import { Route as AppCalendarRouteImport } from './routes/app.calendar'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
 import { Route as AppAssignmentsRouteImport } from './routes/app.assignments'
 import { Route as AppAiInsightsRouteImport } from './routes/app.ai-insights'
+import { Route as AppSrbIndexRouteImport } from './routes/app.srb.index'
+import { Route as AppSrbStudentIdRouteImport } from './routes/app.srb.$studentId'
+import { Route as AppInvoiceIdRouteImport } from './routes/app.invoice.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -74,6 +81,16 @@ const AppStudentsRoute = AppStudentsRouteImport.update({
   path: '/students',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSrbRoute = AppSrbRouteImport.update({
+  id: '/srb',
+  path: '/srb',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppReportsRoute = AppReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -82,6 +99,11 @@ const AppReportsRoute = AppReportsRouteImport.update({
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOnboardingRoute = AppOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMigrationRoute = AppMigrationRouteImport.update({
@@ -139,6 +161,11 @@ const AppChildrenRoute = AppChildrenRouteImport.update({
   path: '/children',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCalendarRoute = AppCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAttendanceRoute = AppAttendanceRouteImport.update({
   id: '/attendance',
   path: '/attendance',
@@ -154,6 +181,21 @@ const AppAiInsightsRoute = AppAiInsightsRouteImport.update({
   path: '/ai-insights',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSrbIndexRoute = AppSrbIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSrbRoute,
+} as any)
+const AppSrbStudentIdRoute = AppSrbStudentIdRouteImport.update({
+  id: '/$studentId',
+  path: '/$studentId',
+  getParentRoute: () => AppSrbRoute,
+} as any)
+const AppInvoiceIdRoute = AppInvoiceIdRouteImport.update({
+  id: '/invoice/$id',
+  path: '/invoice/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -162,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/app/ai-insights': typeof AppAiInsightsRoute
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
+  '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/compliance': typeof AppComplianceRoute
   '/app/courses': typeof AppCoursesRoute
@@ -173,13 +216,19 @@ export interface FileRoutesByFullPath {
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/migration': typeof AppMigrationRoute
+  '/app/onboarding': typeof AppOnboardingRoute
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/srb': typeof AppSrbRouteWithChildren
   '/app/students': typeof AppStudentsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
+  '/app/invoice/$id': typeof AppInvoiceIdRoute
+  '/app/srb/$studentId': typeof AppSrbStudentIdRoute
+  '/app/srb/': typeof AppSrbIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -187,6 +236,7 @@ export interface FileRoutesByTo {
   '/app/ai-insights': typeof AppAiInsightsRoute
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
+  '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/compliance': typeof AppComplianceRoute
   '/app/courses': typeof AppCoursesRoute
@@ -198,13 +248,18 @@ export interface FileRoutesByTo {
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/migration': typeof AppMigrationRoute
+  '/app/onboarding': typeof AppOnboardingRoute
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/students': typeof AppStudentsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
   '/app/users': typeof AppUsersRoute
   '/app': typeof AppIndexRoute
+  '/app/invoice/$id': typeof AppInvoiceIdRoute
+  '/app/srb/$studentId': typeof AppSrbStudentIdRoute
+  '/app/srb': typeof AppSrbIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -214,6 +269,7 @@ export interface FileRoutesById {
   '/app/ai-insights': typeof AppAiInsightsRoute
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
+  '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/compliance': typeof AppComplianceRoute
   '/app/courses': typeof AppCoursesRoute
@@ -225,13 +281,19 @@ export interface FileRoutesById {
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/migration': typeof AppMigrationRoute
+  '/app/onboarding': typeof AppOnboardingRoute
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/srb': typeof AppSrbRouteWithChildren
   '/app/students': typeof AppStudentsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
+  '/app/invoice/$id': typeof AppInvoiceIdRoute
+  '/app/srb/$studentId': typeof AppSrbStudentIdRoute
+  '/app/srb/': typeof AppSrbIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -242,6 +304,7 @@ export interface FileRouteTypes {
     | '/app/ai-insights'
     | '/app/assignments'
     | '/app/attendance'
+    | '/app/calendar'
     | '/app/children'
     | '/app/compliance'
     | '/app/courses'
@@ -253,13 +316,19 @@ export interface FileRouteTypes {
     | '/app/marketplace'
     | '/app/messages'
     | '/app/migration'
+    | '/app/onboarding'
     | '/app/profile'
     | '/app/reports'
+    | '/app/settings'
+    | '/app/srb'
     | '/app/students'
     | '/app/teacher-classes'
     | '/app/tenants'
     | '/app/users'
     | '/app/'
+    | '/app/invoice/$id'
+    | '/app/srb/$studentId'
+    | '/app/srb/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -267,6 +336,7 @@ export interface FileRouteTypes {
     | '/app/ai-insights'
     | '/app/assignments'
     | '/app/attendance'
+    | '/app/calendar'
     | '/app/children'
     | '/app/compliance'
     | '/app/courses'
@@ -278,13 +348,18 @@ export interface FileRouteTypes {
     | '/app/marketplace'
     | '/app/messages'
     | '/app/migration'
+    | '/app/onboarding'
     | '/app/profile'
     | '/app/reports'
+    | '/app/settings'
     | '/app/students'
     | '/app/teacher-classes'
     | '/app/tenants'
     | '/app/users'
     | '/app'
+    | '/app/invoice/$id'
+    | '/app/srb/$studentId'
+    | '/app/srb'
   id:
     | '__root__'
     | '/'
@@ -293,6 +368,7 @@ export interface FileRouteTypes {
     | '/app/ai-insights'
     | '/app/assignments'
     | '/app/attendance'
+    | '/app/calendar'
     | '/app/children'
     | '/app/compliance'
     | '/app/courses'
@@ -304,13 +380,19 @@ export interface FileRouteTypes {
     | '/app/marketplace'
     | '/app/messages'
     | '/app/migration'
+    | '/app/onboarding'
     | '/app/profile'
     | '/app/reports'
+    | '/app/settings'
+    | '/app/srb'
     | '/app/students'
     | '/app/teacher-classes'
     | '/app/tenants'
     | '/app/users'
     | '/app/'
+    | '/app/invoice/$id'
+    | '/app/srb/$studentId'
+    | '/app/srb/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -377,6 +459,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStudentsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/srb': {
+      id: '/app/srb'
+      path: '/srb'
+      fullPath: '/app/srb'
+      preLoaderRoute: typeof AppSrbRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/reports': {
       id: '/app/reports'
       path: '/reports'
@@ -389,6 +485,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/app/profile'
       preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/onboarding': {
+      id: '/app/onboarding'
+      path: '/onboarding'
+      fullPath: '/app/onboarding'
+      preLoaderRoute: typeof AppOnboardingRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/migration': {
@@ -468,6 +571,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChildrenRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/calendar': {
+      id: '/app/calendar'
+      path: '/calendar'
+      fullPath: '/app/calendar'
+      preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/attendance': {
       id: '/app/attendance'
       path: '/attendance'
@@ -489,13 +599,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAiInsightsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/srb/': {
+      id: '/app/srb/'
+      path: '/'
+      fullPath: '/app/srb/'
+      preLoaderRoute: typeof AppSrbIndexRouteImport
+      parentRoute: typeof AppSrbRoute
+    }
+    '/app/srb/$studentId': {
+      id: '/app/srb/$studentId'
+      path: '/$studentId'
+      fullPath: '/app/srb/$studentId'
+      preLoaderRoute: typeof AppSrbStudentIdRouteImport
+      parentRoute: typeof AppSrbRoute
+    }
+    '/app/invoice/$id': {
+      id: '/app/invoice/$id'
+      path: '/invoice/$id'
+      fullPath: '/app/invoice/$id'
+      preLoaderRoute: typeof AppInvoiceIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
+
+interface AppSrbRouteChildren {
+  AppSrbStudentIdRoute: typeof AppSrbStudentIdRoute
+  AppSrbIndexRoute: typeof AppSrbIndexRoute
+}
+
+const AppSrbRouteChildren: AppSrbRouteChildren = {
+  AppSrbStudentIdRoute: AppSrbStudentIdRoute,
+  AppSrbIndexRoute: AppSrbIndexRoute,
+}
+
+const AppSrbRouteWithChildren =
+  AppSrbRoute._addFileChildren(AppSrbRouteChildren)
 
 interface AppRouteChildren {
   AppAiInsightsRoute: typeof AppAiInsightsRoute
   AppAssignmentsRoute: typeof AppAssignmentsRoute
   AppAttendanceRoute: typeof AppAttendanceRoute
+  AppCalendarRoute: typeof AppCalendarRoute
   AppChildrenRoute: typeof AppChildrenRoute
   AppComplianceRoute: typeof AppComplianceRoute
   AppCoursesRoute: typeof AppCoursesRoute
@@ -507,19 +652,24 @@ interface AppRouteChildren {
   AppMarketplaceRoute: typeof AppMarketplaceRoute
   AppMessagesRoute: typeof AppMessagesRoute
   AppMigrationRoute: typeof AppMigrationRoute
+  AppOnboardingRoute: typeof AppOnboardingRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReportsRoute: typeof AppReportsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppSrbRoute: typeof AppSrbRouteWithChildren
   AppStudentsRoute: typeof AppStudentsRoute
   AppTeacherClassesRoute: typeof AppTeacherClassesRoute
   AppTenantsRoute: typeof AppTenantsRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppInvoiceIdRoute: typeof AppInvoiceIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAiInsightsRoute: AppAiInsightsRoute,
   AppAssignmentsRoute: AppAssignmentsRoute,
   AppAttendanceRoute: AppAttendanceRoute,
+  AppCalendarRoute: AppCalendarRoute,
   AppChildrenRoute: AppChildrenRoute,
   AppComplianceRoute: AppComplianceRoute,
   AppCoursesRoute: AppCoursesRoute,
@@ -531,13 +681,17 @@ const AppRouteChildren: AppRouteChildren = {
   AppMarketplaceRoute: AppMarketplaceRoute,
   AppMessagesRoute: AppMessagesRoute,
   AppMigrationRoute: AppMigrationRoute,
+  AppOnboardingRoute: AppOnboardingRoute,
   AppProfileRoute: AppProfileRoute,
   AppReportsRoute: AppReportsRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppSrbRoute: AppSrbRouteWithChildren,
   AppStudentsRoute: AppStudentsRoute,
   AppTeacherClassesRoute: AppTeacherClassesRoute,
   AppTenantsRoute: AppTenantsRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
+  AppInvoiceIdRoute: AppInvoiceIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

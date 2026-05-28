@@ -8,7 +8,7 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-const STORAGE_KEY = "gsm.auth.user";
+const STORAGE_KEY = "oneedu.auth.user";
 
 function readStored(): DemoUser | null {
   if (typeof window === "undefined") return null;

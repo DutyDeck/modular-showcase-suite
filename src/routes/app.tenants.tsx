@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui-kit";
 import { useCollection, addItem, nextId, type Tenant } from "@/lib/store";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, Rocket } from "lucide-react";
 
 export const Route = createFileRoute("/app/tenants")({
   head: () => ({ meta: [{ title: "Tenants — One Edu" }] }),
@@ -35,6 +35,7 @@ const TENANT_IMPORT_FIELDS: ImportField[] = [
 
 function TenantsPage() {
   const tenants = useCollection("tenants");
+  const navigate = useNavigate();
   const add = useDisclosure();
   const importer = useDisclosure();
 
@@ -83,9 +84,13 @@ function TenantsPage() {
               <Upload className="h-4 w-4" />
               <span className="hidden sm:inline">Import CSV</span>
             </Button>
+            <Button variant="outline" onClick={() => navigate({ to: "/app/onboarding" })}>
+              <Rocket className="h-4 w-4" />
+              <span className="hidden sm:inline">Guided setup</span>
+            </Button>
             <Button onClick={add.onOpen}>
               <Plus className="h-4 w-4" />
-              Onboard Tenant
+              Quick add
             </Button>
           </>
         }

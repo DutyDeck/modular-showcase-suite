@@ -43,14 +43,14 @@ function MarketplacePage() {
         <div className="relative max-w-2xl">
           <h2 className="text-xl sm:text-2xl font-bold">Find your next course</h2>
           <p className="opacity-85 text-sm mt-1">
-            12,400+ courses Â· 1,800+ verified institutions Â· 95 countries.
+            12,400+ courses · 1,800+ verified institutions · 95 countries.
           </p>
           <div className="mt-4 flex items-center gap-2 bg-white text-foreground rounded-lg p-1">
             <Search className="h-4 w-4 ml-3 text-muted-foreground" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search courses, providers, categoriesâ€¦"
+              placeholder="Search courses, providers, categories…"
               className="flex-1 h-10 bg-transparent outline-none text-sm min-w-0"
             />
             <button className="bg-primary text-primary-foreground h-9 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">

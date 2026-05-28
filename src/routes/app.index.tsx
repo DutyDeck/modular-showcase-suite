@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { PageHeader, StatCard, Section, Badge, MiniBars } from "@/components/ui-kit";
+import { PageHeader, StatCard, Section, Badge } from "@/components/ui-kit";
+import { AreaTrend, BarTrend } from "@/components/Charts";
 import {
   Users, BookOpen, DollarSign, TrendingUp, GraduationCap, Wallet,
   CalendarCheck, Award, Sparkles, AlertTriangle,
@@ -10,11 +11,30 @@ import {
   aiInsights, teacherClasses, children,
 } from "@/lib/mockData";
 import { useCollection } from "@/lib/store";
+import { usePrefs } from "@/lib/prefs";
 
 export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [{ title: "Dashboard — One Edu" }] }),
   component: Dashboard,
 });
+
+function firstName(fullName: string): string {
+  const titles = new Set([
+    "dr.",
+    "dr",
+    "mr.",
+    "mr",
+    "mrs.",
+    "mrs",
+    "ms.",
+    "ms",
+    "prof.",
+    "prof",
+  ]);
+  const parts = fullName.trim().split(/\s+/);
+  const meaningful = parts.filter((p) => !titles.has(p.toLowerCase()));
+  return meaningful[0] ?? parts[0] ?? "";
+}
 
 function Dashboard() {
   const { user } = useAuth();
@@ -27,7 +47,7 @@ function Dashboard() {
              style={{ backgroundImage: "radial-gradient(circle at 80% 10%, white 0%, transparent 35%)" }} />
         <div className="relative">
           <div className="text-xs uppercase tracking-wider opacity-80">{user.institution}</div>
-          <h1 className="text-2xl md:text-3xl font-bold mt-1">Welcome back, {user.name.split(" ")[0]} ðŸ‘‹</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mt-1">Welcome back, {firstName(user.name)} 👋</h1>
           <p className="text-sm opacity-85 mt-1 max-w-xl">
             Here's what's happening across your {user.role === "admin" ? "platform" : "workspace"} today.
           </p>
@@ -62,7 +82,7 @@ function StudentDash() {
               <li key={a.id} className="py-3 flex items-center justify-between">
                 <div>
                   <div className="text-sm font-medium">{a.title}</div>
-                  <div className="text-xs text-muted-foreground">{a.course} Â· Due {a.due}</div>
+                  <div className="text-xs text-muted-foreground">{a.course} · Due {a.due}</div>
                 </div>
                 <Badge tone={a.status === "Pending" ? "warning" : a.status === "Graded" ? "success" : "info"}>{a.status}</Badge>
               </li>
@@ -85,8 +105,12 @@ function StudentDash() {
           </ul>
         </Section>
       </div>
-      <Section title="Grade Trend">
-        <MiniBars data={grades.map(g => ({ label: g.course.split(" ")[0], value: g.final }))} />
+      <Section title="Grade Trend" description="Final scores per subject">
+        <BarTrend
+          data={grades.map((g) => ({ subject: g.course.split(" ")[0], score: g.final }))}
+          xKey="subject"
+          yKey="score"
+        />
       </Section>
     </>
   );
@@ -133,7 +157,7 @@ function TeacherDash() {
               <li key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
                 <div>
                   <div className="font-medium text-sm">{c.name}</div>
-                  <div className="text-xs text-muted-foreground">{c.batch} Â· {c.students} students Â· {c.room}</div>
+                  <div className="text-xs text-muted-foreground">{c.batch} · {c.students} students · {c.room}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs font-medium">{c.nextSession}</div>
@@ -167,22 +191,33 @@ function AdminDash() {
   const tenants = useCollection("tenants");
   const leads = useCollection("leads");
   const students = useCollection("students");
+  const { formatMoney } = usePrefs();
   const totalStudents = tenants.reduce((a, t) => a + t.students, 0);
   const mrr = tenants.reduce((a, t) => a + t.mrr, 0);
   return (
     <>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard label="Active Tenants" value={tenants.length} hint="+2 this month" icon={<Users className="h-5 w-5" />} accent="primary" />
         <StatCard label="Total Students" value={totalStudents.toLocaleString()} icon={<GraduationCap className="h-5 w-5" />} accent="info" />
-        <StatCard label="MRR" value={`$${mrr.toLocaleString()}`} hint="+12% vs last month" icon={<DollarSign className="h-5 w-5" />} accent="success" />
+        <StatCard label="MRR" value={formatMoney(mrr)} hint="+12% vs last month" icon={<DollarSign className="h-5 w-5" />} accent="success" />
         <StatCard label="Open Leads" value={leads.length} hint="Across all tenants" icon={<TrendingUp className="h-5 w-5" />} accent="warning" />
       </div>
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4 lg:gap-6">
         <Section title="Revenue (last 6 months)" description="MRR in $K">
-          <MiniBars data={revenueTrend.map(r => ({ label: r.m, value: r.v }))} />
+          <AreaTrend
+            data={revenueTrend.map((r) => ({ m: r.m, v: r.v }))}
+            xKey="m"
+            yKey="v"
+            yFormatter={(v) => `$${v}K`}
+          />
         </Section>
-        <Section title="Attendance Trend (weekly avg %)">
-          <MiniBars data={attendanceTrend.map(r => ({ label: r.week, value: r.rate }))} />
+        <Section title="Attendance Trend" description="Weekly average %">
+          <AreaTrend
+            data={attendanceTrend.map((r) => ({ w: r.week, rate: r.rate }))}
+            xKey="w"
+            yKey="rate"
+            yFormatter={(v) => `${v}%`}
+          />
         </Section>
       </div>
       <Section title="At-Risk Students (AI prediction)" description="Cross-tenant signals">
@@ -190,8 +225,8 @@ function AdminDash() {
           {students.filter(s => s.risk !== "low").map((s) => (
             <li key={s.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
               <div>
-                <div className="font-medium text-sm">{s.name} <span className="text-muted-foreground text-xs">Â· {s.grade}</span></div>
-                <div className="text-xs text-muted-foreground">Attendance {s.attendance}% Â· GPA {s.gpa}</div>
+                <div className="font-medium text-sm">{s.name} <span className="text-muted-foreground text-xs">· {s.grade}</span></div>
+                <div className="text-xs text-muted-foreground">Attendance {s.attendance}% · GPA {s.gpa}</div>
               </div>
               <Badge tone={s.risk === "high" ? "destructive" : "warning"}>{s.risk.toUpperCase()} RISK</Badge>
             </li>

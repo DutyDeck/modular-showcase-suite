@@ -44,11 +44,11 @@ interface SourceSystem {
 }
 
 const SOURCES: SourceSystem[] = [
-  { name: "Moodle", exportNote: "Site admin â†’ Reports â†’ Export to CSV", status: "Native", color: "from-orange-500 to-amber-500" },
-  { name: "Canvas LMS", exportNote: "Course â†’ Settings â†’ Course Export Package", status: "Native", color: "from-rose-500 to-pink-500" },
-  { name: "Blackboard Learn", exportNote: "Grade Center â†’ Work Offline â†’ Download", status: "CSV", color: "from-sky-500 to-cyan-500" },
-  { name: "Google Classroom", exportNote: "Gradebook â†’ Download grades as CSV", status: "API", color: "from-emerald-500 to-teal-500" },
-  { name: "Schoology", exportNote: "Tools â†’ Roster Export", status: "CSV", color: "from-indigo-500 to-violet-500" },
+  { name: "Moodle", exportNote: "Site admin → Reports → Export to CSV", status: "Native", color: "from-orange-500 to-amber-500" },
+  { name: "Canvas LMS", exportNote: "Course → Settings → Course Export Package", status: "Native", color: "from-rose-500 to-pink-500" },
+  { name: "Blackboard Learn", exportNote: "Grade Center → Work Offline → Download", status: "CSV", color: "from-sky-500 to-cyan-500" },
+  { name: "Google Classroom", exportNote: "Gradebook → Download grades as CSV", status: "API", color: "from-emerald-500 to-teal-500" },
+  { name: "Schoology", exportNote: "Tools → Roster Export", status: "CSV", color: "from-indigo-500 to-violet-500" },
   { name: "Edmodo / Microsoft Teams Edu", exportNote: "Class CSV roster export", status: "CSV", color: "from-fuchsia-500 to-purple-500" },
   { name: "Custom / In-house SIS", exportNote: "Map any CSV columns to One Edu schema", status: "CSV", color: "from-slate-500 to-zinc-500" },
   { name: "Excel / Google Sheets", exportNote: "Save as .csv (UTF-8)", status: "CSV", color: "from-lime-500 to-green-500" },
@@ -121,7 +121,7 @@ function MigrationPage() {
   };
 
   const startApi = (name: string) => {
-    toast.success(`Connecting to ${name}â€¦`, {
+    toast.success(`Connecting to ${name}…`, {
       description: "OAuth flow opens in a real environment.",
     });
   };
@@ -153,8 +153,8 @@ function MigrationPage() {
               Move your records in three steps.
             </h2>
             <p className="opacity-85 text-sm mt-2 max-w-xl">
-              Export from Moodle, Canvas, Blackboard or Google Classroom â†’
-              optionally map columns â†’ import. We validate every row before it
+              Export from Moodle, Canvas, Blackboard or Google Classroom →
+              optionally map columns → import. We validate every row before it
               touches your tenant.
             </p>
           </div>
@@ -312,7 +312,7 @@ function MigrationPage() {
             "Preserve external IDs for round-trip sync",
             "Roll back any migration run within 24 h",
             "Field-level encryption for PII at rest",
-            "Compliance: GDPR Â· FERPA Â· PDPA Â· COPPA",
+            "Compliance: GDPR · FERPA · PDPA · COPPA",
           ].map((g) => (
             <li
               key={g}

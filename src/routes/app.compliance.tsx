@@ -21,7 +21,7 @@ function CompliancePage() {
               <ShieldCheck className="h-5 w-5 text-success" />
               <div>
                 <div className="text-sm font-medium">{f}</div>
-                <div className="text-[10px] text-success">â— Compliant</div>
+                <div className="text-[10px] text-success">● Compliant</div>
               </div>
             </div>
           ))}
@@ -40,7 +40,7 @@ function CompliancePage() {
             {auditLog.map((a, i) => (
               <li key={i} className="py-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-sm"><span className="font-medium">{a.actor}</span> Â· {a.action} <span className="text-muted-foreground">â†’ {a.target}</span></div>
+                  <div className="text-sm"><span className="font-medium">{a.actor}</span> · {a.action} <span className="text-muted-foreground">→ {a.target}</span></div>
                   <div className="text-[10px] text-muted-foreground">{a.time}</div>
                 </div>
                 <Badge tone={a.severity === "warning" ? "warning" : a.severity === "success" ? "success" : "muted"}>{a.severity}</Badge>

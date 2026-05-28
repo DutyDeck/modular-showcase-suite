@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -15,6 +15,7 @@ import {
   useDisclosure,
 } from "@/components/ui-kit";
 import { useCollection, addItem, updateItem, nextId, type Invoice } from "@/lib/store";
+import { usePrefs } from "@/lib/prefs";
 import { Wallet, TrendingUp, CreditCard, Receipt, Plus, Check } from "lucide-react";
 
 export const Route = createFileRoute("/app/finance")({
@@ -22,10 +23,11 @@ export const Route = createFileRoute("/app/finance")({
   component: FinancePage,
 });
 
-const METHODS = ["Visa â€¢â€¢â€¢â€¢ 4242", "PayPal", "Stripe", "Razorpay", "PayHere", "Bank transfer"];
+const METHODS = ["Visa •••• 4242", "PayPal", "Stripe", "Razorpay", "PayHere", "Bank transfer"];
 
 function FinancePage() {
   const invoices = useCollection("invoices");
+  const { formatMoney } = usePrefs();
   const add = useDisclosure();
   const pay = useDisclosure();
   const [payTarget, setPayTarget] = useState<Invoice | null>(null);
@@ -79,7 +81,7 @@ function FinancePage() {
       status: "Paid",
       method: payMethod,
     });
-    toast.success(`Paid $${payTarget.amount} for ${payTarget.id}`);
+    toast.success(`Paid ${formatMoney(payTarget.amount)} for ${payTarget.id}`);
     setPayTarget(null);
     pay.onClose();
   };
@@ -120,24 +122,24 @@ function FinancePage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           label="Paid (YTD)"
-          value={`$${paid}`}
+          value={formatMoney(paid)}
           icon={<Receipt className="h-5 w-5" />}
           accent="success"
         />
         <StatCard
           label="Due Now"
-          value={`$${due}`}
+          value={formatMoney(due)}
           hint="Pay by Jun 1"
           icon={<Wallet className="h-5 w-5" />}
           accent="warning"
         />
         <StatCard
           label="Upcoming"
-          value={`$${upcoming}`}
+          value={formatMoney(upcoming)}
           icon={<TrendingUp className="h-5 w-5" />}
           accent="info"
         />
-        <StatCard label="Scholarship" value="$120" hint="Merit award" accent="primary" />
+        <StatCard label="Scholarship" value={formatMoney(120)} hint="Merit award" accent="primary" />
       </div>
       <Section title="Invoices">
         <DataTable
@@ -154,7 +156,7 @@ function FinancePage() {
           emptyText="No invoices"
           renderCell={(row, key) => {
             if (key === "amount")
-              return <span className="font-semibold">${row.amount}</span>;
+              return <span className="font-semibold">{formatMoney(row.amount)}</span>;
             if (key === "status") {
               const tone =
                 row.status === "Paid"
@@ -165,20 +167,29 @@ function FinancePage() {
               return <Badge tone={tone}>{row.status}</Badge>;
             }
             if (key === "_actions") {
-              if (row.status === "Paid")
-                return (
-                  <span className="text-xs text-success inline-flex items-center gap-1">
-                    <Check className="h-3 w-3" />
-                    Paid
-                  </span>
-                );
               return (
-                <button
-                  onClick={() => openPay(row)}
-                  className="text-xs px-2.5 py-1 rounded-md bg-primary/10 text-primary font-medium hover:bg-primary/15"
-                >
-                  Pay
-                </button>
+                <div className="flex items-center gap-2 justify-end">
+                  <Link
+                    to="/app/invoice/$id"
+                    params={{ id: row.id }}
+                    className="text-xs px-2.5 py-1 rounded-md border hover:bg-muted text-muted-foreground hover:text-foreground"
+                  >
+                    View
+                  </Link>
+                  {row.status === "Paid" ? (
+                    <span className="text-xs text-success inline-flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Paid
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => openPay(row)}
+                      className="text-xs px-2.5 py-1 rounded-md bg-primary/10 text-primary font-medium hover:bg-primary/15"
+                    >
+                      Pay
+                    </button>
+                  )}
+                </div>
               );
             }
             return String(row[key] ?? "");
@@ -193,7 +204,7 @@ function FinancePage() {
               className="p-4 rounded-lg border text-center text-sm font-medium"
             >
               {p}
-              <div className="text-[10px] text-success mt-1">â— Connected</div>
+              <div className="text-[10px] text-success mt-1">● Connected</div>
             </div>
           ))}
         </div>
@@ -250,9 +261,9 @@ function FinancePage() {
           if (!v) setPayTarget(null);
         }}
         title={`Pay ${payTarget?.id ?? ""}`}
-        description={payTarget ? `${payTarget.desc} Â· $${payTarget.amount}` : ""}
+        description={payTarget ? `${payTarget.desc} · ${formatMoney(payTarget.amount)}` : ""}
         onSubmit={submitPayment}
-        submitLabel={`Pay $${payTarget?.amount ?? 0}`}
+        submitLabel={`Pay ${formatMoney(payTarget?.amount ?? 0)}`}
       >
         <Field label="Payment method" className="sm:col-span-2">
           <Select
