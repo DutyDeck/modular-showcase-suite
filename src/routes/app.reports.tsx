@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader, Section, StatCard, MiniBars } from "@/components/ui-kit";
+import { PageHeader, Section, StatCard, MiniBars, Button } from "@/components/ui-kit";
 import { revenueTrend, attendanceTrend } from "@/lib/mockData";
 import { Download, FileBarChart, TrendingUp, Users, DollarSign } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/reports")({
   head: () => ({ meta: [{ title: "Reports & BI — GlobalEdu" }] }),
@@ -14,7 +15,7 @@ function ReportsPage() {
       <PageHeader
         title="Reporting & Business Intelligence"
         subtitle="Academic, financial and operational dashboards."
-        actions={<button className="h-9 px-3 rounded-md border text-sm flex items-center gap-2 hover:bg-muted"><Download className="h-4 w-4" />Export PDF</button>}
+        actions={<Button variant="outline" onClick={() => toast.success("Generating PDF export…")}><Download className="h-4 w-4" />Export PDF</Button>}
       />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Revenue YTD" value="$486K" icon={<DollarSign className="h-5 w-5" />} accent="success" />
@@ -36,7 +37,7 @@ function ReportsPage() {
             "Compliance Audit Summary",
             "AI Risk Predictions",
           ].map((r) => (
-            <button key={r} className="p-4 rounded-lg border bg-card text-left hover:border-primary hover:shadow-soft transition-all">
+            <button key={r} onClick={() => toast.info(`Building "${r}"…`)} className="p-4 rounded-lg border bg-card text-left hover:border-primary hover:shadow-soft transition-all">
               <FileBarChart className="h-4 w-4 text-primary mb-2" />
               <div className="text-sm font-medium">{r}</div>
               <div className="text-[11px] text-muted-foreground mt-0.5">Generate · Schedule · Share</div>

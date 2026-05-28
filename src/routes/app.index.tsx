@@ -6,9 +6,10 @@ import {
   CalendarCheck, Award, Sparkles, AlertTriangle,
 } from "lucide-react";
 import {
-  notifications, attendanceTrend, revenueTrend, assignments, grades,
-  invoices, aiInsights, students, tenants, leads, teacherClasses, children,
+  notifications, attendanceTrend, revenueTrend, grades,
+  aiInsights, teacherClasses, children,
 } from "@/lib/mockData";
+import { useCollection } from "@/lib/store";
 
 export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [{ title: "Dashboard — GlobalEdu" }] }),
@@ -42,6 +43,8 @@ function Dashboard() {
 }
 
 function StudentDash() {
+  const assignments = useCollection("assignments");
+  const invoices = useCollection("invoices");
   const pending = assignments.filter(a => a.status === "Pending").length;
   const due = invoices.find(i => i.status === "Due");
   return (
@@ -161,6 +164,9 @@ function TeacherDash() {
 }
 
 function AdminDash() {
+  const tenants = useCollection("tenants");
+  const leads = useCollection("leads");
+  const students = useCollection("students");
   const totalStudents = tenants.reduce((a, t) => a + t.students, 0);
   const mrr = tenants.reduce((a, t) => a + t.mrr, 0);
   return (

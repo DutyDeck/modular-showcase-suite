@@ -30,15 +30,16 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const go = (em: string, pw: string) => {
+    if (loading) return;
     setLoading(true);
     setError("");
-    setTimeout(() => {
-      const r = login(em, pw);
-      if (!r.ok) {
-        setError(r.error ?? "Login failed");
-        setLoading(false);
-      } else navigate({ to: "/app" });
-    }, 250);
+    const r = login(em, pw);
+    if (!r.ok) {
+      setError(r.error ?? "Login failed");
+      setLoading(false);
+      return;
+    }
+    navigate({ to: "/app" });
   };
 
   const submit = (e: React.FormEvent) => {
@@ -305,8 +306,10 @@ function LoginPage() {
               {demoUsers.map((u) => (
                 <button
                   key={u.id}
+                  type="button"
+                  disabled={loading}
                   onClick={() => quickPick(u.email)}
-                  className="group relative text-left p-3 rounded-xl border bg-card hover:border-primary/50 hover:shadow-elegant transition-all overflow-hidden"
+                  className="group relative text-left p-3 rounded-xl border bg-card hover:border-primary/50 hover:shadow-elegant transition-all overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${roleAccent[u.role]}`} />
                   <div className="flex items-center gap-2.5">

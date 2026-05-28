@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, Section, Badge } from "@/components/ui-kit";
 import { aiInsights } from "@/lib/mockData";
 import { Sparkles, Bot, BrainCircuit, TrendingUp } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/ai-insights")({
   head: () => ({ meta: [{ title: "AI Insights — GlobalEdu" }] }),
@@ -19,9 +20,9 @@ function AiPage() {
           <div>
             <h3 className="text-xl font-bold">Edu-AI Copilot</h3>
             <p className="text-sm opacity-90 mt-1">"Hi! I've analyzed your cohort. 12 students need intervention this week — want me to draft personalized messages and propose intervention plans?"</p>
-            <div className="mt-3 flex gap-2">
-              <button className="bg-white text-primary px-4 py-2 rounded-md text-xs font-semibold">Draft messages</button>
-              <button className="bg-white/15 text-white px-4 py-2 rounded-md text-xs font-medium">Show plan</button>
+            <div className="mt-3 flex gap-2 flex-wrap">
+              <button onClick={() => toast.success("Drafting 12 personalized messages…")} className="bg-white text-primary px-4 py-2 rounded-md text-xs font-semibold">Draft messages</button>
+              <button onClick={() => toast.info("Intervention plan generated")} className="bg-white/15 text-white px-4 py-2 rounded-md text-xs font-medium">Show plan</button>
             </div>
           </div>
         </div>
@@ -41,7 +42,7 @@ function AiPage() {
             </div>
             <div className="mt-4 pt-3 border-t flex items-center justify-between">
               <span className="text-[11px] text-muted-foreground flex items-center gap-1"><TrendingUp className="h-3 w-3" />Model: edu-predict-v3</span>
-              <button className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground font-medium">{a.action}</button>
+              <button onClick={() => toast.success(`${a.action}`)} className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground font-medium">{a.action}</button>
             </div>
           </Section>
         ))}

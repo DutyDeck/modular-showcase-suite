@@ -15,11 +15,28 @@ export function AppShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const [open, setOpen] = useState(true);
+  // Desktop sidebar collapsed/expanded state
+  const [collapsed, setCollapsed] = useState(false);
+  // Mobile drawer open/closed
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!user) navigate({ to: "/login" });
   }, [user, navigate]);
+
+  // close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [path]);
+
+  // lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   if (!user) return null;
 
@@ -30,15 +47,10 @@ export function AppShell() {
     (groups[g] ||= []).push(item);
   }
 
-  return (
-    <div className="min-h-screen flex bg-background">
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300 sticky top-0 h-screen",
-          open ? "w-64" : "w-16",
-        )}
-      >
+  const sidebar = (mode: "desktop" | "mobile") => {
+    const open = mode === "mobile" ? true : !collapsed;
+    return (
+      <>
         <div className="h-16 flex items-center gap-3 px-4 border-b border-sidebar-border">
           <img
             src={logoUrl}
@@ -48,10 +60,21 @@ export function AppShell() {
             className="h-9 w-9 shrink-0 drop-shadow"
           />
           {open && (
-            <div className="leading-tight">
-              <div className="font-semibold text-sm">GlobalEdu</div>
-              <div className="text-[10px] uppercase tracking-wider opacity-60">Super App</div>
+            <div className="leading-tight flex-1 min-w-0">
+              <div className="font-semibold text-sm truncate">GlobalEdu</div>
+              <div className="text-[10px] uppercase tracking-wider opacity-60">
+                Super App
+              </div>
             </div>
+          )}
+          {mode === "mobile" && (
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="p-2 rounded-md hover:bg-sidebar-accent/60"
+              aria-label="Close menu"
+            >
+              <Icons.X className="h-4 w-4" />
+            </button>
           )}
         </div>
 
@@ -89,28 +112,87 @@ export function AppShell() {
           ))}
         </nav>
 
-        <div className="border-t border-sidebar-border p-3">
-          <button
-            onClick={() => setOpen((o) => !o)}
-            className="w-full flex items-center gap-2 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground"
-          >
-            <Icons.PanelLeft className="h-4 w-4" />
-            {open && <span>Collapse</span>}
-          </button>
-        </div>
+        {mode === "desktop" && (
+          <div className="border-t border-sidebar-border p-3">
+            <button
+              onClick={() => setCollapsed((c) => !c)}
+              className="w-full flex items-center gap-2 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground"
+            >
+              <Icons.PanelLeft className="h-4 w-4" />
+              {open && <span>Collapse</span>}
+            </button>
+          </div>
+        )}
+
+        {mode === "mobile" && (
+          <div className="border-t border-sidebar-border p-3">
+            <button
+              onClick={() => {
+                logout();
+                navigate({ to: "/login" });
+              }}
+              className="w-full flex items-center gap-2 text-xs text-sidebar-foreground/80 hover:text-sidebar-foreground"
+            >
+              <Icons.LogOut className="h-4 w-4" />
+              <span>Sign out</span>
+            </button>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div className="min-h-screen flex bg-background">
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden md:flex bg-sidebar text-sidebar-foreground flex-col transition-all duration-300 sticky top-0 h-screen",
+          collapsed ? "w-16" : "w-64",
+        )}
+      >
+        {sidebar("desktop")}
+      </aside>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-72 bg-sidebar text-sidebar-foreground flex flex-col shadow-2xl transition-transform duration-300 md:hidden",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        {sidebar("mobile")}
       </aside>
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-card border-b flex items-center justify-between px-6 sticky top-0 z-10 backdrop-blur">
-          <div className="flex items-center gap-4">
-            <div>
-              <div className="text-xs text-muted-foreground">{user.institution}</div>
-              <div className="font-semibold text-sm">{roleLabel[user.role]} Workspace</div>
+        <header className="h-14 sm:h-16 bg-card border-b flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 backdrop-blur">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="md:hidden p-2 rounded-md hover:bg-muted"
+              aria-label="Open menu"
+            >
+              <Icons.Menu className="h-5 w-5" />
+            </button>
+            <div className="min-w-0">
+              <div className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                {user.institution}
+              </div>
+              <div className="font-semibold text-xs sm:text-sm truncate">
+                {roleLabel[user.role]} Workspace
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-sm w-72">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-sm w-72">
               <Icons.Search className="h-4 w-4 text-muted-foreground" />
               <input
                 className="bg-transparent outline-none flex-1 text-sm"
@@ -118,27 +200,35 @@ export function AppShell() {
               />
               <kbd className="text-[10px] text-muted-foreground border rounded px-1">⌘K</kbd>
             </div>
-            <button className="relative h-9 w-9 rounded-md hover:bg-muted flex items-center justify-center">
+            <button
+              className="relative h-9 w-9 rounded-md hover:bg-muted flex items-center justify-center"
+              aria-label="Notifications"
+            >
               <Icons.Bell className="h-4 w-4" />
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
             </button>
-            <div className="flex items-center gap-2 pl-3 border-l">
+            <div className="flex items-center gap-2 sm:pl-3 sm:border-l">
               <img
                 src={user.photo}
                 alt={user.name}
-                className="h-9 w-9 rounded-full ring-2 ring-primary/20 bg-muted object-cover"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-full ring-2 ring-primary/20 bg-muted object-cover"
               />
-              <div className="leading-tight hidden sm:block">
-                <div className="text-sm font-medium">{user.name}</div>
-                <div className="text-[11px] text-muted-foreground">{user.email}</div>
+              <div className="leading-tight hidden md:block">
+                <div className="text-sm font-medium truncate max-w-[140px]">
+                  {user.name}
+                </div>
+                <div className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+                  {user.email}
+                </div>
               </div>
               <button
                 onClick={() => {
                   logout();
                   navigate({ to: "/login" });
                 }}
-                className="ml-1 p-2 rounded-md hover:bg-muted"
+                className="hidden sm:flex ml-1 p-2 rounded-md hover:bg-muted"
                 title="Sign out"
+                aria-label="Sign out"
               >
                 <Icons.LogOut className="h-4 w-4" />
               </button>
@@ -146,7 +236,7 @@ export function AppShell() {
           </div>
         </header>
 
-        <main className="flex-1 p-6 md:p-8 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 p-3 sm:p-5 md:p-8 max-w-[1600px] w-full mx-auto">
           <Outlet />
         </main>
       </div>

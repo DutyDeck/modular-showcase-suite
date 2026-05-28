@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import { demoUsers, type DemoUser } from "./mockData";
 
 interface AuthContextValue {
@@ -10,31 +10,39 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 const STORAGE_KEY = "gsm.auth.user";
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<DemoUser | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? (JSON.parse(raw) as DemoUser) : null;
-    } catch { return null; }
-  });
+function readStored(): DemoUser | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as DemoUser) : null;
+  } catch {
+    return null;
+  }
+}
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (user) localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    else localStorage.removeItem(STORAGE_KEY);
-  }, [user]);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<DemoUser | null>(readStored);
 
   const login: AuthContextValue["login"] = (email, password) => {
     const found = demoUsers.find(
       (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password,
     );
     if (!found) return { ok: false, error: "Invalid email or password" };
+    // Write storage synchronously BEFORE state update so the next navigation's
+    // beforeLoad guard sees the auth cookie immediately.
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(found));
+    }
     setUser(found);
     return { ok: true };
   };
 
-  const logout = () => setUser(null);
+  const logout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    setUser(null);
+  };
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>

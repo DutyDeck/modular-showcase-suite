@@ -1,5 +1,13 @@
-import { type ReactNode } from "react";
+import { useState, type ReactNode, type FormEvent } from "react";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function PageHeader({
   title,
@@ -11,12 +19,18 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h1>
-        {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+    <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 md:gap-4 mb-6">
+      <div className="min-w-0">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">{subtitle}</p>
+        )}
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="flex items-center gap-2 flex-wrap">{actions}</div>
+      )}
     </div>
   );
 }
@@ -42,7 +56,7 @@ export function StatCard({
     destructive: "from-destructive/15 to-destructive/0 text-destructive",
   };
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-soft relative overflow-hidden">
+    <div className="rounded-xl border bg-card p-4 sm:p-5 shadow-soft relative overflow-hidden">
       <div
         className={cn(
           "absolute inset-0 bg-gradient-to-br opacity-60 pointer-events-none",
@@ -50,14 +64,18 @@ export function StatCard({
         )}
       />
       <div className="relative flex items-start justify-between gap-3">
-        <div>
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <div className="min-w-0">
+          <div className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">
             {label}
           </div>
-          <div className="text-2xl font-bold mt-1">{value}</div>
-          {hint && <div className="text-xs text-muted-foreground mt-1">{hint}</div>}
+          <div className="text-xl sm:text-2xl font-bold mt-1">{value}</div>
+          {hint && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1">{hint}</div>}
         </div>
-        {icon && <div className={cn("p-2 rounded-lg bg-background/70", accents[accent])}>{icon}</div>}
+        {icon && (
+          <div className={cn("p-2 rounded-lg bg-background/70 shrink-0", accents[accent])}>
+            {icon}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -79,17 +97,17 @@ export function Section({
   return (
     <section className={cn("rounded-xl border bg-card shadow-soft", className)}>
       {(title || actions) && (
-        <header className="flex items-center justify-between gap-2 px-5 py-4 border-b">
-          <div>
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-5 py-3 sm:py-4 border-b">
+          <div className="min-w-0">
             {title && <h3 className="font-semibold text-sm">{title}</h3>}
             {description && (
               <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
             )}
           </div>
-          {actions}
+          {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
         </header>
       )}
-      <div className="p-5">{children}</div>
+      <div className="p-4 sm:p-5">{children}</div>
     </section>
   );
 }
@@ -112,7 +130,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium",
+        "inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap",
         tones[tone],
       )}
     >
@@ -125,28 +143,40 @@ export function DataTable<T extends Record<string, any>>({
   columns,
   rows,
   renderCell,
+  emptyText = "No records",
 }: {
   columns: { key: string; label: string; className?: string }[];
   rows: T[];
   renderCell?: (row: any, key: string) => ReactNode;
+  emptyText?: string;
 }) {
   return (
-    <div className="overflow-x-auto -mx-5">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto -mx-4 sm:-mx-5">
+      <table className="w-full text-sm min-w-[640px]">
         <thead>
           <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground border-b">
             {columns.map((c) => (
-              <th key={c.key} className={cn("px-5 py-2 font-medium", c.className)}>
+              <th key={c.key} className={cn("px-4 sm:px-5 py-2 font-medium", c.className)}>
                 {c.label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 && (
+            <tr>
+              <td
+                colSpan={columns.length}
+                className="px-5 py-10 text-center text-sm text-muted-foreground"
+              >
+                {emptyText}
+              </td>
+            </tr>
+          )}
           {rows.map((row, i) => (
             <tr key={i} className="border-b last:border-b-0 hover:bg-muted/40 transition-colors">
               {columns.map((c) => (
-                <td key={c.key} className={cn("px-5 py-3", c.className)}>
+                <td key={c.key} className={cn("px-4 sm:px-5 py-3 align-middle", c.className)}>
                   {renderCell ? renderCell(row, c.key) : String((row as any)[c.key] ?? "")}
                 </td>
               ))}
@@ -158,7 +188,13 @@ export function DataTable<T extends Record<string, any>>({
   );
 }
 
-export function MiniBars({ data, max = 100 }: { data: { label: string; value: number }[]; max?: number }) {
+export function MiniBars({
+  data,
+  max = 100,
+}: {
+  data: { label: string; value: number }[];
+  max?: number;
+}) {
   return (
     <div className="flex items-end gap-2 h-32">
       {data.map((d) => (
@@ -174,4 +210,179 @@ export function MiniBars({ data, max = 100 }: { data: { label: string; value: nu
       ))}
     </div>
   );
+}
+
+/* ---------- Buttons & form controls ---------- */
+
+type Variant = "primary" | "secondary" | "outline" | "ghost" | "destructive";
+type Size = "sm" | "md";
+
+const buttonStyles: Record<Variant, string> = {
+  primary:
+    "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft",
+  secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+  outline: "border bg-background hover:bg-muted",
+  ghost: "hover:bg-muted text-foreground",
+  destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+};
+const sizeStyles: Record<Size, string> = {
+  sm: "h-8 px-2.5 text-xs",
+  md: "h-9 px-3 text-sm",
+};
+
+export function Button({
+  children,
+  variant = "primary",
+  size = "md",
+  className,
+  ...rest
+}: {
+  variant?: Variant;
+  size?: Size;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...rest}
+      className={cn(
+        "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        buttonStyles[variant],
+        sizeStyles[size],
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function Field({
+  label,
+  hint,
+  required,
+  children,
+  className,
+}: {
+  label: string;
+  hint?: string;
+  required?: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={cn("block space-y-1.5", className)}>
+      <div className="text-xs font-medium text-foreground flex items-center gap-1">
+        {label}
+        {required && <span className="text-destructive">*</span>}
+      </div>
+      {children}
+      {hint && <div className="text-[11px] text-muted-foreground">{hint}</div>}
+    </label>
+  );
+}
+
+const inputClass =
+  "w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all";
+
+export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={cn(inputClass, props.className)} />;
+}
+
+export function NumberInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      type="number"
+      {...props}
+      className={cn(inputClass, props.className)}
+    />
+  );
+}
+
+export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      className={cn(inputClass, "h-auto py-2 min-h-[80px]", props.className)}
+    />
+  );
+}
+
+export function Select({
+  options,
+  ...rest
+}: {
+  options: { value: string; label: string }[];
+} & React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select {...rest} className={cn(inputClass, "pr-8", rest.className)}>
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+/* ---------- FormDialog ---------- */
+
+export function FormDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  onSubmit,
+  submitLabel = "Save",
+  cancelLabel = "Cancel",
+  submitVariant = "primary",
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  title: string;
+  description?: string;
+  children: ReactNode;
+  onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  submitLabel?: string;
+  cancelLabel?: string;
+  submitVariant?: Variant;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          {description && <DialogDescription>{description}</DialogDescription>}
+        </DialogHeader>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit(e);
+          }}
+          className="space-y-4"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{children}</div>
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {cancelLabel}
+            </Button>
+            <Button type="submit" variant={submitVariant}>
+              {submitLabel}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ---------- useDisclosure helper ---------- */
+
+export function useDisclosure(initial = false) {
+  const [open, setOpen] = useState(initial);
+  return {
+    open,
+    setOpen,
+    onOpen: () => setOpen(true),
+    onClose: () => setOpen(false),
+  };
 }
