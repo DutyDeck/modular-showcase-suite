@@ -14,7 +14,8 @@ import {
   useDisclosure,
 } from "@/components/ui-kit";
 import { useCollection, addItem, removeItem, nextId, type Student } from "@/lib/store";
-import { Plus, Download, Filter, Search, Trash2 } from "lucide-react";
+import { ImportDialog, type ImportField } from "@/components/ImportDialog";
+import { Plus, Download, Filter, Search, Trash2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/app/students")({
   head: () => ({ meta: [{ title: "Students — GlobalEdu" }] }),
@@ -25,9 +26,20 @@ const GRADES = ["Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12"];
 const BATCHES = ["Science-A", "Science-B", "Commerce-A", "Commerce-B", "Arts-A"];
 const STATUS = ["Active", "At Risk", "Inactive"];
 
+const STUDENT_IMPORT_FIELDS: ImportField[] = [
+  { key: "name", label: "Name", required: true, sample: "Aarav Perera" },
+  { key: "grade", label: "Grade", required: true, sample: "Grade 12" },
+  { key: "batch", label: "Batch", sample: "Science-A" },
+  { key: "parent", label: "Parent", sample: "Nimal Perera" },
+  { key: "attendance", label: "Attendance", sample: "94" },
+  { key: "gpa", label: "GPA", sample: "3.8" },
+  { key: "status", label: "Status", sample: "Active" },
+];
+
 function StudentsPage() {
   const students = useCollection("students");
   const add = useDisclosure();
+  const importer = useDisclosure();
   const [query, setQuery] = useState("");
   const [gradeFilter, setGradeFilter] = useState<string>("");
 
@@ -123,6 +135,10 @@ function StudentsPage() {
             <Button variant="outline" onClick={exportCsv}>
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline">Export</span>
+            </Button>
+            <Button variant="outline" onClick={importer.onOpen}>
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">Import CSV</span>
             </Button>
             <Button onClick={add.onOpen}>
               <Plus className="h-4 w-4" />
