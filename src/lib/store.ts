@@ -46,7 +46,7 @@ interface State {
   srb: SrbEntry[];
 }
 
-const STORAGE_KEY = "oneedu.store.v2";
+const STORAGE_KEY = "oneedu.store.v3";
 
 function makeInitialState(): State {
   return {

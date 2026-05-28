@@ -9,6 +9,7 @@ import {
   Select,
 } from "@/components/ui-kit";
 import { Avatar } from "@/components/Avatar";
+import { useAuth } from "@/lib/auth";
 import { useCollection, addItem, updateItem, type AttendanceRow } from "@/lib/store";
 import {
   ArrowLeft,
@@ -43,8 +44,19 @@ const METHODS = [
 
 function TakeAttendancePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const students = useCollection("students");
   const existingAttendance = useCollection("attendance");
+
+  // Only teachers and admins can take attendance. Students/parents get bounced
+  // back to their read-only history view.
+  useEffect(() => {
+    if (user && user.role !== "teacher" && user.role !== "admin") {
+      toast.info("Attendance marking is for teachers and admins.");
+      navigate({ to: "/app/attendance", replace: true });
+    }
+  }, [user, navigate]);
+  if (user && user.role !== "teacher" && user.role !== "admin") return null;
 
   // Unique batches from the roster
   const batches = useMemo(

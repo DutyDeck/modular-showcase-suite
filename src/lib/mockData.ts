@@ -110,6 +110,7 @@ export const attendanceToday = [
   { id: "S-1004", name: "Nethmi Fernando", time: "07:58 AM", method: "RFID", status: "Present" },
   { id: "S-1005", name: "Tharindu Bandara", time: "08:42 AM", method: "GPS", status: "Late" },
   { id: "S-1006", name: "Hiruni Senanayake", time: "08:01 AM", method: "QR Scan", status: "Present" },
+  { id: "S-1009", name: "Tashi Perera", time: "07:55 AM", method: "Facial Recognition", status: "Present" },
 ];
 
 export const assignments = [

@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   PageHeader,
@@ -14,19 +14,245 @@ import {
   FormDialog,
   useDisclosure,
 } from "@/components/ui-kit";
-import { useCollection, addItem, updateItem, type AttendanceRow } from "@/lib/store";
-import { attendanceTrend } from "@/lib/mockData";
-import { QrCode, MapPin, ScanFace, Radio, Plus, ListChecks } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Avatar } from "@/components/Avatar";
+import {
+  useCollection,
+  addItem,
+  updateItem,
+  type AttendanceRow,
+  type Student,
+} from "@/lib/store";
+import { attendanceTrend, children as parentChildren } from "@/lib/mockData";
+import { useAuth } from "@/lib/auth";
+import {
+  QrCode,
+  MapPin,
+  ScanFace,
+  Radio,
+  Plus,
+  ListChecks,
+  CalendarCheck,
+  TrendingUp,
+  CircleAlert,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/attendance/")({
   head: () => ({ meta: [{ title: "Attendance — One Edu" }] }),
-  component: AttendancePage,
+  component: AttendanceRouter,
 });
 
 const METHODS = ["QR Scan", "Facial Recognition", "GPS", "RFID"];
 
-function AttendancePage() {
+function AttendanceRouter() {
+  const { user } = useAuth();
+  const role = user?.role;
+  if (role === "student") return <StudentAttendance />;
+  if (role === "parent") return <ParentAttendance />;
+  return <StaffAttendance />;
+}
+
+// ───────────────────────── Student view ─────────────────────────
+
+function StudentAttendance() {
+  const { user } = useAuth();
+  const students = useCollection("students");
+  const attendance = useCollection("attendance");
+
+  const me: Student | undefined = useMemo(() => {
+    if (!user) return students[0];
+    return (
+      students.find((s) => s.name.toLowerCase() === user.name.toLowerCase()) ??
+      students[0]
+    );
+  }, [students, user]);
+
+  const rows = useMemo(
+    () => (me ? attendance.filter((a) => a.id === me.id) : []),
+    [attendance, me],
+  );
+
+  return (
+    <HistoryView
+      title="My Attendance"
+      subtitle="Your daily check-in record."
+      heroStudents={me ? [me] : []}
+      rows={rows}
+    />
+  );
+}
+
+// ───────────────────────── Parent view ─────────────────────────
+
+function ParentAttendance() {
+  const students = useCollection("students");
+  const attendance = useCollection("attendance");
+
+  // Resolve every child individually: prefer the full student record when it
+  // exists, otherwise synthesise a hero-card-shaped entry from parentChildren
+  // so kids missing from the roster (e.g. Tashi) still appear.
+  const kids: Student[] = useMemo(() => {
+    return parentChildren.map((c) => {
+      const full = students.find((s) => s.id === c.id);
+      if (full) return full;
+      return {
+        id: c.id,
+        name: c.name,
+        grade: c.grade,
+        batch: "—",
+        attendance: c.attendance,
+        gpa: c.gpa,
+        status: "Active",
+        parent: "",
+        risk: "low",
+      } as unknown as Student;
+    });
+  }, [students]);
+
+  const childIds = useMemo(() => new Set(kids.map((k) => k.id)), [kids]);
+  const rows = useMemo(
+    () => attendance.filter((a) => childIds.has(a.id)),
+    [attendance, childIds],
+  );
+
+  return (
+    <HistoryView
+      title="Children's Attendance"
+      subtitle="Daily check-in records for your children."
+      heroStudents={kids}
+      rows={rows}
+    />
+  );
+}
+
+// ─────────────────── Shared read-only history view ───────────────────
+
+function HistoryView({
+  title,
+  subtitle,
+  heroStudents,
+  rows,
+}: {
+  title: string;
+  subtitle: string;
+  heroStudents: Student[];
+  rows: AttendanceRow[];
+}) {
+  const present = rows.filter((r) => r.status === "Present").length;
+  const late = rows.filter((r) => r.status === "Late").length;
+  const absent = rows.filter((r) => r.status === "Absent").length;
+  const recorded = rows.length;
+  const avgAttendance =
+    heroStudents.length > 0
+      ? Math.round(
+          heroStudents.reduce((s, k) => s + (k.attendance ?? 0), 0) /
+            heroStudents.length,
+        )
+      : 0;
+
+  return (
+    <div className="space-y-6">
+      <PageHeader title={title} subtitle={subtitle} />
+
+      {heroStudents.length > 0 && (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {heroStudents.map((s) => (
+            <div
+              key={s.id}
+              className="rounded-xl border bg-card p-4 flex items-center gap-3"
+            >
+              <Avatar name={s.name} seed={s.id} size={48} />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold truncate">{s.name}</div>
+                <div className="text-xs text-muted-foreground">
+                  {s.id} · {s.grade}
+                </div>
+                <div className="mt-1 text-xs">
+                  Term avg:{" "}
+                  <span className="font-semibold text-foreground">
+                    {s.attendance ?? "—"}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <StatCard
+          label="Today Present"
+          value={present}
+          icon={<ScanFace className="h-5 w-5" />}
+          accent="success"
+        />
+        <StatCard
+          label="Today Late"
+          value={late}
+          icon={<MapPin className="h-5 w-5" />}
+          accent="warning"
+        />
+        <StatCard
+          label="Today Absent"
+          value={absent}
+          icon={<CircleAlert className="h-5 w-5" />}
+          accent="destructive"
+        />
+        <StatCard
+          label="Term Avg"
+          value={`${avgAttendance}%`}
+          icon={<TrendingUp className="h-5 w-5" />}
+          accent="info"
+        />
+      </div>
+
+      <Section
+        title="Weekly Trend"
+        description="Class attendance % over 8 weeks (informational)"
+      >
+        <MiniBars
+          data={attendanceTrend.map((r) => ({ label: r.week, value: r.rate }))}
+        />
+      </Section>
+
+      <Section title="Recent Check-ins">
+        {rows.length === 0 ? (
+          <div className="text-center py-10 text-sm text-muted-foreground">
+            <CalendarCheck className="h-8 w-8 mx-auto mb-2" />
+            No attendance recorded yet.
+          </div>
+        ) : (
+          <DataTable
+            columns={[
+              { key: "id", label: "Student ID" },
+              { key: "name", label: "Name" },
+              { key: "time", label: "Time" },
+              { key: "method", label: "Method" },
+              { key: "status", label: "Status" },
+            ]}
+            rows={rows}
+            emptyText="No check-ins yet"
+            renderCell={(row, key) => {
+              if (key === "status") {
+                const tone =
+                  row.status === "Present"
+                    ? "success"
+                    : row.status === "Late"
+                      ? "warning"
+                      : "destructive";
+                return <Badge tone={tone}>{row.status}</Badge>;
+              }
+              return String(row[key] ?? "");
+            }}
+          />
+        )}
+      </Section>
+    </div>
+  );
+}
+
+// ───────────────────────── Staff (teacher/admin) view ─────────────────────────
+
+function StaffAttendance() {
   const attendance = useCollection("attendance");
   const students = useCollection("students");
   const mark = useDisclosure();
