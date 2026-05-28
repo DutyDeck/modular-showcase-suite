@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, Section, Badge } from "@/components/ui-kit";
+import { Avatar } from "@/components/Avatar";
 import { useAuth } from "@/lib/auth";
 import { roleLabel } from "@/lib/menus";
 
@@ -16,10 +17,13 @@ function ProfilePage() {
       <PageHeader title="My Profile" subtitle="Manage your global student identity and preferences." />
       <Section>
         <div className="flex items-start gap-5">
-          <img
+          <Avatar
+            name={user.name}
             src={user.photo}
-            alt={user.name}
-            className="h-20 w-20 rounded-2xl ring-2 ring-primary/20 bg-muted object-cover shadow-elegant"
+            size={80}
+            tone="brand"
+            shape="square"
+            className="ring-2 ring-primary/20 shadow-elegant"
           />
 
           <div className="flex-1">

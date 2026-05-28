@@ -15,6 +15,7 @@ import {
 } from "@/components/ui-kit";
 import { useCollection, addItem, removeItem, nextId, type Student } from "@/lib/store";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
+import { Avatar } from "@/components/Avatar";
 import { Plus, Download, Filter, Search, Trash2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/app/students")({
@@ -193,13 +194,7 @@ function StudentsPage() {
             if (key === "name")
               return (
                 <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-full bg-gradient-brand text-white flex items-center justify-center text-[10px] font-semibold">
-                    {row.name
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .join("")
-                      .slice(0, 2)}
-                  </div>
+                  <Avatar name={row.name} size={28} />
                   <span className="font-medium">{row.name}</span>
                 </div>
               );

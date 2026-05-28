@@ -4,6 +4,7 @@ import * as Icons from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { menusByRole, roleLabel } from "@/lib/menus";
 import { cn } from "@/lib/utils";
+import { Avatar } from "@/components/Avatar";
 import logoUrl from "@/assets/globaledu-logo.png";
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -208,10 +209,12 @@ export function AppShell() {
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
             </button>
             <div className="flex items-center gap-2 sm:pl-3 sm:border-l">
-              <img
+              <Avatar
+                name={user.name}
                 src={user.photo}
-                alt={user.name}
-                className="h-8 w-8 sm:h-9 sm:w-9 rounded-full ring-2 ring-primary/20 bg-muted object-cover"
+                size={36}
+                tone="brand"
+                className="ring-2 ring-primary/20"
               />
               <div className="leading-tight hidden md:block">
                 <div className="text-sm font-medium truncate max-w-[140px]">

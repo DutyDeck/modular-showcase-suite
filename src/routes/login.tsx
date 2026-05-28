@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { demoUsers } from "@/lib/mockData";
+import { Avatar } from "@/components/Avatar";
 import logoUrl from "@/assets/globaledu-logo.png";
 
 export const Route = createFileRoute("/login")({
@@ -141,10 +142,11 @@ function LoginPage() {
 
           {/* Testimonial */}
           <div className="flex items-start gap-3 pt-1">
-            <img
-              src="https://api.dicebear.com/9.x/avataaars/svg?seed=Mentor&backgroundType=gradientLinear&backgroundColor=c0aede,ffd5dc"
-              alt=""
-              className="h-10 w-10 rounded-full ring-2 ring-white/40"
+            <Avatar
+              name="Dr. Anjali Ramanathan"
+              src="https://randomuser.me/api/portraits/women/68.jpg"
+              size={40}
+              className="ring-2 ring-white/40"
             />
             <div className="text-[12px] leading-relaxed opacity-90">
               <div className="flex items-center gap-0.5 mb-1">
@@ -313,10 +315,11 @@ function LoginPage() {
                 >
                   <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${roleAccent[u.role]}`} />
                   <div className="flex items-center gap-2.5">
-                    <img
+                    <Avatar
+                      name={u.name}
                       src={u.photo}
-                      alt={u.name}
-                      className="h-10 w-10 rounded-full ring-2 ring-border group-hover:ring-primary/30 bg-muted object-cover transition-all"
+                      size={40}
+                      className="ring-2 ring-border group-hover:ring-primary/30 transition-all"
                     />
                     <div className="leading-tight min-w-0 flex-1">
                       <div className="text-xs font-semibold capitalize truncate flex items-center gap-1">
