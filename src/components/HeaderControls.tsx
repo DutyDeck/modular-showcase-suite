@@ -13,6 +13,7 @@ import {
   Wallet,
   Award,
   GraduationCap,
+  Building2,
 } from "lucide-react";
 import {
   Popover,
@@ -22,6 +23,8 @@ import {
 import { usePrefs, LOCALE_LABEL, CURRENCY_LABEL, type Locale, type Currency } from "@/lib/prefs";
 import { resetStore } from "@/lib/store";
 import { notifications } from "@/lib/mockData";
+import { useAuth } from "@/lib/auth";
+import { setEnabledModules, useEnabledModules, MODULES, type ModuleId } from "@/lib/modules";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -184,6 +187,122 @@ export function CurrencySwitcher() {
             {c === currency && <Check className="h-3.5 w-3.5 text-primary" />}
           </button>
         ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+const ENTITLEMENT_PROFILES: Array<{
+  id: string;
+  label: string;
+  plan: "Starter" | "Growth" | "Enterprise";
+  hint: string;
+  modules: ModuleId[];
+}> = [
+  {
+    id: "starter",
+    label: "Starter",
+    plan: "Starter",
+    hint: "Roster, attendance, comms only",
+    modules: [
+      "core", "students", "courses", "attendance", "calendar",
+      "teaching", "family", "messages", "users",
+    ],
+  },
+  {
+    id: "growth",
+    label: "Growth",
+    plan: "Growth",
+    hint: "Adds LMS, grades, finance",
+    modules: [
+      "core", "students", "courses", "attendance", "calendar", "lms",
+      "assignments", "grades", "srb", "teaching", "family", "finance",
+      "marketplace", "messages", "reports", "users",
+    ],
+  },
+  {
+    id: "enterprise",
+    label: "Enterprise",
+    plan: "Enterprise",
+    hint: "Everything · AI, multi-tenant, compliance",
+    modules: MODULES.map((m) => m.id),
+  },
+];
+
+const PLAN_DOT: Record<string, string> = {
+  Starter: "bg-muted-foreground",
+  Growth: "bg-info",
+  Enterprise: "bg-primary",
+};
+
+export function TenantProfileSwitcher() {
+  const { user } = useAuth();
+  const enabled = useEnabledModules(user?.institution ?? "");
+  if (!user) return null;
+
+  // Match profile by exact module set, fall back to "Custom".
+  const currentIds = Array.from(enabled).sort().join(",");
+  const active = ENTITLEMENT_PROFILES.find(
+    (p) => [...p.modules].sort().join(",") === currentIds,
+  );
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className="h-9 px-2 sm:px-2.5 rounded-md hover:bg-muted flex items-center gap-1.5 text-xs font-medium"
+          aria-label="Tenant entitlement profile"
+          title="Demo: tenant entitlement profile"
+        >
+          <Building2 className="h-4 w-4" />
+          <span className="hidden sm:inline">{active?.label ?? "Custom"}</span>
+          <span
+            className={cn(
+              "h-1.5 w-1.5 rounded-full",
+              active ? PLAN_DOT[active.plan] : "bg-warning",
+            )}
+          />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 p-1">
+        <div className="px-3 py-2 border-b mb-1">
+          <div className="text-xs font-semibold">Demo: tenant profile</div>
+          <div className="text-[10px] text-muted-foreground mt-0.5">
+            Applies an entitlement preset to{" "}
+            <span className="font-medium text-foreground">{user.institution}</span>.
+            Sidebar updates instantly.
+          </div>
+        </div>
+        {ENTITLEMENT_PROFILES.map((p) => {
+          const isActive = active?.id === p.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => {
+                setEnabledModules(user.institution, p.modules);
+                toast.success(`Applied ${p.label} profile`);
+              }}
+              className={cn(
+                "w-full text-left px-3 py-2 rounded-md hover:bg-muted flex items-start gap-2",
+                isActive && "bg-muted/60",
+              )}
+            >
+              <span
+                className={cn(
+                  "mt-1.5 h-1.5 w-1.5 rounded-full shrink-0",
+                  PLAN_DOT[p.plan],
+                )}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium flex items-center justify-between gap-2">
+                  {p.label}
+                  {isActive && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                </div>
+                <div className="text-[10px] text-muted-foreground">{p.hint}</div>
+              </div>
+            </button>
+          );
+        })}
       </PopoverContent>
     </Popover>
   );

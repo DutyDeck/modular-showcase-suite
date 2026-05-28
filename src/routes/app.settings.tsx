@@ -10,6 +10,8 @@ import {
   Select,
 } from "@/components/ui-kit";
 import { usePrefs, LOCALE_LABEL, CURRENCY_LABEL, type Locale, type Currency } from "@/lib/prefs";
+import { useAuth } from "@/lib/auth";
+import { ModulesPanel } from "@/components/ModulesPanel";
 import {
   Building2,
   Palette,
@@ -51,6 +53,7 @@ function loadBranding(): BrandingPrefs {
 
 function SettingsPage() {
   const { locale, setLocale, currency, setCurrency, theme, setTheme } = usePrefs();
+  const { user } = useAuth();
   const [branding, setBranding] = useState<BrandingPrefs>(loadBranding);
 
   const saveBranding = () => {
@@ -155,6 +158,8 @@ function SettingsPage() {
           </div>
         </Section>
       </div>
+
+      {user?.role === "admin" && <ModulesPanel />}
 
       <Section
         title="Plan & limits"

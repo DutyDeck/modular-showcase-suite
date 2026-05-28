@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import * as Icons from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { menusByRole, roleLabel } from "@/lib/menus";
+import { useEnabledModules } from "@/lib/modules";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/Avatar";
 import {
@@ -11,9 +12,11 @@ import {
   LanguageSwitcher,
   CurrencySwitcher,
   ResetDemoButton,
+  TenantProfileSwitcher,
 } from "@/components/HeaderControls";
 import { CommandPalette, useCommandPaletteHotkey } from "@/components/CommandPalette";
 import { CopilotDrawer, CopilotLauncher } from "@/components/CopilotDrawer";
+import { ModuleGate } from "@/components/ModuleGate";
 import { usePrefs } from "@/lib/prefs";
 import logoUrl from "@/assets/globaledu-logo.png";
 
@@ -52,9 +55,13 @@ export function AppShell() {
     };
   }, [mobileOpen]);
 
+  const enabled = useEnabledModules(user?.institution ?? "");
+
   if (!user) return null;
 
-  const items = menusByRole[user.role];
+  const items = menusByRole[user.role].filter(
+    (item) => !item.moduleId || enabled.has(item.moduleId),
+  );
   const groups: Record<string, typeof items> = {};
   for (const item of items) {
     const g = item.group ?? "Main";
@@ -226,6 +233,7 @@ export function AppShell() {
             >
               <Icons.Search className="h-4 w-4" />
             </button>
+            <TenantProfileSwitcher />
             <LanguageSwitcher />
             <CurrencySwitcher />
             <ThemeToggle />
@@ -263,7 +271,9 @@ export function AppShell() {
         </header>
 
         <main className="flex-1 p-3 sm:p-5 md:p-8 max-w-[1600px] w-full mx-auto">
-          <Outlet />
+          <ModuleGate>
+            <Outlet />
+          </ModuleGate>
         </main>
       </div>
 
