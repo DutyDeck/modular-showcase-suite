@@ -4,8 +4,8 @@ import { PageHeader, Section, Button, Badge } from "@/components/ui-kit";
 import { Avatar } from "@/components/Avatar";
 import { useAuth } from "@/lib/auth";
 import { useCollection } from "@/lib/store";
-import { children as parentChildren } from "@/lib/mockData";
-import { Search, Bell, ChevronRight, NotebookPen } from "lucide-react";
+import { children as parentChildren, getEnrollments } from "@/lib/mockData";
+import { Search, Bell, ChevronRight, NotebookPen, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/srb/")({
   head: () => ({ meta: [{ title: "Record Books — One Edu" }] }),
@@ -139,32 +139,43 @@ function SrbIndexPage() {
 }
 
 function ParentChildPicker() {
+  const students = useCollection("students");
   return (
     <div>
       <PageHeader
         title="My Children · Record Books"
-        subtitle="Tap a child to open their record book."
+        subtitle="Tap a child to open their record book — across every institute they attend."
       />
       <div className="grid sm:grid-cols-2 gap-4">
-        {parentChildren.map((c) => (
-          <Link
-            key={c.id}
-            to="/app/srb/$studentId"
-            params={{ studentId: c.id }}
-            className="rounded-xl border bg-card p-5 hover:border-primary hover:shadow-soft transition-all flex items-center gap-4"
-          >
-            <Avatar name={c.name} seed={c.id} size={56} />
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold">{c.name}</div>
-              <div className="text-xs text-muted-foreground">{c.grade}</div>
-              <div className="text-xs text-muted-foreground mt-1">Next: {c.nextClass}</div>
-            </div>
-            <Button variant="outline" size="sm">
-              Open
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          </Link>
-        ))}
+        {parentChildren.map((c) => {
+          const studentRow = students.find((x) => x.id === c.id);
+          const enrolments = studentRow ? getEnrollments(studentRow) : [];
+          return (
+            <Link
+              key={c.id}
+              to="/app/srb/$studentId"
+              params={{ studentId: c.id }}
+              className="rounded-xl border bg-card p-5 hover:border-primary hover:shadow-soft transition-all flex items-start gap-4"
+            >
+              <Avatar name={c.name} seed={c.id} size={56} />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold">{c.name}</div>
+                <div className="text-xs text-muted-foreground">{c.grade}</div>
+                <div className="text-xs text-muted-foreground mt-1">Next: {c.nextClass}</div>
+                {enrolments.length > 0 && (
+                  <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-primary font-medium">
+                    <Building2 className="h-3 w-3" />
+                    {enrolments.length} institute{enrolments.length === 1 ? "" : "s"} linked
+                  </div>
+                )}
+              </div>
+              <Button variant="outline" size="sm">
+                Open
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

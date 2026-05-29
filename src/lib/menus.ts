@@ -64,5 +64,5 @@ export const roleLabel: Record<Role, string> = {
   student: "Student",
   parent: "Parent / Guardian",
   teacher: "Teacher",
-  admin: "Platform Administrator",
+  admin: "Administrator",
 };

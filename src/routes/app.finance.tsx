@@ -16,7 +16,9 @@ import {
 } from "@/components/ui-kit";
 import { useCollection, addItem, updateItem, nextId, type Invoice } from "@/lib/store";
 import { usePrefs } from "@/lib/prefs";
-import { Wallet, TrendingUp, CreditCard, Receipt, Plus, Check } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { children as parentChildren } from "@/lib/mockData";
+import { Wallet, TrendingUp, CreditCard, Receipt, Plus, Check, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/finance")({
   head: () => ({ meta: [{ title: "Finance — One Edu" }] }),
@@ -26,11 +28,27 @@ export const Route = createFileRoute("/app/finance")({
 const METHODS = ["Visa •••• 4242", "PayPal", "Stripe", "Razorpay", "PayHere", "Bank transfer"];
 
 function FinancePage() {
-  const invoices = useCollection("invoices");
+  const { user } = useAuth();
+  const allInvoices = useCollection("invoices");
   const { formatMoney } = usePrefs();
   const add = useDisclosure();
   const pay = useDisclosure();
   const [payTarget, setPayTarget] = useState<Invoice | null>(null);
+
+  // Scope: institute admins see only their institute's invoices; parents see
+  // only invoices for their own children; everyone else sees everything.
+  const isInstituteScoped = user?.adminScope === "institute";
+  const isParent = user?.role === "parent";
+  const invoices = (() => {
+    if (isInstituteScoped) {
+      return allInvoices.filter((i) => i.institutionId === user?.institutionId);
+    }
+    if (isParent) {
+      const ids = new Set(parentChildren.map((c) => c.id));
+      return allInvoices.filter((i) => i.studentId && ids.has(i.studentId));
+    }
+    return allInvoices;
+  })();
 
   const paid = invoices
     .filter((i) => i.status === "Paid")
@@ -105,7 +123,13 @@ function FinancePage() {
     <div className="space-y-6">
       <PageHeader
         title="Financial Management"
-        subtitle="Invoices, installments, scholarships and payment gateways."
+        subtitle={
+          isInstituteScoped
+            ? `Invoices for ${user?.institutionName ?? "your institute"} only.`
+            : isParent
+              ? "Fees and invoices across every institute your children attend."
+              : "Invoices, installments, scholarships and payment gateways."
+        }
         actions={
           <>
             <Button variant="outline" onClick={add.onOpen}>
@@ -146,6 +170,7 @@ function FinancePage() {
           columns={[
             { key: "id", label: "Invoice" },
             { key: "date", label: "Date" },
+            { key: "_institute", label: "Institute" },
             { key: "desc", label: "Description" },
             { key: "amount", label: "Amount" },
             { key: "method", label: "Method" },
@@ -155,6 +180,15 @@ function FinancePage() {
           rows={invoices}
           emptyText="No invoices"
           renderCell={(row, key) => {
+            if (key === "_institute")
+              return row.institutionName ? (
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Building2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <span className="truncate max-w-[170px]">{row.institutionName}</span>
+                </div>
+              ) : (
+                <span className="text-xs text-muted-foreground">—</span>
+              );
             if (key === "amount")
               return <span className="font-semibold">{formatMoney(row.amount)}</span>;
             if (key === "status") {

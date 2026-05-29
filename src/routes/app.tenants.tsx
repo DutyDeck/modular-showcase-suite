@@ -15,7 +15,8 @@ import {
 } from "@/components/ui-kit";
 import { useCollection, addItem, nextId, type Tenant } from "@/lib/store";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
-import { Plus, Upload, Rocket } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { Plus, Upload, Rocket, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/app/tenants")({
   head: () => ({ meta: [{ title: "Tenants — One Edu" }] }),
@@ -34,7 +35,14 @@ const TENANT_IMPORT_FIELDS: ImportField[] = [
 ];
 
 function TenantsPage() {
-  const tenants = useCollection("tenants");
+  const { user } = useAuth();
+  const allTenants = useCollection("tenants");
+  // Institute-scoped admins only ever see their own tenant in the multi-tenant
+  // table — they have no way to onboard or manage anyone else's institute.
+  const isInstituteScoped = user?.adminScope === "institute";
+  const tenants = isInstituteScoped
+    ? allTenants.filter((t) => t.id === user?.institutionId)
+    : allTenants;
   const navigate = useNavigate();
   const add = useDisclosure();
   const importer = useDisclosure();
@@ -76,25 +84,40 @@ function TenantsPage() {
   return (
     <div>
       <PageHeader
-        title="Multi-Tenant Management"
-        subtitle="Institutions, schools, tutors and learning providers using the platform."
+        title={isInstituteScoped ? "My Institute" : "Multi-Tenant Management"}
+        subtitle={
+          isInstituteScoped
+            ? "Scoped view — you administer this institute only."
+            : "Institutions, schools, tutors and learning providers using the platform."
+        }
         actions={
-          <>
-            <Button variant="outline" onClick={importer.onOpen}>
-              <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">Import CSV</span>
-            </Button>
-            <Button variant="outline" onClick={() => navigate({ to: "/app/onboarding" })}>
-              <Rocket className="h-4 w-4" />
-              <span className="hidden sm:inline">Guided setup</span>
-            </Button>
-            <Button onClick={add.onOpen}>
-              <Plus className="h-4 w-4" />
-              Quick add
-            </Button>
-          </>
+          isInstituteScoped ? null : (
+            <>
+              <Button variant="outline" onClick={importer.onOpen}>
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:inline">Import CSV</span>
+              </Button>
+              <Button variant="outline" onClick={() => navigate({ to: "/app/onboarding" })}>
+                <Rocket className="h-4 w-4" />
+                <span className="hidden sm:inline">Guided setup</span>
+              </Button>
+              <Button onClick={add.onOpen}>
+                <Plus className="h-4 w-4" />
+                Quick add
+              </Button>
+            </>
+          )
         }
       />
+      {isInstituteScoped && (
+        <div className="mb-4 rounded-lg border bg-warning/10 border-warning/30 px-4 py-2.5 text-xs flex items-center gap-2">
+          <ShieldAlert className="h-3.5 w-3.5 text-warning-foreground shrink-0" />
+          <span>
+            Onboarding new institutes, plan changes and cross-tenant analytics are
+            reserved for the global admin.
+          </span>
+        </div>
+      )}
       <Section>
         <DataTable
           columns={[

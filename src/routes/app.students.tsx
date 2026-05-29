@@ -14,9 +14,20 @@ import {
   useDisclosure,
 } from "@/components/ui-kit";
 import { useCollection, addItem, removeItem, nextId, type Student } from "@/lib/store";
+import { getEnrollments } from "@/lib/mockData";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import { Avatar } from "@/components/Avatar";
-import { Plus, Download, Filter, Search, Trash2, Upload, NotebookPen } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import {
+  Plus,
+  Download,
+  Filter,
+  Search,
+  Trash2,
+  Upload,
+  NotebookPen,
+  Building2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/students")({
   head: () => ({ meta: [{ title: "Students — One Edu" }] }),
@@ -38,22 +49,36 @@ const STUDENT_IMPORT_FIELDS: ImportField[] = [
 ];
 
 function StudentsPage() {
-  const students = useCollection("students");
+  const { user } = useAuth();
+  const allStudents = useCollection("students");
   const add = useDisclosure();
   const importer = useDisclosure();
   const [query, setQuery] = useState("");
   const [gradeFilter, setGradeFilter] = useState<string>("");
 
-  const filtered = useMemo(() => {
-    return students.filter(
-      (s) =>
-        (gradeFilter ? s.grade === gradeFilter : true) &&
-        (query
-          ? `${s.name} ${s.id} ${s.parent}`
-              .toLowerCase()
-              .includes(query.toLowerCase())
-          : true),
+  // Institute admins only ever see students enrolled at their own institute,
+  // even though the underlying collection holds the platform-wide roster.
+  const isInstituteScoped = user?.adminScope === "institute";
+  const students = useMemo(() => {
+    if (!isInstituteScoped) return allStudents;
+    return allStudents.filter((s) =>
+      getEnrollments(s).some((e) => e.institutionId === user?.institutionId),
     );
+  }, [allStudents, isInstituteScoped, user?.institutionId]);
+
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase();
+    return students.filter((s) => {
+      if (gradeFilter && s.grade !== gradeFilter) return false;
+      if (!q) return true;
+      // Match against name, One Edu ID, parent, and any legacy institute ID
+      // so admins can paste a known external ID and still find the student.
+      const legacyIds = getEnrollments(s)
+        .map((e) => e.legacyId)
+        .filter(Boolean)
+        .join(" ");
+      return `${s.name} ${s.id} ${s.parent} ${legacyIds}`.toLowerCase().includes(q);
+    });
   }, [students, query, gradeFilter]);
 
   const [form, setForm] = useState({
@@ -126,7 +151,11 @@ function StudentsPage() {
     <div>
       <PageHeader
         title="Student Information System"
-        subtitle="Unified student profiles, academic history, and wellness tracking."
+        subtitle={
+          isInstituteScoped
+            ? `Roster for ${user?.institutionName ?? "your institute"} — students enrolled at other institutes are not shown.`
+            : "Unified student profiles, academic history, and wellness tracking."
+        }
         actions={
           <>
             <Button variant="outline">
@@ -178,10 +207,11 @@ function StudentsPage() {
       >
         <DataTable
           columns={[
-            { key: "id", label: "ID" },
+            { key: "id", label: "One Edu ID" },
             { key: "name", label: "Name" },
             { key: "grade", label: "Grade" },
             { key: "batch", label: "Batch" },
+            { key: "_institutes", label: "Institutes" },
             { key: "attendance", label: "Attendance" },
             { key: "gpa", label: "GPA" },
             { key: "parent", label: "Parent" },
@@ -191,6 +221,46 @@ function StudentsPage() {
           rows={filtered}
           emptyText="No matching students"
           renderCell={(row, key) => {
+            if (key === "id") {
+              const enrolments = getEnrollments(row);
+              const primary = enrolments.find((e) => e.primary) ?? enrolments[0];
+              return (
+                <div className="leading-tight">
+                  <div className="font-medium">{row.id}</div>
+                  {primary?.legacyId && (
+                    <div
+                      className="text-[10px] text-muted-foreground font-mono"
+                      title={`Legacy ID at ${primary.institution}${
+                        primary.legacySystem ? ` (${primary.legacySystem})` : ""
+                      }`}
+                    >
+                      {primary.legacyId}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            if (key === "_institutes") {
+              const enrolments = getEnrollments(row);
+              const primary = enrolments.find((e) => e.primary) ?? enrolments[0];
+              const extras = enrolments.length - 1;
+              return (
+                <div
+                  className="leading-tight"
+                  title={enrolments.map((e) => `• ${e.institution} — ${e.role}`).join("\n")}
+                >
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <Building2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span className="truncate max-w-[180px]">{primary?.institution ?? "—"}</span>
+                  </div>
+                  {extras > 0 && (
+                    <div className="text-[10px] text-primary font-medium mt-0.5">
+                      +{extras} more institute{extras === 1 ? "" : "s"}
+                    </div>
+                  )}
+                </div>
+              );
+            }
             if (key === "name")
               return (
                 <div className="flex items-center gap-2">

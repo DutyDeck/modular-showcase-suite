@@ -7,7 +7,7 @@ import {
 import { useMemo } from "react";
 import { useAuth } from "@/lib/auth";
 import { useCollection } from "@/lib/store";
-import { children as parentChildren } from "@/lib/mockData";
+import { children as parentChildren, getEnrollments } from "@/lib/mockData";
 import { Avatar } from "@/components/Avatar";
 import { Badge, Button, PageHeader, Section, useDisclosure } from "@/components/ui-kit";
 import { SrbTimeline, SrbComposer } from "@/components/Srb";
@@ -20,6 +20,8 @@ import {
   Plus,
   Printer,
   MessageSquare,
+  Building2,
+  KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -73,6 +75,14 @@ function SrbStudentPage() {
     studentId,
   ]);
   const needsAck = studentSrb.filter((e) => e.requiresAck && !e.ackAt).length;
+
+  const enrolments = useMemo(
+    () =>
+      student
+        ? getEnrollments({ id: student.id, grade: student.grade, batch: student.batch })
+        : [],
+    [student],
+  );
 
   if (!student) {
     return (
@@ -166,6 +176,52 @@ function SrbStudentPage() {
           </div>
         </div>
       </Section>
+
+      {enrolments.length > 0 && (
+        <Section
+          title="Enrolled at"
+          description={
+            enrolments.length > 1
+              ? `${enrolments.length} institutes — all managed from this single One Edu account.`
+              : "Single-institute enrolment."
+          }
+        >
+          <ul className="grid sm:grid-cols-2 gap-2.5">
+            {enrolments.map((e) => (
+              <li
+                key={`${e.institutionId}-${e.role}`}
+                className="rounded-lg border bg-card p-3 flex gap-3"
+              >
+                <div className="h-9 w-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Building2 className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-semibold truncate">{e.institution}</span>
+                    {e.primary && <Badge tone="info">Main</Badge>}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {e.role} · {e.classLabel}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    <span>Since {e.since}</span>
+                    {e.legacyId && (
+                      <span
+                        className="inline-flex items-center gap-1"
+                        title={e.legacySystem ?? "Migrated from previous system"}
+                      >
+                        <KeyRound className="h-2.5 w-2.5" />
+                        Institute ID:
+                        <span className="font-mono text-foreground">{e.legacyId}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       {/* Needs-ack banner */}
       {isParent && needsAck > 0 && recentAttn?.requiresAck && !recentAttn?.ackAt && (
