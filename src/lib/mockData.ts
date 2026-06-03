@@ -180,24 +180,65 @@ export const studentEnrollments: Record<string, StudentEnrollment[]> = {
   ],
 };
 
+/* Default main-school pool for students that aren't in the explicit map. We
+ * distribute deterministically by ID modulo so each institute hosts a believable
+ * slice of the roster — and so the institute-admin scope filter actually filters
+ * something out, instead of putting everyone at one tenant. */
+const DEFAULT_SECONDARY_SCHOOLS = [
+  {
+    institutionId: "T-006",
+    institution: "Royal Vista College",
+    legacyPrefix: "RVC",
+    legacySystem: "Moodle (migrated Feb 2026)",
+    since: "2021",
+  },
+  {
+    institutionId: "T-001",
+    institution: "Global Coaching Hub",
+    legacyPrefix: "GCH",
+    legacySystem: "Custom CRM (migrated Dec 2025)",
+    since: "2022",
+  },
+  {
+    institutionId: "T-002",
+    institution: "EduStar International",
+    legacyPrefix: "ESI",
+    legacySystem: "PowerSchool (migrated Mar 2026)",
+    since: "2022",
+  },
+] as const;
+
 /** Resolve enrollments for a student. Falls back to a single-institute default
- *  so we can render the column for every row without dead cells. */
+ *  spread across the pool so the demo roster looks like a real cross-tenant
+ *  platform (and institute admins see only their slice). */
 export function getEnrollments(student: { id: string; grade: string; batch: string }): StudentEnrollment[] {
   const explicit = studentEnrollments[student.id];
   if (explicit) return explicit;
+  const idNum = parseInt(student.id.replace(/\D/g, ""), 10) || 0;
+  // Grade 7/8 students belong at LittleSparks (primary). Everyone else goes
+  // into the secondary-school pool.
+  const isPrimary = /Grade [78]\b/.test(student.grade);
+  const school = isPrimary
+    ? {
+        institutionId: "T-008",
+        institution: "LittleSparks Academy",
+        legacyPrefix: "LS",
+        legacySystem: "Spreadsheet roster (migrated Mar 2026)",
+        since: "2019",
+      }
+    : DEFAULT_SECONDARY_SCHOOLS[idNum % DEFAULT_SECONDARY_SCHOOLS.length];
   // Deterministic "migrated half" so the table shows a realistic mix of
   // legacy-ID-present (came from another LMS) vs natively-signed-up rows.
-  const idNum = parseInt(student.id.replace(/\D/g, ""), 10) || 0;
   const migrated = idNum % 2 === 0;
   return [
     {
-      institutionId: "T-006",
-      institution: "Royal Vista College",
+      institutionId: school.institutionId,
+      institution: school.institution,
       role: "Main school",
       classLabel: `${student.grade} · ${student.batch}`,
-      legacyId: migrated ? `RVC/${idNum % 5 === 0 ? "2022" : "2021"}/${3000 + idNum}` : undefined,
-      legacySystem: migrated ? "Moodle (migrated Feb 2026)" : undefined,
-      since: migrated ? "2021" : "2024",
+      legacyId: migrated ? `${school.legacyPrefix}/${school.since}/${3000 + idNum}` : undefined,
+      legacySystem: migrated ? school.legacySystem : undefined,
+      since: school.since,
       primary: true,
     },
   ];
@@ -318,12 +359,46 @@ export const tenants = [
   { id: "T-008", name: "LittleSparks Academy", country: "Sri Lanka", students: 320, plan: "Growth", status: "Active", mrr: 980 },
 ];
 
-export const platformUsers = [
+/* Each platform user belongs to a tenant (institutionId). The global admin
+ * (Priya) has no institutionId and sees everyone; institute admins see only
+ * users tagged with their own institutionId. Cross-institute users like a
+ * parent are tagged to the institute that originated the account so the
+ * institute admin can still see the parent of one of their pupils. */
+export interface PlatformUserRow {
+  name: string;
+  email: string;
+  role: string;
+  lastLogin: string;
+  mfa: boolean;
+  institutionId?: string;
+  institutionName?: string;
+}
+
+export const platformUsers: PlatformUserRow[] = [
+  /* Global admin — no institute affiliation. */
   { name: "Priya Kumar", email: "priya@platform.io", role: "Super Admin", lastLogin: "10 min ago", mfa: true },
-  { name: "Dr. Saman Silva", email: "saman@gch.lk", role: "Teacher", lastLogin: "2h ago", mfa: true },
-  { name: "Nimal Perera", email: "nimal@gmail.com", role: "Parent", lastLogin: "1d ago", mfa: false },
-  { name: "Aarav Perera", email: "aarav@gmail.com", role: "Student", lastLogin: "5 min ago", mfa: true },
-  { name: "Rajiv Marketing", email: "rajiv@gch.lk", role: "Marketing Officer", lastLogin: "30 min ago", mfa: true },
+
+  /* Royal Vista College (T-006) — staff Ananda manages directly. */
+  { name: "Ananda Wijesinghe", email: "principal@royalvista.com", role: "Institute Admin", lastLogin: "1 min ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
+  { name: "Mrs. Lalani Perera", email: "lalani@royalvista.com", role: "Teacher", lastLogin: "12 min ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
+  { name: "Counselor Riya", email: "riya@royalvista.com", role: "Counselor", lastLogin: "3h ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
+  { name: "Janaki Premarathne", email: "finance@royalvista.com", role: "Finance Officer", lastLogin: "45 min ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
+  { name: "Aarav Perera", email: "aarav@royalvista.com", role: "Student", lastLogin: "5 min ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
+  { name: "Sara Wijesinghe", email: "sara@royalvista.com", role: "Student", lastLogin: "1h ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
+  { name: "Nimal Perera", email: "nimal@gmail.com", role: "Parent", lastLogin: "1d ago", mfa: false, institutionId: "T-006", institutionName: "Royal Vista College" },
+
+  /* Global Coaching Hub (T-001). */
+  { name: "Dr. Saman Silva", email: "saman@gch.lk", role: "Teacher", lastLogin: "2h ago", mfa: true, institutionId: "T-001", institutionName: "Global Coaching Hub" },
+  { name: "Rajiv Marketing", email: "rajiv@gch.lk", role: "Marketing Officer", lastLogin: "30 min ago", mfa: true, institutionId: "T-001", institutionName: "Global Coaching Hub" },
+
+  /* Apex Tuition Hub (T-007). */
+  { name: "Mr. Asanka Gunasekara", email: "asanka@apextuition.lk", role: "Teacher", lastLogin: "4h ago", mfa: true, institutionId: "T-007", institutionName: "Apex Tuition Hub" },
+
+  /* LittleSparks Academy (T-008). */
+  { name: "Ms. Chandrika Soysa", email: "chandrika@littlesparks.lk", role: "Teacher", lastLogin: "6h ago", mfa: true, institutionId: "T-008", institutionName: "LittleSparks Academy" },
+
+  /* BrightPath Institute (T-003). */
+  { name: "Ms. Chathuri Wijesinghe", email: "chathuri@brightpath.ae", role: "Teacher", lastLogin: "1d ago", mfa: true, institutionId: "T-003", institutionName: "BrightPath Institute" },
 ];
 
 export const auditLog = [

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   PageHeader,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui-kit";
 import { usePrefs, LOCALE_LABEL, CURRENCY_LABEL, type Locale, type Currency } from "@/lib/prefs";
 import { useAuth } from "@/lib/auth";
+import { useCollection } from "@/lib/store";
 import { ModulesPanel } from "@/components/ModulesPanel";
 import {
   Building2,
@@ -21,6 +22,7 @@ import {
   Bell,
   Check,
   X,
+  ShieldAlert,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/settings")({
@@ -34,43 +36,89 @@ interface BrandingPrefs {
   domain: string;
 }
 
-const STORAGE_KEY = "oneedu.tenant-settings.v1";
-const DEFAULTS: BrandingPrefs = {
-  tenantName: "Global Coaching Hub",
-  primaryColor: "#4f46e5",
-  domain: "gch.oneedu.app",
-};
+const STORAGE_KEY_PREFIX = "oneedu.tenant-settings.v1";
 
-function loadBranding(): BrandingPrefs {
-  if (typeof window === "undefined") return DEFAULTS;
+/** Each tenant has its own branding bucket in localStorage so an institute
+ *  admin editing Royal Vista's branding can't clobber the platform defaults. */
+function storageKeyFor(tenantId: string | undefined) {
+  return tenantId ? `${STORAGE_KEY_PREFIX}:${tenantId}` : STORAGE_KEY_PREFIX;
+}
+
+function slugify(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 20) || "tenant";
+}
+
+function defaultsFor(name: string): BrandingPrefs {
+  return {
+    tenantName: name,
+    primaryColor: "#4f46e5",
+    domain: `${slugify(name)}.oneedu.app`,
+  };
+}
+
+function loadBranding(tenantId: string | undefined, name: string): BrandingPrefs {
+  const fallback = defaultsFor(name);
+  if (typeof window === "undefined") return fallback;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : DEFAULTS;
+    const raw = localStorage.getItem(storageKeyFor(tenantId));
+    return raw ? { ...fallback, ...JSON.parse(raw) } : fallback;
   } catch {
-    return DEFAULTS;
+    return fallback;
   }
 }
 
 function SettingsPage() {
   const { locale, setLocale, currency, setCurrency, theme, setTheme } = usePrefs();
   const { user } = useAuth();
-  const [branding, setBranding] = useState<BrandingPrefs>(loadBranding);
+  const tenants = useCollection("tenants");
+
+  const isInstituteScoped = user?.adminScope === "institute";
+  // The tenant whose settings this page is editing. For institute admins it's
+  // always their own; for global admins we fall back to the first demo tenant.
+  const scopedTenant = useMemo(() => {
+    if (isInstituteScoped) {
+      return tenants.find((t) => t.id === user?.institutionId);
+    }
+    return tenants[0];
+  }, [isInstituteScoped, tenants, user?.institutionId]);
+
+  const scopedTenantName =
+    scopedTenant?.name ?? user?.institutionName ?? "Your institute";
+
+  const [branding, setBranding] = useState<BrandingPrefs>(() =>
+    loadBranding(scopedTenant?.id, scopedTenantName),
+  );
 
   const saveBranding = () => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(branding));
+      localStorage.setItem(storageKeyFor(scopedTenant?.id), JSON.stringify(branding));
     } catch {
       /* ignore */
     }
-    toast.success("Branding saved");
+    toast.success(`Branding saved for ${scopedTenantName}`);
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Settings"
-        subtitle="Tenant configuration, branding, locale and integrations."
+        subtitle={
+          isInstituteScoped
+            ? `Configuration for ${scopedTenantName}. Cross-tenant settings stay with the global admin.`
+            : "Tenant configuration, branding, locale and integrations."
+        }
       />
+
+      {isInstituteScoped && (
+        <div className="rounded-lg border bg-warning/10 border-warning/30 px-4 py-2.5 text-xs flex items-center gap-2">
+          <ShieldAlert className="h-3.5 w-3.5 text-warning-foreground shrink-0" />
+          <span>
+            You can only edit settings for{" "}
+            <span className="font-semibold">{scopedTenantName}</span>. The tenant picker
+            and platform-wide configuration are reserved for the global admin.
+          </span>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-4 lg:gap-6">
         <Section
@@ -113,7 +161,10 @@ function SettingsPage() {
             </Field>
           </div>
           <div className="mt-4 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setBranding(DEFAULTS)}>
+            <Button
+              variant="outline"
+              onClick={() => setBranding(defaultsFor(scopedTenantName))}
+            >
               Reset
             </Button>
             <Button onClick={saveBranding}>
@@ -162,15 +213,39 @@ function SettingsPage() {
       {user?.role === "admin" && <ModulesPanel />}
 
       <Section
-        title="Plan & limits"
-        description="Active subscription and usage caps."
-        actions={<Button variant="outline">Upgrade plan</Button>}
+        title={isInstituteScoped ? `Plan & limits · ${scopedTenantName}` : "Plan & limits"}
+        description={
+          scopedTenant
+            ? `${scopedTenant.plan} plan · ${scopedTenant.country} · ${scopedTenant.students.toLocaleString()} students on roster.`
+            : "Active subscription and usage caps."
+        }
+        actions={
+          isInstituteScoped ? (
+            <Button variant="outline" onClick={() => toast.info("Contact the global admin to change plan", { description: "Plan changes are billed centrally." })}>
+              Request upgrade
+            </Button>
+          ) : (
+            <Button variant="outline">Upgrade plan</Button>
+          )
+        }
       >
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <PlanStat label="Plan" value="Enterprise" tone="primary" />
-          <PlanStat label="Seats" value="500 / 2,000" />
+          <PlanStat label="Plan" value={scopedTenant?.plan ?? "Enterprise"} tone="primary" />
+          <PlanStat
+            label="Seats"
+            value={
+              scopedTenant
+                ? `${scopedTenant.students.toLocaleString()} / ${(
+                    Math.max(2000, Math.ceil(scopedTenant.students * 1.25 / 100) * 100)
+                  ).toLocaleString()}`
+                : "500 / 2,000"
+            }
+          />
           <PlanStat label="Storage" value="48 GB / 1 TB" />
-          <PlanStat label="API calls" value="1.2M / 10M (mo)" />
+          <PlanStat
+            label="MRR"
+            value={scopedTenant ? `$${scopedTenant.mrr.toLocaleString()}` : "—"}
+          />
         </div>
       </Section>
 

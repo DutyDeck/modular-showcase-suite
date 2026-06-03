@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Section, Badge, Select } from "@/components/ui-kit";
 import { tenants as seedTenants } from "@/lib/mockData";
+import { useAuth } from "@/lib/auth";
 import {
   MODULES,
   useEnabledModules,
@@ -11,7 +12,7 @@ import {
   resetTenant,
   type ModuleId,
 } from "@/lib/modules";
-import { Sparkles, Building2, PackageCheck, Package } from "lucide-react";
+import { Sparkles, Building2, PackageCheck, Package, Lock } from "lucide-react";
 
 const PLAN_TONE: Record<string, "default" | "success" | "warning" | "info" | "muted"> = {
   Starter: "muted",
@@ -33,21 +34,32 @@ const PLAN_PRESETS: Record<string, ModuleId[]> = {
 };
 
 export function ModulesPanel() {
+  const { user } = useAuth();
+  // Institute admins can only configure their own institute's modules. We
+  // lock the selector to user.institutionName (or fall back to the first
+  // demo tenant for the global admin who can switch freely).
+  const isInstituteScoped = user?.adminScope === "institute";
+  const lockedTenantName = isInstituteScoped
+    ? user?.institutionName ?? user?.institution
+    : undefined;
   const [tenantName, setTenantName] = useState<string>(
-    seedTenants[0]?.name ?? "Global Coaching Hub",
+    lockedTenantName ?? seedTenants[0]?.name ?? "Global Coaching Hub",
   );
-  const enabled = useEnabledModules(tenantName);
+  const effectiveTenantName = lockedTenantName ?? tenantName;
+  const enabled = useEnabledModules(effectiveTenantName);
 
+  // Global admins see every tenant in the picker; institute admins never see
+  // any picker at all (their tenant is fixed).
   const tenantOptions = useMemo(
     () => seedTenants.map((t) => ({ value: t.name, label: `${t.name} · ${t.plan}` })),
     [],
   );
 
-  const tenantInfo = seedTenants.find((t) => t.name === tenantName);
+  const tenantInfo = seedTenants.find((t) => t.name === effectiveTenantName);
 
   const applyPreset = (plan: keyof typeof PLAN_PRESETS) => {
-    setEnabledModules(tenantName, PLAN_PRESETS[plan]);
-    toast.success(`Applied ${plan} preset to ${tenantName}`);
+    setEnabledModules(effectiveTenantName, PLAN_PRESETS[plan]);
+    toast.success(`Applied ${plan} preset to ${effectiveTenantName}`);
   };
 
   const counts = useMemo(() => {
@@ -59,18 +71,29 @@ export function ModulesPanel() {
   return (
     <Section
       title="Modules & Entitlements"
-      description="Toggle which modules are available to each tenant. Sidebar and routes update immediately for users in that tenant."
+      description={
+        isInstituteScoped
+          ? `Modules enabled for ${effectiveTenantName}. Cross-tenant module entitlement is reserved for the global admin.`
+          : "Toggle which modules are available to each tenant. Sidebar and routes update immediately for users in that tenant."
+      }
       actions={
         <>
-          <Select
-            value={tenantName}
-            onChange={(e) => setTenantName(e.target.value)}
-            options={tenantOptions}
-          />
+          {isInstituteScoped ? (
+            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border bg-muted/40 text-muted-foreground">
+              <Lock className="h-3 w-3" />
+              {effectiveTenantName}
+            </span>
+          ) : (
+            <Select
+              value={tenantName}
+              onChange={(e) => setTenantName(e.target.value)}
+              options={tenantOptions}
+            />
+          )}
           <button
             onClick={() => {
-              resetTenant(tenantName);
-              toast.success(`Reset ${tenantName} to all modules`);
+              resetTenant(effectiveTenantName);
+              toast.success(`Reset ${effectiveTenantName} to all modules`);
             }}
             className="text-xs px-2.5 py-1.5 rounded-md border hover:bg-muted"
           >
