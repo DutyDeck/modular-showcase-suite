@@ -242,7 +242,9 @@ function SrbStudentPage() {
 
       {isStudent && (
         <div className="rounded-xl border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
-          You can read entries about you. Parents and teachers post and reply here.
+          {user?.selfManaged
+            ? "You manage your own record book — teachers post here and you acknowledge entries yourself. No guardian is linked to this account."
+            : "You can read entries about you. Parents and teachers post and reply here."}
         </div>
       )}
 

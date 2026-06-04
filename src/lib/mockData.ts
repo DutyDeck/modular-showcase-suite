@@ -17,12 +17,33 @@ export interface DemoUser {
   adminScope?: "global" | "institute";
   institutionId?: string;
   institutionName?: string;
+  /* Guardianship model (for student accounts). A student who is 18 or older is
+   * "self-managed": they own their account and authorise their own enrolments,
+   * payments and course selection with no guardian in the loop. A minor is
+   * guardian-linked — those same actions require the named guardian's consent. */
+  dob?: string; // ISO date of birth
+  selfManaged?: boolean; // true ⇒ adult, manages own account; false ⇒ minor
+  guardianName?: string; // the guardian who approves actions for a minor
+  oneEduId?: string; // link to the roster student record (S-XXXX)
 }
 
 const portrait = (path: string) => `https://randomuser.me/api/portraits/${path}`;
 
+/** Age in whole years on a given date (defaults to today). */
+export function ageOn(dob: string, on: Date = new Date()): number {
+  const b = new Date(dob);
+  let age = on.getFullYear() - b.getFullYear();
+  const m = on.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && on.getDate() < b.getDate())) age--;
+  return age;
+}
+
 export const demoUsers: DemoUser[] = [
-  { id: "u1", email: "student@demo.com", password: "demo", name: "Aarav Perera", role: "student", photo: portrait("men/32.jpg"), institution: "Royal Vista College + 3 tuition classes", tagline: "1 app · 4 institutes · A/L Science", meta: { grade: "Grade 12", batch: "Science-A", institutions: "4" } },
+  { id: "u1", email: "student@demo.com", password: "demo", name: "Aarav Perera", role: "student", photo: portrait("men/32.jpg"), institution: "Royal Vista College + 3 tuition classes", tagline: "1 app · 4 institutes · A/L Science", meta: { grade: "Grade 12", batch: "Science-A", institutions: "4" }, dob: "2009-03-14", selfManaged: false, guardianName: "Nimal Perera", oneEduId: "S-1001" },
+  /* Adult, self-managed student (18+) — no guardian. Owns her account and
+   * authorises her own enrolments, payments and course selection. Also the
+   * subject of the cross-tenant enrolment demo (searchable as S-2001). */
+  { id: "u6", email: "adult@demo.com", password: "demo", name: "Senuli Fernando", role: "student", photo: portrait("women/29.jpg"), institution: "EduStar International + self-managed", tagline: "18+ · Self-managed · own fees & enrolments", meta: { grade: "Foundation Year", age: "19", account: "Self-managed" }, dob: "2007-02-20", selfManaged: true, oneEduId: "S-2001" },
   { id: "u2", email: "parent@demo.com", password: "demo", name: "Nimal Perera", role: "parent", photo: portrait("men/65.jpg"), institution: "Manages 2 children across 6 institutes", tagline: "1 login · 2 children · 6 institutes", meta: { children: "2", institutions: "6" } },
   { id: "u3", email: "teacher@demo.com", password: "demo", name: "Dr. Saman Silva", role: "teacher", photo: portrait("men/45.jpg"), institution: "Global Coaching Hub", tagline: "Physics faculty · 12 yrs experience", meta: { subject: "Physics" } },
   /* Global super-admin — sees every tenant. */
@@ -128,6 +149,15 @@ export const students = [
   { id: "S-1058", name: "Lakshan Edirisuriya", grade: "Grade 12", batch: "Arts-A", attendance: 79, gpa: 3.0, status: "Active", parent: "Kanchana Edirisuriya", risk: "medium" },
   { id: "S-1059", name: "Tashmi Welikala", grade: "Grade 12", batch: "Arts-A", attendance: 96, gpa: 3.9, status: "Active", parent: "Buddhi Welikala", risk: "low" },
   { id: "S-1060", name: "Rikitha Vidanapathirana", grade: "Grade 12", batch: "Arts-A", attendance: 89, gpa: 3.5, status: "Active", parent: "Sirimal Vidanapathirana", risk: "low" },
+
+  /* ── Cross-tenant directory students ──────────────────────────────────────
+   * These two are enrolled at EduStar International (T-002), NOT at Royal Vista
+   * College (T-006). They power the "enrol an existing One Edu student from
+   * another tenant" demo: a Royal Vista admin can find them by email/reference
+   * but cannot see their details until the student (adult) or guardian (minor)
+   * approves. Senuli (S-2001) is also the adult self-managed demo login. */
+  { id: "S-2001", name: "Senuli Fernando", grade: "Foundation Year", batch: "Foundation-A", attendance: 90, gpa: 3.6, status: "Active", parent: "—", risk: "low" },
+  { id: "S-2002", name: "Rehan Gupta", grade: "Grade 9", batch: "Science-B", attendance: 85, gpa: 3.3, status: "Active", parent: "Anil Gupta", risk: "low" },
 ];
 
 /* Per-student institute enrolments. Students NOT listed here fall back to a
@@ -178,7 +208,84 @@ export const studentEnrollments: Record<string, StudentEnrollment[]> = {
     { institutionId: "T-006", institution: "Royal Vista College", role: "Main school", classLabel: "Grade 11 · Commerce-B", legacyId: "RVC/2022/4112", legacySystem: "Moodle (migrated Feb 2026)", since: "2022", primary: true },
     { institutionId: "T-005", institution: "Lingua Vista", role: "French Beginner", classLabel: "Online evening", since: "2025" },
   ],
+
+  /* Cross-tenant directory students — enrolled only at EduStar (T-002) until a
+     different tenant enrols them with consent. Deliberately NOT at T-006. */
+  "S-2001": [
+    { institutionId: "T-002", institution: "EduStar International", role: "Main school", classLabel: "Foundation Year · Science", since: "2025", primary: true },
+  ],
+  "S-2002": [
+    { institutionId: "T-002", institution: "EduStar International", role: "Main school", classLabel: "Grade 9 · Science-B", since: "2024", primary: true },
+  ],
 };
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Platform directory — the consent-gated lookup used for cross-tenant enrolment.
+ *
+ * Scenario: a student already on One Edu (at tenant A) wants to enrol at a new
+ * tenant B. Because tenant B's admin cannot see students outside their own
+ * tenant, they search this directory by the student's registered email or One
+ * Edu reference number. The search returns only *availability* — never contact
+ * details or academic history. When the admin requests enrolment, One Edu
+ * notifies the student (if self-managed/adult) or their guardian (if a minor)
+ * by email + SMS to approve (one-click magic link or OTP). Only after that
+ * approval is the full profile unlocked for tenant B.
+ * ──────────────────────────────────────────────────────────────────────── */
+export interface DirectoryClass {
+  id: string;
+  label: string;
+  fee: number; // USD
+}
+
+export interface DirectoryStudent {
+  oneEduId: string;
+  name: string;
+  email: string; // registered account email (searchable)
+  phone: string; // registered mobile (consent SMS target for adults)
+  dob: string;
+  selfManaged: boolean; // adult ⇒ student approves; minor ⇒ guardian approves
+  guardianName?: string;
+  guardianEmail?: string;
+  guardianPhone?: string;
+  homeInstitution: string; // where they're currently enrolled
+  grade: string;
+  /** Classes the searching tenant currently has open for enrolment. */
+  availableClasses: DirectoryClass[];
+}
+
+export const platformDirectory: DirectoryStudent[] = [
+  {
+    oneEduId: "S-2001",
+    name: "Senuli Fernando",
+    email: "senuli.fernando@gmail.com",
+    phone: "+94771234589",
+    dob: "2007-02-20",
+    selfManaged: true,
+    homeInstitution: "EduStar International",
+    grade: "Foundation Year",
+    availableClasses: [
+      { id: "RVC-AL-CHEM", label: "A/L Chemistry · Theory (Sat 8–11 AM)", fee: 95 },
+      { id: "RVC-AL-PHY", label: "A/L Physics · Revision (Sun 2–5 PM)", fee: 90 },
+    ],
+  },
+  {
+    oneEduId: "S-2002",
+    name: "Rehan Gupta",
+    email: "rehan.g09@gmail.com",
+    phone: "+94762345567",
+    dob: "2011-11-05",
+    selfManaged: false,
+    guardianName: "Anil Gupta",
+    guardianEmail: "anil.gupta@gmail.com",
+    guardianPhone: "+94718889912",
+    homeInstitution: "EduStar International",
+    grade: "Grade 9",
+    availableClasses: [
+      { id: "RVC-G9-MATH", label: "Grade 9 Maths · Weekday (Mon/Wed 4–6 PM)", fee: 60 },
+      { id: "RVC-G9-SCI", label: "Grade 9 Science · Lab (Fri 3–5 PM)", fee: 65 },
+    ],
+  },
+];
 
 /* Default main-school pool for students that aren't in the explicit map. We
  * distribute deterministically by ID modulo so each institute hosts a believable
@@ -739,5 +846,92 @@ export const srbEntries: SrbEntry[] = [
     date: d(3, 14, 0),
     institutionId: "T-007",
     institutionName: "Apex Tuition Hub",
+  },
+
+  /* ── Senuli Fernando (S-2001) — adult, self-managed (18+) student ───────────
+   * Her record book has no guardian in the loop: she authors her own
+   * communications, acknowledges entries herself, and is billed self-service.
+   * All entries sit at her home institute (EduStar International, T-002). They
+   * also foreshadow the cross-tenant enrolment flow she approves herself. */
+  {
+    id: "SRB-540",
+    studentId: "S-2001",
+    studentName: "Senuli Fernando",
+    authorName: "Dr. Nadia Khan",
+    authorRole: "teacher",
+    type: "achievement",
+    title: "Top of the Foundation cohort — Chemistry",
+    body:
+      "Senuli scored 96/100 in the Foundation Chemistry mid-module — the highest in the cohort. Excellent lab technique and written analysis.",
+    date: d(2, 14, 0),
+    institutionId: "T-002",
+    institutionName: "EduStar International",
+  },
+  {
+    id: "SRB-541",
+    studentId: "S-2001",
+    studentName: "Senuli Fernando",
+    authorName: "Lab Office",
+    authorRole: "admin",
+    type: "permission",
+    title: "Lab safety induction — please confirm",
+    body:
+      "Mandatory lab safety induction before this term's practicals. As a self-managed (18+) student you confirm your own attendance here — no guardian sign-off is required.",
+    date: d(1, 9, 0),
+    pinned: true,
+    requiresAck: true,
+    institutionId: "T-002",
+    institutionName: "EduStar International",
+  },
+  {
+    id: "SRB-542",
+    studentId: "S-2001",
+    studentName: "Senuli Fernando",
+    authorName: "Senuli Fernando",
+    authorRole: "student",
+    type: "communication",
+    title: "Will miss Friday's lab — medical appointment",
+    body:
+      "I have a medical appointment on Friday morning and will miss the 9 AM practical. I'll catch up on the worksheet over the weekend. (Managing this myself — no guardian on file.)",
+    date: d(1, 8, 20),
+    replies: [
+      {
+        id: "r-se1",
+        authorName: "Dr. Nadia Khan",
+        authorRole: "teacher",
+        text: "Thanks for letting me know, Senuli. I'll set the worksheet aside for you.",
+        at: d(1, 10, 0),
+      },
+    ],
+    institutionId: "T-002",
+    institutionName: "EduStar International",
+  },
+  {
+    id: "SRB-543",
+    studentId: "S-2001",
+    studentName: "Senuli Fernando",
+    authorName: "EduStar Finance",
+    authorRole: "admin",
+    type: "communication",
+    title: "Self-service billing active",
+    body:
+      "Your account is set to self-managed billing. Invoices and reminders go directly to you, and you authorise your own course enrolments and payments.",
+    date: d(5, 11, 0),
+    institutionId: "T-002",
+    institutionName: "EduStar International",
+  },
+  {
+    id: "SRB-544",
+    studentId: "S-2001",
+    studentName: "Senuli Fernando",
+    authorName: "Ms. Priyanka Rao",
+    authorRole: "counselor",
+    type: "remark",
+    title: "Pathway check-in — adding an external A/L class",
+    body:
+      "Discussed Senuli's plan to add an A/L Chemistry class at another institute. She'll approve any cross-institute enrolment herself via One Edu (OTP / one-click). No concerns.",
+    date: d(6, 13, 0),
+    institutionId: "T-002",
+    institutionName: "EduStar International",
   },
 ];

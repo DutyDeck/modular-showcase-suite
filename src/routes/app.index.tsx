@@ -1,14 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { PageHeader, StatCard, Section, Badge } from "@/components/ui-kit";
 import { AreaTrend, BarTrend } from "@/components/Charts";
 import {
   Users, BookOpen, DollarSign, TrendingUp, GraduationCap, Wallet,
   CalendarCheck, Award, Sparkles, AlertTriangle, Building2,
+  UserCheck, ShieldCheck, CreditCard,
 } from "lucide-react";
 import {
   notifications, attendanceTrend, revenueTrend, grades,
-  aiInsights, teacherClasses, children, getEnrollments,
+  aiInsights, teacherClasses, children, getEnrollments, ageOn,
 } from "@/lib/mockData";
 import { useCollection } from "@/lib/store";
 import { usePrefs } from "@/lib/prefs";
@@ -68,13 +69,83 @@ function Dashboard() {
   );
 }
 
+function AutonomyBanner() {
+  const { user } = useAuth();
+  if (!user?.dob) return null;
+  const age = ageOn(user.dob);
+  const adult = !!user.selfManaged;
+
+  if (adult) {
+    return (
+      <div className="rounded-xl border border-success/30 bg-success/10 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <div className="h-9 w-9 rounded-lg bg-success/15 text-success flex items-center justify-center shrink-0">
+            <UserCheck className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-sm">Self-managed account</span>
+              <Badge tone="success">{age} yrs · 18+</Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              You manage your own enrolment, payments and course selection — no
+              guardian approval needed.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <Link to="/app/courses">
+            <QuickAction icon={<BookOpen className="h-3.5 w-3.5" />} label="Courses" />
+          </Link>
+          <Link to="/app/finance">
+            <QuickAction icon={<Wallet className="h-3.5 w-3.5" />} label="Pay fees" />
+          </Link>
+          <Link to="/app/marketplace">
+            <QuickAction icon={<CreditCard className="h-3.5 w-3.5" />} label="Enrol" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 flex items-start gap-3">
+      <div className="h-9 w-9 rounded-lg bg-warning/20 text-warning-foreground flex items-center justify-center shrink-0">
+        <ShieldCheck className="h-5 w-5" />
+      </div>
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-sm">Guardian-linked account</span>
+          <Badge tone="warning">{age} yrs · minor</Badge>
+        </div>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Enrolment, payments and course-selection requests are approved by{" "}
+          <b>{user.guardianName ?? "your guardian"}</b>. You turn 18 and become
+          self-managed automatically.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function QuickAction({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium rounded-md bg-card border px-2.5 py-1.5 hover:border-primary hover:text-primary transition-colors">
+      {icon}
+      {label}
+    </span>
+  );
+}
+
 function StudentDash() {
+  const { user } = useAuth();
   const assignments = useCollection("assignments");
   const invoices = useCollection("invoices");
   const pending = assignments.filter(a => a.status === "Pending").length;
   const due = invoices.find(i => i.status === "Due");
   return (
     <>
+      {user?.dob && <AutonomyBanner />}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Current GPA" value="3.8" hint="Top 12% of cohort" icon={<Award className="h-5 w-5" />} accent="success" />
         <StatCard label="Attendance" value="94%" hint="This semester" icon={<CalendarCheck className="h-5 w-5" />} accent="primary" />

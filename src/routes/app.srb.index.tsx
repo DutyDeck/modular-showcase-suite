@@ -32,9 +32,10 @@ function SrbIndexPage() {
     return <ParentChildPicker />;
   }
 
-  // Students land on their own timeline (in demo, user id is fake — use first student)
+  // Students land on their OWN timeline — resolve via the account's linked One
+  // Edu ID (falls back to the first roster row only if none is set).
   if (user?.role === "student") {
-    const me = students[0]?.id;
+    const me = user.oneEduId ?? students[0]?.id;
     if (me) {
       navigate({ to: "/app/srb/$studentId", params: { studentId: me }, replace: true });
       return null;

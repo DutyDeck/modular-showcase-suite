@@ -32,6 +32,24 @@ export type Message = (typeof initialMessages)[number];
 
 import type { SrbEntry } from "./mockData";
 
+/* A cross-tenant enrolment created at runtime — i.e. a tenant admin enrolled an
+ * existing One Edu student (from another tenant) after the student/guardian
+ * approved the request. These augment the static enrolment map in mockData so
+ * the newly enrolled student shows up on the enrolling tenant's roster. */
+export interface CrossEnrollment {
+  id: string;
+  studentId: string;
+  studentName: string;
+  institutionId: string;
+  institutionName: string;
+  role: string;
+  classLabel: string;
+  since: string;
+  at: string; // ISO timestamp the enrolment was confirmed
+  consentBy: string; // who approved (student or guardian name)
+  consentVia: string; // "Student OTP" | "Guardian OTP" | "Magic link" …
+}
+
 interface State {
   students: Student[];
   courses: Course[];
@@ -44,6 +62,7 @@ interface State {
   marketplace: MarketplaceCourse[];
   messages: Message[];
   srb: SrbEntry[];
+  enrollments: CrossEnrollment[];
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
@@ -61,6 +80,7 @@ function makeInitialState(): State {
     marketplace: [...initialMarketplace],
     messages: [...initialMessages],
     srb: [...initialSrb],
+    enrollments: [],
   };
 }
 

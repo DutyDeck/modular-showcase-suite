@@ -120,6 +120,9 @@ export function SrbEntryCard({ entry }: { entry: SrbEntry }) {
   const { user } = useAuth();
   const isParent = user?.role === "parent";
   const isStaff = user?.role === "teacher" || user?.role === "admin";
+  // An adult, self-managed (18+) student acknowledges entries on their own
+  // record book — there is no guardian to sign off for them.
+  const selfAck = user?.role === "student" && !!user?.selfManaged;
   const meta = TYPE_BY_ID[entry.type];
   const Icon = Icons[meta.icon] as React.ComponentType<{ className?: string }>;
   const [replying, setReplying] = useState(false);
@@ -241,12 +244,18 @@ export function SrbEntryCard({ entry }: { entry: SrbEntry }) {
           ) : (
             <>
               <Icons.Circle className="h-3.5 w-3.5" />
-              <span>Awaiting parent acknowledgement</span>
+              <span>
+                {selfAck
+                  ? "Awaiting your acknowledgement"
+                  : isParent
+                    ? "Awaiting parent acknowledgement"
+                    : "Awaiting acknowledgement"}
+              </span>
             </>
           )}
         </div>
         <div className="flex items-center gap-1.5">
-          {isParent && !entry.ackAt && (
+          {(isParent || selfAck) && !entry.ackAt && (
             <Button size="sm" onClick={ack}>
               <Icons.Check className="h-3.5 w-3.5" />
               Acknowledge
@@ -411,7 +420,7 @@ export function SrbComposer({
           <DialogTitle>New record book entry</DialogTitle>
           <DialogDescription>
             Posts to {defaultStudentName ? defaultStudentName : "the selected student"}'s
-            record book and notifies parents.
+            record book and notifies the student and any linked guardian.
           </DialogDescription>
         </DialogHeader>
 
@@ -497,7 +506,7 @@ export function SrbComposer({
               onChange={(e) => setRequiresAck(e.target.checked)}
               className="rounded border-input"
             />
-            Require parent acknowledgement
+            Require acknowledgement
           </label>
         </div>
 

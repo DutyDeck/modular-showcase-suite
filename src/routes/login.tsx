@@ -313,7 +313,11 @@ function LoginPage() {
                     ? u.adminScope === "institute"
                       ? "Institute admin"
                       : "Global admin"
-                    : u.role;
+                    : u.role === "student"
+                      ? u.selfManaged
+                        ? "Adult student"
+                        : "Student"
+                      : u.role;
                 return (
                   <button
                     key={u.id}

@@ -14,8 +14,9 @@ import {
   useDisclosure,
 } from "@/components/ui-kit";
 import { useCollection, addItem, removeItem, nextId, type Student } from "@/lib/store";
-import { getEnrollments } from "@/lib/mockData";
+import { getEnrollments, type StudentEnrollment } from "@/lib/mockData";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
+import { CrossTenantEnrollDialog } from "@/components/CrossTenantEnrollDialog";
 import { Avatar } from "@/components/Avatar";
 import { useAuth } from "@/lib/auth";
 import {
@@ -27,6 +28,7 @@ import {
   Upload,
   NotebookPen,
   Building2,
+  UserCheck,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/students")({
@@ -51,20 +53,53 @@ const STUDENT_IMPORT_FIELDS: ImportField[] = [
 function StudentsPage() {
   const { user } = useAuth();
   const allStudents = useCollection("students");
+  const crossEnrollments = useCollection("enrollments");
   const add = useDisclosure();
   const importer = useDisclosure();
+  const crossEnroll = useDisclosure();
   const [query, setQuery] = useState("");
   const [gradeFilter, setGradeFilter] = useState<string>("");
 
   // Institute admins only ever see students enrolled at their own institute,
   // even though the underlying collection holds the platform-wide roster.
   const isInstituteScoped = user?.adminScope === "institute";
+
+  // Students this institute enrolled from another tenant (via the consent flow)
+  // now belong on its roster too — track their One Edu IDs for filtering/badges.
+  const crossIdsHere = useMemo(
+    () =>
+      new Set(
+        crossEnrollments
+          .filter((e) => e.institutionId === user?.institutionId)
+          .map((e) => e.studentId),
+      ),
+    [crossEnrollments, user?.institutionId],
+  );
+
+  // Display helper: a student's static enrolments PLUS any runtime cross-tenant
+  // enrolments, so a newly enrolled student shows the new institute too.
+  const mergedEnrollments = (s: Student): StudentEnrollment[] => {
+    const base = getEnrollments(s);
+    const extra = crossEnrollments
+      .filter((e) => e.studentId === s.id)
+      .map((e) => ({
+        institutionId: e.institutionId,
+        institution: e.institutionName,
+        role: e.role,
+        classLabel: e.classLabel,
+        since: e.since,
+      }));
+    return [...base, ...extra];
+  };
+
   const students = useMemo(() => {
     if (!isInstituteScoped) return allStudents;
-    return allStudents.filter((s) =>
-      getEnrollments(s).some((e) => e.institutionId === user?.institutionId),
+    return allStudents.filter(
+      (s) =>
+        getEnrollments(s).some((e) => e.institutionId === user?.institutionId) ||
+        crossIdsHere.has(s.id),
     );
-  }, [allStudents, isInstituteScoped, user?.institutionId]);
+  }, [allStudents, isInstituteScoped, user?.institutionId, crossIdsHere]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
@@ -153,7 +188,7 @@ function StudentsPage() {
         title="Student Information System"
         subtitle={
           isInstituteScoped
-            ? `Roster for ${user?.institutionName ?? "your institute"} — students enrolled at other institutes are not shown.`
+            ? `Roster for ${user?.institutionName ?? "your institute"} — other institutes' students are hidden. Use “Enrol existing” to add an existing One Edu student with their consent.`
             : "Unified student profiles, academic history, and wellness tracking."
         }
         actions={
@@ -170,6 +205,12 @@ function StudentsPage() {
               <Upload className="h-4 w-4" />
               <span className="hidden sm:inline">Import CSV</span>
             </Button>
+            {isInstituteScoped && (
+              <Button variant="outline" onClick={crossEnroll.onOpen}>
+                <UserCheck className="h-4 w-4" />
+                <span className="hidden sm:inline">Enrol existing</span>
+              </Button>
+            )}
             <Button onClick={add.onOpen}>
               <Plus className="h-4 w-4" />
               New Student
@@ -222,7 +263,7 @@ function StudentsPage() {
           emptyText="No matching students"
           renderCell={(row, key) => {
             if (key === "id") {
-              const enrolments = getEnrollments(row);
+              const enrolments = mergedEnrollments(row);
               const primary = enrolments.find((e) => e.primary) ?? enrolments[0];
               return (
                 <div className="leading-tight">
@@ -241,7 +282,7 @@ function StudentsPage() {
               );
             }
             if (key === "_institutes") {
-              const enrolments = getEnrollments(row);
+              const enrolments = mergedEnrollments(row);
               const primary = enrolments.find((e) => e.primary) ?? enrolments[0];
               const extras = enrolments.length - 1;
               return (
@@ -266,6 +307,9 @@ function StudentsPage() {
                 <div className="flex items-center gap-2">
                   <Avatar name={row.name} seed={row.id} size={28} />
                   <span className="font-medium">{row.name}</span>
+                  {crossIdsHere.has(row.id) && (
+                    <Badge tone="info">Enrolled via consent</Badge>
+                  )}
                 </div>
               );
             if (key === "attendance")
@@ -407,6 +451,15 @@ function StudentsPage() {
         }}
         onCommit={(items) => items.forEach((s) => addItem("students", s))}
       />
+
+      {isInstituteScoped && (
+        <CrossTenantEnrollDialog
+          open={crossEnroll.open}
+          onOpenChange={crossEnroll.setOpen}
+          tenantId={user?.institutionId ?? ""}
+          tenantName={user?.institutionName ?? "your institute"}
+        />
+      )}
     </div>
   );
 }
