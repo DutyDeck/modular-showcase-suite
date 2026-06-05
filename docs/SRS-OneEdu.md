@@ -13,6 +13,13 @@
 | Classification | Internal / Confidential |
 | Standard | Structured per ISO/IEC/IEEE 29148:2018 |
 
+### Document Revision History
+
+| Version | Date | Author | Summary of change |
+|---|---|---|---|
+| 0.9 | 2026-06-03 | Product & Requirements Team | Internal draft for review. |
+| 1.0.0 | 2026-06-04 | Product & Requirements Team | Baseline release — full functional/non-functional requirements, compliance, and prototype walkthrough. |
+
 > **Purpose of this document.** This SRS captures the agreed requirements for One Edu **prior to development**, as gathered from stakeholders during the requirements elicitation phase. It defines *what* the system must do and the qualities it must exhibit — not how it will be built. It is the authoritative baseline against which design, implementation, testing, and acceptance are measured. No implementation decisions are assumed except where they are genuine, stakeholder-imposed constraints (recorded in §2.6).
 
 ---
