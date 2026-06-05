@@ -50,416 +50,416 @@
 <path fill="#ebf3e7" stroke="#aeb6be" d="M2775,-284.1C2775,-284.1 3141,-284.1 3141,-284.1 3147,-284.1 3153,-290.1 3153,-296.1 3153,-296.1 3153,-498.2 3153,-498.2 3153,-504.2 3147,-510.2 3141,-510.2 3141,-510.2 2775,-510.2 2775,-510.2 2769,-510.2 2763,-504.2 2763,-498.2 2763,-498.2 2763,-296.1 2763,-296.1 2763,-290.1 2769,-284.1 2775,-284.1"/>
 <text xml:space="preserve" text-anchor="middle" x="2904.88" y="-494.8" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Tenant&#45;isolated data &#160;· &#160;RLS · per&#45;tenant keys</text>
 </g>
-<!-- aa2459edf158411698922eb33576c747 -->
+<!-- e0da88141d8b43c4b7ab9621aa0f22d9 -->
 <g id="node1" class="node">
-<title>aa2459edf158411698922eb33576c747</title>
+<title>e0da88141d8b43c4b7ab9621aa0f22d9</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/general\mobile.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="289.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="340" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Mobile app</text>
 <text xml:space="preserve" text-anchor="middle" x="340" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">(iOS / Android)</text>
 </g>
-<!-- fe8b2c51fda843a3ab9dfa26abed8fa6 -->
+<!-- a3fa631ebd504861957b982a05663ea8 -->
 <g id="node4" class="node">
-<title>fe8b2c51fda843a3ab9dfa26abed8fa6</title>
+<title>a3fa631ebd504861957b982a05663ea8</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/network\front-doors.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="483.6" y="-714.9"/>
 <text xml:space="preserve" text-anchor="middle" x="534" y="-598.8" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Azure Front Door &#160;(global)</text>
 <text xml:space="preserve" text-anchor="middle" x="534" y="-584.55" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">WAF · routes each tenant to its home region</text>
 </g>
-<!-- aa2459edf158411698922eb33576c747&#45;&gt;fe8b2c51fda843a3ab9dfa26abed8fa6 -->
+<!-- e0da88141d8b43c4b7ab9621aa0f22d9&#45;&gt;a3fa631ebd504861957b982a05663ea8 -->
 <g id="edge1" class="edge">
-<title>aa2459edf158411698922eb33576c747&#45;&gt;fe8b2c51fda843a3ab9dfa26abed8fa6</title>
+<title>e0da88141d8b43c4b7ab9621aa0f22d9&#45;&gt;a3fa631ebd504861957b982a05663ea8</title>
 <path fill="none" stroke="#5b6b7a" d="M310.71,-457.63C300.6,-476.97 287.54,-496.06 271,-510.2 262.37,-517.58 253.4,-509 246.75,-518.2 242.45,-524.14 242.76,-528.54 246.75,-534.7 296.56,-611.62 404.34,-643.03 472.79,-655.55"/>
 <polygon fill="#5b6b7a" stroke="#5b6b7a" points="471.9,-658.95 482.35,-657.21 473.1,-652.05 471.9,-658.95"/>
 <text xml:space="preserve" text-anchor="middle" x="267.38" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">HTTPS</text>
 </g>
-<!-- 7db060cbdbe54c96bd0557d795b2bb99 -->
+<!-- 4a2acda6e808446eabbbbf66633af3f6 -->
 <g id="node2" class="node">
-<title>7db060cbdbe54c96bd0557d795b2bb99</title>
+<title>4a2acda6e808446eabbbbf66633af3f6</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/general\browser.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="152.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="203" y="-309.35" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Web app / PWA</text>
 </g>
-<!-- 7db060cbdbe54c96bd0557d795b2bb99&#45;&gt;fe8b2c51fda843a3ab9dfa26abed8fa6 -->
+<!-- 4a2acda6e808446eabbbbf66633af3f6&#45;&gt;a3fa631ebd504861957b982a05663ea8 -->
 <g id="edge2" class="edge">
-<title>7db060cbdbe54c96bd0557d795b2bb99&#45;&gt;fe8b2c51fda843a3ab9dfa26abed8fa6</title>
+<title>4a2acda6e808446eabbbbf66633af3f6&#45;&gt;a3fa631ebd504861957b982a05663ea8</title>
 <path fill="none" stroke="#5b6b7a" d="M181.32,-443.18C175.74,-473.57 175.62,-508.46 193.75,-534.7 256.62,-625.72 392.71,-652.48 472.42,-660.31"/>
 <polygon fill="#5b6b7a" stroke="#5b6b7a" points="471.97,-663.78 482.25,-661.2 472.6,-656.81 471.97,-663.78"/>
 <text xml:space="preserve" text-anchor="middle" x="214.38" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">HTTPS</text>
 </g>
-<!-- 7b56c5276f774295998f480daf57b879 -->
+<!-- 74f4bbee63094ad8b29f4637a9f3bf81 -->
 <g id="node3" class="node">
-<title>7b56c5276f774295998f480daf57b879</title>
+<title>74f4bbee63094ad8b29f4637a9f3bf81</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/general\usericon.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="15.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="66" y="-309.35" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">students · parents · staff</text>
 </g>
-<!-- 7b56c5276f774295998f480daf57b879&#45;&gt;fe8b2c51fda843a3ab9dfa26abed8fa6 -->
+<!-- 74f4bbee63094ad8b29f4637a9f3bf81&#45;&gt;a3fa631ebd504861957b982a05663ea8 -->
 <g id="edge3" class="edge">
-<title>7b56c5276f774295998f480daf57b879&#45;&gt;fe8b2c51fda843a3ab9dfa26abed8fa6</title>
+<title>74f4bbee63094ad8b29f4637a9f3bf81&#45;&gt;a3fa631ebd504861957b982a05663ea8</title>
 <path fill="none" stroke="#5b6b7a" d="M81.71,-443.02C92.22,-474.67 109.16,-510.67 135.75,-534.7 231.75,-621.46 386.88,-649.84 472.44,-659.08"/>
 <polygon fill="#5b6b7a" stroke="#5b6b7a" points="471.97,-662.55 482.27,-660.08 472.68,-655.59 471.97,-662.55"/>
 <text xml:space="preserve" text-anchor="middle" x="156.38" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">HTTPS</text>
 </g>
-<!-- 7c3b1d1b6ef64b379465e62597ba580d -->
+<!-- f1ff3162786f43b2bfaf0d1f27a282b1 -->
 <g id="node5" class="node">
-<title>7c3b1d1b6ef64b379465e62597ba580d</title>
-<image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/database\cosmos-db.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="1740.6" y="-425.3"/>
-<text xml:space="preserve" text-anchor="middle" x="1791" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Cosmos DB</text>
+<title>f1ff3162786f43b2bfaf0d1f27a282b1</title>
+<image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/database\sql-databases.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="1740.6" y="-425.3"/>
+<text xml:space="preserve" text-anchor="middle" x="1791" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Azure SQL (global registry)</text>
 <text xml:space="preserve" text-anchor="middle" x="1791" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">tenant registry · One Edu ID · billing</text>
 </g>
-<!-- fe8b2c51fda843a3ab9dfa26abed8fa6&#45;&gt;7c3b1d1b6ef64b379465e62597ba580d -->
+<!-- a3fa631ebd504861957b982a05663ea8&#45;&gt;f1ff3162786f43b2bfaf0d1f27a282b1 -->
 <g id="edge4" class="edge">
-<title>fe8b2c51fda843a3ab9dfa26abed8fa6&#45;&gt;7c3b1d1b6ef64b379465e62597ba580d</title>
+<title>a3fa631ebd504861957b982a05663ea8&#45;&gt;f1ff3162786f43b2bfaf0d1f27a282b1</title>
 <path fill="none" stroke="#9aa7b4" stroke-dasharray="5,2" d="M584.14,-584.21C585.4,-583.33 586.69,-582.49 588,-581.7 723.89,-499.54 1142.86,-539.15 1299,-510.2 1456.69,-480.96 1637.55,-425.86 1729.84,-396.14"/>
 <polygon fill="#9aa7b4" stroke="#9aa7b4" points="1730.77,-399.51 1739.21,-393.11 1728.62,-392.85 1730.77,-399.51"/>
 <text xml:space="preserve" text-anchor="middle" x="1297.47" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">lookup / routing (no PII)</text>
 </g>
-<!-- 1314a0b6c8e74578a28ce44d3a4c1b85 -->
+<!-- 3aa9db8edd7940de97eea4e60ce4a0e1 -->
 <g id="node8" class="node">
-<title>1314a0b6c8e74578a28ce44d3a4c1b85</title>
+<title>3aa9db8edd7940de97eea4e60ce4a0e1</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/web\app-services.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="928.6" y="-714.9"/>
 <text xml:space="preserve" text-anchor="middle" x="979" y="-598.8" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">App Service</text>
 <text xml:space="preserve" text-anchor="middle" x="979" y="-584.55" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">regional stack</text>
 </g>
-<!-- fe8b2c51fda843a3ab9dfa26abed8fa6&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85 -->
+<!-- a3fa631ebd504861957b982a05663ea8&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1 -->
 <g id="edge23" class="edge">
-<title>fe8b2c51fda843a3ab9dfa26abed8fa6&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85</title>
+<title>a3fa631ebd504861957b982a05663ea8&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1</title>
 <path fill="none" stroke="#1f7a3d" d="M584.18,-664.5C666.17,-664.5 828.58,-664.5 917.42,-664.5"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="917.15,-668 927.15,-664.5 917.15,-661 917.15,-668"/>
 <text xml:space="preserve" text-anchor="middle" x="756.5" y="-671.65" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">UK tenants</text>
 </g>
-<!-- cb9ae1be3c6f4eaab7e989f8d29902fb -->
+<!-- 2b11603c9c5641d697add27518512355 -->
 <g id="node17" class="node">
-<title>cb9ae1be3c6f4eaab7e989f8d29902fb</title>
+<title>2b11603c9c5641d697add27518512355</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/web\app-services.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2214.6" y="-714.9"/>
 <text xml:space="preserve" text-anchor="middle" x="2265" y="-598.8" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">App Service</text>
 <text xml:space="preserve" text-anchor="middle" x="2265" y="-584.55" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">regional stack</text>
 </g>
-<!-- fe8b2c51fda843a3ab9dfa26abed8fa6&#45;&gt;cb9ae1be3c6f4eaab7e989f8d29902fb -->
+<!-- a3fa631ebd504861957b982a05663ea8&#45;&gt;2b11603c9c5641d697add27518512355 -->
 <g id="edge24" class="edge">
-<title>fe8b2c51fda843a3ab9dfa26abed8fa6&#45;&gt;cb9ae1be3c6f4eaab7e989f8d29902fb</title>
+<title>a3fa631ebd504861957b982a05663ea8&#45;&gt;2b11603c9c5641d697add27518512355</title>
 <path fill="none" stroke="#1f7a3d" d="M553.41,-747.26C561.32,-764.23 572.42,-780.03 588,-790.29 653.97,-833.76 1220.17,-795.4 1299,-790.29 1642.91,-767.99 2051.39,-701.49 2203.73,-675.29"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2203.94,-678.8 2213.19,-673.65 2202.74,-671.9 2203.94,-678.8"/>
 <text xml:space="preserve" text-anchor="middle" x="808" y="-811.95" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">EU tenants</text>
 </g>
-<!-- 2cfa141d4f3540f892ace554648ff936 -->
+<!-- f34fc39c9a8b4f29a29deed38f66682d -->
 <g id="node23" class="node">
-<title>2cfa141d4f3540f892ace554648ff936</title>
+<title>f34fc39c9a8b4f29a29deed38f66682d</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/web\app-services.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2762.6" y="-714.9"/>
 <text xml:space="preserve" text-anchor="middle" x="2813" y="-598.8" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">App Service</text>
 <text xml:space="preserve" text-anchor="middle" x="2813" y="-584.55" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">regional stack</text>
 </g>
-<!-- fe8b2c51fda843a3ab9dfa26abed8fa6&#45;&gt;2cfa141d4f3540f892ace554648ff936 -->
+<!-- a3fa631ebd504861957b982a05663ea8&#45;&gt;f34fc39c9a8b4f29a29deed38f66682d -->
 <g id="edge25" class="edge">
-<title>fe8b2c51fda843a3ab9dfa26abed8fa6&#45;&gt;2cfa141d4f3540f892ace554648ff936</title>
+<title>a3fa631ebd504861957b982a05663ea8&#45;&gt;f34fc39c9a8b4f29a29deed38f66682d</title>
 <path fill="none" stroke="#1f7a3d" d="M553.41,-747.26C561.32,-764.23 572.42,-780.03 588,-790.29 638.17,-823.35 2699.98,-822.03 2751,-790.29 2764.14,-782.12 2774.58,-770.25 2782.85,-757.02"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2785.8,-758.91 2787.74,-748.49 2779.73,-755.42 2785.8,-758.91"/>
 <text xml:space="preserve" text-anchor="middle" x="894" y="-811.95" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">APAC tenants</text>
 </g>
-<!-- a76757b5057c4d55b3180a02cb918a22 -->
+<!-- abc623259eb64a5ab785f69ce4ec157e -->
 <g id="node6" class="node">
-<title>a76757b5057c4d55b3180a02cb918a22</title>
+<title>abc623259eb64a5ab785f69ce4ec157e</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/identity\external-identities.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="1877.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="1928" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Entra External ID</text>
 <text xml:space="preserve" text-anchor="middle" x="1928" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">global sign&#45;in · MFA</text>
 </g>
-<!-- a76757b5057c4d55b3180a02cb918a22&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85 -->
+<!-- abc623259eb64a5ab785f69ce4ec157e&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1 -->
 <g id="edge27" class="edge">
-<title>a76757b5057c4d55b3180a02cb918a22&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85</title>
+<title>abc623259eb64a5ab785f69ce4ec157e&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1</title>
 <path fill="none" stroke="#9aa7b4" stroke-dasharray="1,5" d="M1901.73,-457.45C1891.47,-477.64 1877.57,-497.19 1859,-510.2 1847.44,-518.3 1809.94,-516.01 1796,-518.2 1756.69,-524.38 1747.15,-527.57 1708,-534.7 1460.62,-579.74 1165.58,-631.17 1040.21,-652.91"/>
 <polygon fill="#9aa7b4" stroke="#9aa7b4" points="1039.72,-649.44 1030.46,-654.6 1040.91,-656.34 1039.72,-649.44"/>
 </g>
-<!-- a76757b5057c4d55b3180a02cb918a22&#45;&gt;cb9ae1be3c6f4eaab7e989f8d29902fb -->
+<!-- abc623259eb64a5ab785f69ce4ec157e&#45;&gt;2b11603c9c5641d697add27518512355 -->
 <g id="edge29" class="edge">
-<title>a76757b5057c4d55b3180a02cb918a22&#45;&gt;cb9ae1be3c6f4eaab7e989f8d29902fb</title>
+<title>abc623259eb64a5ab785f69ce4ec157e&#45;&gt;2b11603c9c5641d697add27518512355</title>
 <path fill="none" stroke="#9aa7b4" stroke-dasharray="1,5" d="M1958.4,-457.52C1971.95,-485.01 1990.29,-513.94 2014,-534.7 2070.83,-584.46 2150.28,-621.01 2204.47,-642.21"/>
 <polygon fill="#9aa7b4" stroke="#9aa7b4" points="2202.96,-645.37 2213.55,-645.7 2205.47,-638.84 2202.96,-645.37"/>
 </g>
-<!-- a76757b5057c4d55b3180a02cb918a22&#45;&gt;2cfa141d4f3540f892ace554648ff936 -->
+<!-- abc623259eb64a5ab785f69ce4ec157e&#45;&gt;f34fc39c9a8b4f29a29deed38f66682d -->
 <g id="edge31" class="edge">
-<title>a76757b5057c4d55b3180a02cb918a22&#45;&gt;2cfa141d4f3540f892ace554648ff936</title>
+<title>abc623259eb64a5ab785f69ce4ec157e&#45;&gt;f34fc39c9a8b4f29a29deed38f66682d</title>
 <path fill="none" stroke="#9aa7b4" stroke-dasharray="1,5" d="M1953.28,-457.69C1963.57,-478.14 1977.73,-497.76 1997,-510.2 2011.96,-519.85 2139.25,-516.81 2157,-518.2 2289.35,-528.57 2635.43,-516.39 2751,-581.7 2751.92,-582.22 2752.82,-582.76 2753.72,-583.31"/>
 <polygon fill="#9aa7b4" stroke="#9aa7b4" points="2751.57,-586.08 2761.75,-589.04 2755.64,-580.38 2751.57,-586.08"/>
 </g>
-<!-- 52ce4069fb1a498fb13e27fe0df0b516 -->
+<!-- 9777589cdc44430d9f1c938383eff75c -->
 <g id="node7" class="node">
-<title>52ce4069fb1a498fb13e27fe0df0b516</title>
+<title>9777589cdc44430d9f1c938383eff75c</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/identity\active-directory.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2014.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="2065" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Entra ID + PIM</text>
 <text xml:space="preserve" text-anchor="middle" x="2065" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">platform admin · break&#45;glass</text>
 </g>
-<!-- 1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;aa2459edf158411698922eb33576c747 -->
+<!-- 3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;e0da88141d8b43c4b7ab9621aa0f22d9 -->
 <g id="edge32" class="edge">
-<title>1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;aa2459edf158411698922eb33576c747</title>
+<title>3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;e0da88141d8b43c4b7ab9621aa0f22d9</title>
 <path fill="none" stroke="#b0792f" stroke-dasharray="5,2" d="M928.83,-651.89C856.73,-635.37 719.52,-604.55 602,-581.7 541.57,-569.95 368.66,-581.78 329,-534.7 313.63,-516.46 309.87,-492.46 311.65,-468.66"/>
 <polygon fill="#b0792f" stroke="#b0792f" points="315.11,-469.22 312.72,-458.9 308.15,-468.46 315.11,-469.22"/>
 <text xml:space="preserve" text-anchor="middle" x="381.5" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">push · real&#45;time</text>
 </g>
-<!-- 1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;7c3b1d1b6ef64b379465e62597ba580d -->
+<!-- 3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;f1ff3162786f43b2bfaf0d1f27a282b1 -->
 <g id="edge26" class="edge">
-<title>1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;7c3b1d1b6ef64b379465e62597ba580d</title>
+<title>3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;f1ff3162786f43b2bfaf0d1f27a282b1</title>
 <path fill="none" stroke="#9aa7b4" stroke-dasharray="5,2" d="M1029.29,-655.01C1122.46,-638.37 1327.35,-597.54 1491,-534.7 1515.43,-525.32 1650.43,-452.48 1730.77,-408.78"/>
 <polygon fill="#9aa7b4" stroke="#9aa7b4" points="1732.32,-411.92 1739.43,-404.06 1728.98,-405.77 1732.32,-411.92"/>
 <text xml:space="preserve" text-anchor="middle" x="1611.26" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">One Edu ID · mTLS (no PII)</text>
 </g>
-<!-- e557ee7fca4e4e40a8134145a78929d6 -->
+<!-- ee5301e89c784bdd9b51e99d34bb21fa -->
 <g id="node9" class="node">
-<title>e557ee7fca4e4e40a8134145a78929d6</title>
+<title>ee5301e89c784bdd9b51e99d34bb21fa</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/database\sql-databases.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="870.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="921" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Azure SQL</text>
 <text xml:space="preserve" text-anchor="middle" x="921" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">multi&#45;tenant</text>
 </g>
-<!-- 1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;e557ee7fca4e4e40a8134145a78929d6 -->
+<!-- 3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;ee5301e89c784bdd9b51e99d34bb21fa -->
 <g id="edge5" class="edge">
-<title>1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;e557ee7fca4e4e40a8134145a78929d6</title>
+<title>3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;ee5301e89c784bdd9b51e99d34bb21fa</title>
 <path fill="none" stroke="#1f7a3d" d="M962.53,-581.85C955.4,-546.49 947.02,-504.91 939.66,-468.4"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="943.11,-467.85 937.71,-458.74 936.25,-469.23 943.11,-467.85"/>
 </g>
-<!-- 97290bef760149dda49a8cdb7de874cb -->
+<!-- 62e7cf1f5b1649dc9634a0b5c75ceca9 -->
 <g id="node10" class="node">
-<title>97290bef760149dda49a8cdb7de874cb</title>
+<title>62e7cf1f5b1649dc9634a0b5c75ceca9</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/storage\blob-storage.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="1007.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="1058" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Blob</text>
 <text xml:space="preserve" text-anchor="middle" x="1058" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">per&#45;tenant containers</text>
 </g>
-<!-- 1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;97290bef760149dda49a8cdb7de874cb -->
+<!-- 3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;62e7cf1f5b1649dc9634a0b5c75ceca9 -->
 <g id="edge6" class="edge">
-<title>1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;97290bef760149dda49a8cdb7de874cb</title>
+<title>3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;62e7cf1f5b1649dc9634a0b5c75ceca9</title>
 <path fill="none" stroke="#1f7a3d" d="M1001.43,-581.85C1011.18,-546.33 1022.66,-504.55 1032.72,-467.93"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="1035.98,-469.28 1035.25,-458.71 1029.23,-467.43 1035.98,-469.28"/>
 </g>
-<!-- 6b8af5aa3b464d8c84ec3041d1ba4f58 -->
+<!-- 1d1adcb7b2ab425198695395d7cd65ef -->
 <g id="node11" class="node">
-<title>6b8af5aa3b464d8c84ec3041d1ba4f58</title>
+<title>1d1adcb7b2ab425198695395d7cd65ef</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/security\key-vaults.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="733.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="784" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Key Vault</text>
 <text xml:space="preserve" text-anchor="middle" x="784" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">per&#45;tenant keys</text>
 </g>
-<!-- 1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;6b8af5aa3b464d8c84ec3041d1ba4f58 -->
+<!-- 3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;1d1adcb7b2ab425198695395d7cd65ef -->
 <g id="edge7" class="edge">
-<title>1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;6b8af5aa3b464d8c84ec3041d1ba4f58</title>
+<title>3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;1d1adcb7b2ab425198695395d7cd65ef</title>
 <path fill="none" stroke="#1f7a3d" d="M928.71,-608.22C904.32,-580 875.51,-544.46 853,-510.2 844.17,-496.76 835.61,-482.05 827.7,-467.45"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="830.83,-465.89 823.04,-458.71 824.66,-469.18 830.83,-465.89"/>
 </g>
-<!-- 140311ec06bc4e52a449e5d18e74a2e1 -->
+<!-- 2ae1e84ca72f4e0f89c5bf72c981c5aa -->
 <g id="node12" class="node">
-<title>140311ec06bc4e52a449e5d18e74a2e1</title>
+<title>2ae1e84ca72f4e0f89c5bf72c981c5aa</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/ml\azure-open-ai.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="1144.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="1195" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Azure OpenAI</text>
 <text xml:space="preserve" text-anchor="middle" x="1195" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">in&#45;region inference</text>
 </g>
-<!-- 1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;140311ec06bc4e52a449e5d18e74a2e1 -->
+<!-- 3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;2ae1e84ca72f4e0f89c5bf72c981c5aa -->
 <g id="edge8" class="edge">
-<title>1314a0b6c8e74578a28ce44d3a4c1b85&#45;&gt;140311ec06bc4e52a449e5d18e74a2e1</title>
+<title>3aa9db8edd7940de97eea4e60ce4a0e1&#45;&gt;2ae1e84ca72f4e0f89c5bf72c981c5aa</title>
 <path fill="none" stroke="#1f7a3d" d="M1029.06,-617.89C1059.13,-588.89 1096.89,-549.51 1125,-510.2 1134.53,-496.87 1143.58,-482.06 1151.8,-467.29"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="1154.64,-469.39 1156.36,-458.94 1148.5,-466.04 1154.64,-469.39"/>
 </g>
-<!-- db121555103449c2b6142c5ea217b639 -->
+<!-- e8cb0cfc06fc46bfbf8a2013ec0e3396 -->
 <g id="node13" class="node">
-<title>db121555103449c2b6142c5ea217b639</title>
+<title>e8cb0cfc06fc46bfbf8a2013ec0e3396</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/storage\recovery-services-vaults.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="870.6" y="-149.2"/>
 <text xml:space="preserve" text-anchor="middle" x="921" y="-33.1" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">DR pair (same jurisdiction)</text>
 <text xml:space="preserve" text-anchor="middle" x="921" y="-18.85" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">HA + geo&#45;restore</text>
 </g>
-<!-- e557ee7fca4e4e40a8134145a78929d6&#45;&gt;db121555103449c2b6142c5ea217b639 -->
+<!-- ee5301e89c784bdd9b51e99d34bb21fa&#45;&gt;e8cb0cfc06fc46bfbf8a2013ec0e3396 -->
 <g id="edge9" class="edge">
-<title>e557ee7fca4e4e40a8134145a78929d6&#45;&gt;db121555103449c2b6142c5ea217b639</title>
+<title>ee5301e89c784bdd9b51e99d34bb21fa&#45;&gt;e8cb0cfc06fc46bfbf8a2013ec0e3396</title>
 <path fill="none" stroke="#1f7a3d" stroke-dasharray="1,5" d="M921,-292.4C921,-261.06 921,-225.06 921,-192.73"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="924.5,-192.97 921,-182.97 917.5,-192.97 924.5,-192.97"/>
 <text xml:space="preserve" text-anchor="middle" x="959.25" y="-232.75" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">geo&#45;restore</text>
 </g>
-<!-- 61b51e901aaf4a9795aa161738e8df8b -->
+<!-- ed838cf2f66f4ff3994530a73c25a375 -->
 <g id="node14" class="node">
-<title>61b51e901aaf4a9795aa161738e8df8b</title>
+<title>ed838cf2f66f4ff3994530a73c25a375</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/general\resourcegroups.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="599.6" y="-990.1"/>
 <text xml:space="preserve" text-anchor="middle" x="650" y="-874.15" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Tenant A</text>
 </g>
-<!-- 61b51e901aaf4a9795aa161738e8df8b&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85 -->
+<!-- ed838cf2f66f4ff3994530a73c25a375&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1 -->
 <g id="edge10" class="edge">
-<title>61b51e901aaf4a9795aa161738e8df8b&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85</title>
+<title>ed838cf2f66f4ff3994530a73c25a375&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1</title>
 <path fill="none" stroke="#b0792f" stroke-dasharray="1,5" d="M623.8,-871.32C619.63,-849.54 620.12,-826.27 632.5,-807.8 696.31,-712.62 836.44,-681.05 917.6,-670.61"/>
 <polygon fill="#b0792f" stroke="#b0792f" points="917.64,-674.14 927.14,-669.46 916.79,-667.19 917.64,-674.14"/>
 <text xml:space="preserve" text-anchor="middle" x="697.75" y="-811.95" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">isolated institutions</text>
 </g>
-<!-- d832c23065b74438a729cf1b01e77700 -->
+<!-- b6cec9a7549b4bc197525be53174b75d -->
 <g id="node15" class="node">
-<title>d832c23065b74438a729cf1b01e77700</title>
+<title>b6cec9a7549b4bc197525be53174b75d</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/general\resourcegroups.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="928.6" y="-990.1"/>
 <text xml:space="preserve" text-anchor="middle" x="979" y="-874.15" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Tenant B</text>
 </g>
-<!-- d832c23065b74438a729cf1b01e77700&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85 -->
+<!-- b6cec9a7549b4bc197525be53174b75d&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1 -->
 <g id="edge11" class="edge">
-<title>d832c23065b74438a729cf1b01e77700&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85</title>
+<title>b6cec9a7549b4bc197525be53174b75d&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1</title>
 <path fill="none" stroke="#b0792f" stroke-dasharray="1,5" d="M976.6,-871.56C976.14,-856.04 975.73,-839.6 975.5,-824.3 975.17,-803.03 975.36,-780.16 975.79,-758.59"/>
 <polygon fill="#b0792f" stroke="#b0792f" points="979.28,-758.68 976,-748.61 972.29,-758.53 979.28,-758.68"/>
 <text xml:space="preserve" text-anchor="middle" x="1040.75" y="-811.95" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">isolated institutions</text>
 </g>
-<!-- f56e9eee6dee410eb43b7700ff18830e -->
+<!-- 29b42891e4a34b16be63783b2d8a67fe -->
 <g id="node16" class="node">
-<title>f56e9eee6dee410eb43b7700ff18830e</title>
+<title>29b42891e4a34b16be63783b2d8a67fe</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/general\resourcegroups.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="1100.6" y="-990.1"/>
 <text xml:space="preserve" text-anchor="middle" x="1151" y="-874.15" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Tenant C</text>
 </g>
-<!-- f56e9eee6dee410eb43b7700ff18830e&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85 -->
+<!-- 29b42891e4a34b16be63783b2d8a67fe&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1 -->
 <g id="edge12" class="edge">
-<title>f56e9eee6dee410eb43b7700ff18830e&#45;&gt;1314a0b6c8e74578a28ce44d3a4c1b85</title>
+<title>29b42891e4a34b16be63783b2d8a67fe&#45;&gt;3aa9db8edd7940de97eea4e60ce4a0e1</title>
 <path fill="none" stroke="#b0792f" stroke-dasharray="1,5" d="M1136.7,-871.38C1130.58,-850.19 1122.2,-827.26 1111,-807.8 1091.66,-774.2 1063.05,-742.06 1037.4,-716.85"/>
 <polygon fill="#b0792f" stroke="#b0792f" points="1039.9,-714.4 1030.28,-709.97 1035.03,-719.44 1039.9,-714.4"/>
 <text xml:space="preserve" text-anchor="middle" x="1184.74" y="-811.95" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">isolated institutions</text>
 </g>
-<!-- cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;aa2459edf158411698922eb33576c747 -->
+<!-- 2b11603c9c5641d697add27518512355&#45;&gt;e0da88141d8b43c4b7ab9621aa0f22d9 -->
 <g id="edge33" class="edge">
-<title>cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;aa2459edf158411698922eb33576c747</title>
+<title>2b11603c9c5641d697add27518512355&#45;&gt;e0da88141d8b43c4b7ab9621aa0f22d9</title>
 <path fill="none" stroke="#b0792f" stroke-dasharray="5,2" d="M2214.73,-659.08C2071.61,-646.51 1649.65,-609.73 1299,-581.7 1021.32,-559.5 943.24,-606.16 674,-534.7 572.77,-507.83 464.93,-450.73 400.01,-412.83"/>
 <polygon fill="#b0792f" stroke="#b0792f" points="402.06,-409.97 391.66,-407.92 398.51,-416 402.06,-409.97"/>
 <text xml:space="preserve" text-anchor="middle" x="726.5" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">push · real&#45;time</text>
 </g>
-<!-- cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;7c3b1d1b6ef64b379465e62597ba580d -->
+<!-- 2b11603c9c5641d697add27518512355&#45;&gt;f1ff3162786f43b2bfaf0d1f27a282b1 -->
 <g id="edge28" class="edge">
-<title>cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;7c3b1d1b6ef64b379465e62597ba580d</title>
+<title>2b11603c9c5641d697add27518512355&#45;&gt;f1ff3162786f43b2bfaf0d1f27a282b1</title>
 <path fill="none" stroke="#9aa7b4" stroke-dasharray="5,2" d="M2214.82,-656.01C2109.08,-639.18 1868.7,-595.07 1815.5,-534.7 1799.58,-516.63 1791.61,-492.69 1788.04,-468.9"/>
 <polygon fill="#9aa7b4" stroke="#9aa7b4" points="1791.53,-468.63 1786.84,-459.13 1784.58,-469.48 1791.53,-468.63"/>
 <text xml:space="preserve" text-anchor="middle" x="1903.25" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">One Edu ID · mTLS (no PII)</text>
 </g>
-<!-- 395caae5d0bc48b7a2d5c8e2e98fb527 -->
+<!-- bd9ee27d89834168aa767be70f079029 -->
 <g id="node18" class="node">
-<title>395caae5d0bc48b7a2d5c8e2e98fb527</title>
+<title>bd9ee27d89834168aa767be70f079029</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/database\sql-databases.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2359.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="2410" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Azure SQL</text>
 <text xml:space="preserve" text-anchor="middle" x="2410" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">multi&#45;tenant</text>
 </g>
-<!-- cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;395caae5d0bc48b7a2d5c8e2e98fb527 -->
+<!-- 2b11603c9c5641d697add27518512355&#45;&gt;bd9ee27d89834168aa767be70f079029 -->
 <g id="edge13" class="edge">
-<title>cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;395caae5d0bc48b7a2d5c8e2e98fb527</title>
+<title>2b11603c9c5641d697add27518512355&#45;&gt;bd9ee27d89834168aa767be70f079029</title>
 <path fill="none" stroke="#1f7a3d" d="M2306.16,-581.85C2324.15,-546.18 2345.32,-504.19 2363.84,-467.46"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2366.93,-469.11 2368.3,-458.6 2360.68,-465.96 2366.93,-469.11"/>
 </g>
-<!-- dff2e06237a0413895aef255142ff37e -->
+<!-- b88d63da308a42a887afffaedc9dca93 -->
 <g id="node19" class="node">
-<title>dff2e06237a0413895aef255142ff37e</title>
+<title>b88d63da308a42a887afffaedc9dca93</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/storage\blob-storage.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2496.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="2547" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Blob</text>
 <text xml:space="preserve" text-anchor="middle" x="2547" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">per&#45;tenant containers</text>
 </g>
-<!-- cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;dff2e06237a0413895aef255142ff37e -->
+<!-- 2b11603c9c5641d697add27518512355&#45;&gt;b88d63da308a42a887afffaedc9dca93 -->
 <g id="edge14" class="edge">
-<title>cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;dff2e06237a0413895aef255142ff37e</title>
+<title>2b11603c9c5641d697add27518512355&#45;&gt;b88d63da308a42a887afffaedc9dca93</title>
 <path fill="none" stroke="#1f7a3d" d="M2314.99,-636.77C2361.79,-609.79 2431.33,-564.41 2478,-510.2 2489.01,-497.41 2498.85,-482.55 2507.41,-467.48"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2510.38,-469.35 2512.12,-458.9 2504.24,-465.98 2510.38,-469.35"/>
 </g>
-<!-- 4d6e45352c484b1e8cea9cfacefadfc2 -->
+<!-- cba8d6baa41e4ae8818311f776800f55 -->
 <g id="node20" class="node">
-<title>4d6e45352c484b1e8cea9cfacefadfc2</title>
+<title>cba8d6baa41e4ae8818311f776800f55</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/security\key-vaults.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2222.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="2273" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Key Vault</text>
 <text xml:space="preserve" text-anchor="middle" x="2273" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">per&#45;tenant keys</text>
 </g>
-<!-- cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;4d6e45352c484b1e8cea9cfacefadfc2 -->
+<!-- 2b11603c9c5641d697add27518512355&#45;&gt;cba8d6baa41e4ae8818311f776800f55 -->
 <g id="edge15" class="edge">
-<title>cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;4d6e45352c484b1e8cea9cfacefadfc2</title>
+<title>2b11603c9c5641d697add27518512355&#45;&gt;cba8d6baa41e4ae8818311f776800f55</title>
 <path fill="none" stroke="#1f7a3d" d="M2267.27,-581.85C2268.25,-546.49 2269.41,-504.91 2270.43,-468.4"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2273.92,-468.86 2270.69,-458.76 2266.92,-468.66 2273.92,-468.86"/>
 </g>
-<!-- d4af1ef385044adaa0f037409afcd100 -->
+<!-- 05a70dfa9c74423c9ebdab241d5eb730 -->
 <g id="node21" class="node">
-<title>d4af1ef385044adaa0f037409afcd100</title>
+<title>05a70dfa9c74423c9ebdab241d5eb730</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/ml\azure-open-ai.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2633.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="2684" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Azure OpenAI</text>
 <text xml:space="preserve" text-anchor="middle" x="2684" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">in&#45;region inference</text>
 </g>
-<!-- cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;d4af1ef385044adaa0f037409afcd100 -->
+<!-- 2b11603c9c5641d697add27518512355&#45;&gt;05a70dfa9c74423c9ebdab241d5eb730 -->
 <g id="edge16" class="edge">
-<title>cb9ae1be3c6f4eaab7e989f8d29902fb&#45;&gt;d4af1ef385044adaa0f037409afcd100</title>
+<title>2b11603c9c5641d697add27518512355&#45;&gt;05a70dfa9c74423c9ebdab241d5eb730</title>
 <path fill="none" stroke="#1f7a3d" d="M2315.09,-652.73C2388.67,-634.66 2526.65,-591.92 2614,-510.2 2626.96,-498.08 2637.95,-483.01 2647.11,-467.4"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2650.01,-469.38 2651.84,-458.95 2643.9,-465.96 2650.01,-469.38"/>
 </g>
-<!-- ceb82510ac5848a6b74fb04c3a91776f -->
+<!-- 5330b12518204484a1a45cc291ef9a47 -->
 <g id="node22" class="node">
-<title>ceb82510ac5848a6b74fb04c3a91776f</title>
+<title>5330b12518204484a1a45cc291ef9a47</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/storage\recovery-services-vaults.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2359.6" y="-149.2"/>
 <text xml:space="preserve" text-anchor="middle" x="2410" y="-33.1" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">DR pair (same jurisdiction)</text>
 <text xml:space="preserve" text-anchor="middle" x="2410" y="-18.85" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">HA + geo&#45;restore</text>
 </g>
-<!-- 395caae5d0bc48b7a2d5c8e2e98fb527&#45;&gt;ceb82510ac5848a6b74fb04c3a91776f -->
+<!-- bd9ee27d89834168aa767be70f079029&#45;&gt;5330b12518204484a1a45cc291ef9a47 -->
 <g id="edge17" class="edge">
-<title>395caae5d0bc48b7a2d5c8e2e98fb527&#45;&gt;ceb82510ac5848a6b74fb04c3a91776f</title>
+<title>bd9ee27d89834168aa767be70f079029&#45;&gt;5330b12518204484a1a45cc291ef9a47</title>
 <path fill="none" stroke="#1f7a3d" stroke-dasharray="1,5" d="M2410,-292.4C2410,-261.06 2410,-225.06 2410,-192.73"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2413.5,-192.97 2410,-182.97 2406.5,-192.97 2413.5,-192.97"/>
 <text xml:space="preserve" text-anchor="middle" x="2448.25" y="-232.75" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">geo&#45;restore</text>
 </g>
-<!-- 2cfa141d4f3540f892ace554648ff936&#45;&gt;aa2459edf158411698922eb33576c747 -->
+<!-- f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;e0da88141d8b43c4b7ab9621aa0f22d9 -->
 <g id="edge34" class="edge">
-<title>2cfa141d4f3540f892ace554648ff936&#45;&gt;aa2459edf158411698922eb33576c747</title>
+<title>f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;e0da88141d8b43c4b7ab9621aa0f22d9</title>
 <path fill="none" stroke="#b0792f" stroke-dasharray="5,2" d="M2762.67,-589.38C2758.97,-586.49 2755.08,-583.9 2751,-581.7 2612.19,-506.9 2197,-568.55 2043,-534.7 2023.01,-530.31 2020.12,-521.99 2000,-518.2 1929.95,-505 787.2,-522.56 717,-510.2 601.23,-489.82 473.83,-437.73 400.73,-404.73"/>
 <polygon fill="#b0792f" stroke="#b0792f" points="402.27,-401.59 391.72,-400.64 399.37,-407.96 402.27,-401.59"/>
 <text xml:space="preserve" text-anchor="middle" x="2095.5" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">push · real&#45;time</text>
 </g>
-<!-- 2cfa141d4f3540f892ace554648ff936&#45;&gt;7c3b1d1b6ef64b379465e62597ba580d -->
+<!-- f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;f1ff3162786f43b2bfaf0d1f27a282b1 -->
 <g id="edge30" class="edge">
-<title>2cfa141d4f3540f892ace554648ff936&#45;&gt;7c3b1d1b6ef64b379465e62597ba580d</title>
+<title>f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;f1ff3162786f43b2bfaf0d1f27a282b1</title>
 <path fill="none" stroke="#9aa7b4" stroke-dasharray="5,2" d="M2762.97,-589.93C2759.18,-586.85 2755.19,-584.07 2751,-581.7 2637.01,-517.18 2295.69,-526.98 2165,-518.2 2148.09,-517.06 1874.35,-519.22 1860,-510.2 1843.67,-499.94 1831.03,-484.48 1821.31,-467.67"/>
 <polygon fill="#9aa7b4" stroke="#9aa7b4" points="1824.45,-466.12 1816.63,-458.97 1818.29,-469.44 1824.45,-466.12"/>
 <text xml:space="preserve" text-anchor="middle" x="2620.87" y="-522.35" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">One Edu ID · mTLS (no PII)</text>
 </g>
-<!-- 9fffc787f3324d55bd973013d62c7aad -->
+<!-- e7aefedf05774472a7eec3b1c72d87a8 -->
 <g id="node24" class="node">
-<title>9fffc787f3324d55bd973013d62c7aad</title>
+<title>e7aefedf05774472a7eec3b1c72d87a8</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/database\sql-databases.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2907.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="2958" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Azure SQL</text>
 <text xml:space="preserve" text-anchor="middle" x="2958" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">multi&#45;tenant</text>
 </g>
-<!-- 2cfa141d4f3540f892ace554648ff936&#45;&gt;9fffc787f3324d55bd973013d62c7aad -->
+<!-- f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;e7aefedf05774472a7eec3b1c72d87a8 -->
 <g id="edge18" class="edge">
-<title>2cfa141d4f3540f892ace554648ff936&#45;&gt;9fffc787f3324d55bd973013d62c7aad</title>
+<title>f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;e7aefedf05774472a7eec3b1c72d87a8</title>
 <path fill="none" stroke="#1f7a3d" d="M2863.24,-638.14C2900.35,-616.34 2948.06,-581.07 2970,-534.7 2979.56,-514.5 2981.88,-491.22 2980.59,-468.82"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2984.1,-468.74 2979.77,-459.07 2977.12,-469.33 2984.1,-468.74"/>
 </g>
-<!-- 96f78714eaf8408ca804db31867798a1 -->
+<!-- 3cee0ec1589c4095b44c7630f48b2b61 -->
 <g id="node25" class="node">
-<title>96f78714eaf8408ca804db31867798a1</title>
+<title>3cee0ec1589c4095b44c7630f48b2b61</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/storage\blob-storage.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="3044.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="3095" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Blob</text>
 <text xml:space="preserve" text-anchor="middle" x="3095" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">per&#45;tenant containers</text>
 </g>
-<!-- 2cfa141d4f3540f892ace554648ff936&#45;&gt;96f78714eaf8408ca804db31867798a1 -->
+<!-- f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;3cee0ec1589c4095b44c7630f48b2b61 -->
 <g id="edge19" class="edge">
-<title>2cfa141d4f3540f892ace554648ff936&#45;&gt;96f78714eaf8408ca804db31867798a1</title>
+<title>f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;3cee0ec1589c4095b44c7630f48b2b61</title>
 <path fill="none" stroke="#1f7a3d" d="M2862.99,-636.77C2909.79,-609.79 2979.33,-564.41 3026,-510.2 3037.01,-497.41 3046.85,-482.55 3055.41,-467.48"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="3058.38,-469.35 3060.12,-458.9 3052.24,-465.98 3058.38,-469.35"/>
 </g>
-<!-- b9b4380aa6b04f448f5ece9cee05e706 -->
+<!-- 7838d62a82d04a6badfc02d71df165a0 -->
 <g id="node26" class="node">
-<title>b9b4380aa6b04f448f5ece9cee05e706</title>
+<title>7838d62a82d04a6badfc02d71df165a0</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/security\key-vaults.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2770.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="2821" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Key Vault</text>
 <text xml:space="preserve" text-anchor="middle" x="2821" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">per&#45;tenant keys</text>
 </g>
-<!-- 2cfa141d4f3540f892ace554648ff936&#45;&gt;b9b4380aa6b04f448f5ece9cee05e706 -->
+<!-- f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;7838d62a82d04a6badfc02d71df165a0 -->
 <g id="edge20" class="edge">
-<title>2cfa141d4f3540f892ace554648ff936&#45;&gt;b9b4380aa6b04f448f5ece9cee05e706</title>
+<title>f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;7838d62a82d04a6badfc02d71df165a0</title>
 <path fill="none" stroke="#1f7a3d" d="M2863.27,-636.21C2898.42,-614.02 2942.58,-579.15 2963,-534.7 2966.06,-528.04 2967.89,-523.66 2963,-518.2 2952.11,-506.05 2903.44,-519.45 2890,-510.2 2874.38,-499.46 2862.09,-484.07 2852.48,-467.51"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2855.69,-466.11 2847.85,-458.99 2849.54,-469.45 2855.69,-466.11"/>
 </g>
-<!-- 1d5778c0d3a7465b8b45fe93bc0c1622 -->
+<!-- 0d5682d1f59e4ec8932611f1b099c9f4 -->
 <g id="node27" class="node">
-<title>1d5778c0d3a7465b8b45fe93bc0c1622</title>
+<title>0d5682d1f59e4ec8932611f1b099c9f4</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/ml\azure-open-ai.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="3181.6" y="-425.3"/>
 <text xml:space="preserve" text-anchor="middle" x="3232" y="-309.2" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Azure OpenAI</text>
 <text xml:space="preserve" text-anchor="middle" x="3232" y="-294.95" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">in&#45;region inference</text>
 </g>
-<!-- 2cfa141d4f3540f892ace554648ff936&#45;&gt;1d5778c0d3a7465b8b45fe93bc0c1622 -->
+<!-- f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;0d5682d1f59e4ec8932611f1b099c9f4 -->
 <g id="edge21" class="edge">
-<title>2cfa141d4f3540f892ace554648ff936&#45;&gt;1d5778c0d3a7465b8b45fe93bc0c1622</title>
+<title>f34fc39c9a8b4f29a29deed38f66682d&#45;&gt;0d5682d1f59e4ec8932611f1b099c9f4</title>
 <path fill="none" stroke="#1f7a3d" d="M2863.09,-652.73C2936.67,-634.66 3074.65,-591.92 3162,-510.2 3174.96,-498.08 3185.95,-483.01 3195.11,-467.4"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="3198.01,-469.38 3199.84,-458.95 3191.9,-465.96 3198.01,-469.38"/>
 </g>
-<!-- eabd8caa689843d68a425915ac437105 -->
+<!-- 51f0180f1ce84f88abed983376d58277 -->
 <g id="node28" class="node">
-<title>eabd8caa689843d68a425915ac437105</title>
+<title>51f0180f1ce84f88abed983376d58277</title>
 <image xlink:href="C:\Users\USER\AppData\Local\Programs\Python\Python312\Lib\site-packages\resources/azure/storage\recovery-services-vaults.png" width="100.8px" height="100.8px" preserveAspectRatio="xMinYMin meet" x="2907.6" y="-149.2"/>
 <text xml:space="preserve" text-anchor="middle" x="2958" y="-33.1" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">DR pair (same jurisdiction)</text>
 <text xml:space="preserve" text-anchor="middle" x="2958" y="-18.85" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">HA + geo&#45;restore</text>
 </g>
-<!-- 9fffc787f3324d55bd973013d62c7aad&#45;&gt;eabd8caa689843d68a425915ac437105 -->
+<!-- e7aefedf05774472a7eec3b1c72d87a8&#45;&gt;51f0180f1ce84f88abed983376d58277 -->
 <g id="edge22" class="edge">
-<title>9fffc787f3324d55bd973013d62c7aad&#45;&gt;eabd8caa689843d68a425915ac437105</title>
+<title>e7aefedf05774472a7eec3b1c72d87a8&#45;&gt;51f0180f1ce84f88abed983376d58277</title>
 <path fill="none" stroke="#1f7a3d" stroke-dasharray="1,5" d="M2958,-292.4C2958,-261.06 2958,-225.06 2958,-192.73"/>
 <polygon fill="#1f7a3d" stroke="#1f7a3d" points="2961.5,-192.97 2958,-182.97 2954.5,-192.97 2961.5,-192.97"/>
 <text xml:space="preserve" text-anchor="middle" x="2996.25" y="-232.75" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">geo&#45;restore</text>
