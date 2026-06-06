@@ -5,7 +5,7 @@
 
 | Field | Value |
 |---|---|
-| Document Version | 1.0.0 |
+| Document Version | 1.0.1 |
 | Status | Baseline for Development |
 | Date | 2026-06-04 |
 | Prepared By | Product & Requirements Team |
@@ -19,6 +19,7 @@
 |---|---|---|---|
 | 0.9 | 2026-06-03 | Product & Requirements Team | Internal draft for review. |
 | 1.0.0 | 2026-06-04 | Product & Requirements Team | Baseline release — full functional/non-functional requirements, compliance, and prototype walkthrough. |
+| 1.0.1 | 2026-06-06 | Product & Requirements Team | AUTH-002 expanded with social identity providers (Google, Apple, Microsoft/Outlook, Facebook). |
 
 > **Purpose of this document.** This SRS captures the agreed requirements for One Edu **prior to development**, as gathered from stakeholders during the requirements elicitation phase. It defines *what* the system must do and the qualities it must exhibit — not how it will be built. It is the authoritative baseline against which design, implementation, testing, and acceptance are measured. No implementation decisions are assumed except where they are genuine, stakeholder-imposed constraints (recorded in §2.6).
 
@@ -288,7 +289,7 @@ Each role lands on a home screen tailored to its most frequent tasks.
 | ID | Requirement |
 |---|---|
 | **AUTH-001** | The system SHALL authenticate users by email/username and password, and SHALL store passwords only as salted, computationally-hard hashes — never in recoverable form. |
-| **AUTH-002** | The system SHALL support federated sign-in via external identity providers (e.g. Microsoft, Google) using industry-standard protocols (OAuth 2.0 / OIDC / SAML 2.0). |
+| **AUTH-002** | The system SHALL support federated / social sign-in via external identity providers — including **Google, Apple (Sign in with Apple), Microsoft / Outlook, and Facebook** — as well as enterprise SSO, using industry-standard protocols (OAuth 2.0 / OIDC / SAML 2.0), brokered through Microsoft Entra External ID. Apple sign-in SHALL be offered wherever the iOS app offers third-party login (App Store requirement). |
 | **AUTH-003** | The system SHALL require multi-factor authentication for all administrative roles (Institute Admin, Platform Admin, Compliance Officer) and SHALL allow it to be enabled for other roles. |
 | **AUTH-004** | The system SHALL support at least: time-based one-time passwords (authenticator apps) and FIDO2/WebAuthn security keys. SMS codes MAY be offered only as a fallback. |
 | **AUTH-005** | The system SHALL maintain authenticated sessions with limited lifetime and SHALL allow a user to view and revoke their active sessions. |

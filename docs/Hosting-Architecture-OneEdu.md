@@ -10,7 +10,7 @@
 | **Product** | One Edu — Education Super App |
 | **Prepared for** | Board of Directors |
 | **Classification** | Internal / Confidential |
-| **Version** | 1.0 |
+| **Version** | 1.1 |
 | **Date** | June 2026 |
 | **Cloud platform** | Microsoft Azure |
 | **Primary region** | UK South (UK West for DR) |
@@ -22,6 +22,7 @@
 |---|---|---|---|
 | 0.9 | June 2026 | Architecture Team | Internal draft for review. |
 | 1.0 | June 2026 | Architecture Team | Initial board release — single-region & multi-region designs, component briefs, security & governance briefing. |
+| 1.1 | June 2026 | Architecture Team | Identity briefs + diagrams updated with social providers (Google, Apple, Microsoft/Outlook, Facebook). |
 
 ---
 
@@ -103,7 +104,7 @@ This is the **day-one production environment** — one Azure region hosting the 
 |---|---|---|
 | **Edge & firewall** | Azure Front Door + WAF | Single secure entry point; TLS, global routing, blocks common web attacks (OWASP). |
 | **Application tier** | Azure App Service (Premium v3) | Runs the web/API workload; auto-scales; zone-redundant for HA. |
-| **Identity** | Microsoft Entra External ID | Customer sign-in, social/SSO federation, and enforced MFA for staff/admins. |
+| **Identity** | Microsoft Entra External ID | Sign-in with **social logins (Google, Apple, Microsoft/Outlook, Facebook)** + enterprise SSO; enforced MFA for staff/admins. |
 | **Primary database** | Azure SQL Database | Stores all institution data; **Row-Level Security** keeps tenants isolated; built-in HA. |
 | **File storage** | Azure Blob Storage | Documents/media; a write-once container holds the tamper-evident **audit log**. |
 | **Secrets & keys** | Azure Key Vault | Central, encrypted store for secrets and per-tenant encryption keys. |
@@ -183,7 +184,7 @@ Every request passes through multiple independent controls, so no single failure
 | Layer | Control | Delivered by |
 |---|---|---|
 | **Edge** | TLS encryption, Web Application Firewall (OWASP rules), volumetric (DDoS) protection | Azure Front Door + WAF |
-| **Identity** | Multi-factor authentication for staff/admins, federated SSO, conditional access; just-in-time ("break-glass") privileged access | Microsoft Entra External ID + PIM |
+| **Identity** | Social sign-in (Google, Apple, Microsoft/Outlook, Facebook) + enterprise SSO; multi-factor authentication for staff/admins; conditional access; just-in-time ("break-glass") privileged access | Microsoft Entra External ID + PIM |
 | **Application** | Server-side authorisation (role-based), input validation, per-module entitlement enforcement | Azure App Service |
 | **Data — isolation** | Per-tenant **Row-Level Security**; no query path can return another tenant's rows | Azure SQL Database |
 | **Data — encryption** | TLS in transit; AES-256 at rest; sensitive fields encrypted with **per-tenant keys** | Azure SQL + Blob Storage + Key Vault |
