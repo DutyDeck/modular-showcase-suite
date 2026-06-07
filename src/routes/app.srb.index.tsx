@@ -17,7 +17,34 @@ function SrbIndexPage() {
   const navigate = useNavigate();
   const students = useCollection("students");
   const srb = useCollection("srb");
+  const crossEnrollments = useCollection("enrollments");
   const [query, setQuery] = useState("");
+
+  // Institute admins only see record books for students on their own roster —
+  // never students who belong solely to other institutes (tenant isolation).
+  // (All hooks must run before the role-based early returns below.)
+  const isInstituteScoped = user?.adminScope === "institute";
+  const scoped = useMemo(() => {
+    if (!isInstituteScoped) return students;
+    return students.filter(
+      (s) =>
+        getEnrollments(s).some((e) => e.institutionId === user?.institutionId) ||
+        crossEnrollments.some(
+          (e) => e.studentId === s.id && e.institutionId === user?.institutionId,
+        ),
+    );
+  }, [students, crossEnrollments, isInstituteScoped, user?.institutionId]);
+
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase();
+    return scoped.filter(
+      (s) =>
+        !q ||
+        s.name.toLowerCase().includes(q) ||
+        s.id.toLowerCase().includes(q) ||
+        s.grade.toLowerCase().includes(q),
+    );
+  }, [scoped, query]);
 
   // Parents land directly on their first child's timeline
   if (user?.role === "parent") {
@@ -41,17 +68,6 @@ function SrbIndexPage() {
       return null;
     }
   }
-
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase();
-    return students.filter(
-      (s) =>
-        !q ||
-        s.name.toLowerCase().includes(q) ||
-        s.id.toLowerCase().includes(q) ||
-        s.grade.toLowerCase().includes(q),
-    );
-  }, [students, query]);
 
   return (
     <div>

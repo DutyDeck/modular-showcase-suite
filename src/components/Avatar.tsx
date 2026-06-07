@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { genderFor, photoOverride } from "@/lib/people";
 
 interface AvatarProps {
   name: string;
@@ -29,22 +30,17 @@ const PALETTE: Array<{ from: string; to: string }> = [
 ];
 
 // Curated professional headshots from randomuser.me — stable URLs, no API key.
-// Pool size kept generous (80) to keep birthday-paradox collisions rare for
-// rosters in the low hundreds.
-const PORTRAITS: string[] = (() => {
-  const men = [
-    3, 5, 8, 12, 15, 18, 21, 24, 27, 30, 32, 36, 39, 42, 45, 48, 51, 53, 56,
-    59, 62, 65, 68, 71, 74, 76, 79, 82, 85, 89, 91, 94, 96, 99,
-  ];
-  const women = [
-    1, 4, 7, 8, 11, 14, 15, 18, 21, 23, 25, 28, 33, 36, 39, 42, 44, 47, 50,
-    52, 55, 58, 62, 65, 68, 71, 74, 77, 79, 82, 85, 88, 92, 95, 97,
-  ];
-  return [
-    ...men.map((n) => `https://randomuser.me/api/portraits/men/${n}.jpg`),
-    ...women.map((n) => `https://randomuser.me/api/portraits/women/${n}.jpg`),
-  ];
-})();
+// Kept as separate gendered pools so a derived portrait always matches the
+// person's gender (see genderFor in lib/people).
+const MEN_PORTRAITS: string[] = [
+  3, 5, 8, 12, 15, 18, 21, 24, 27, 30, 32, 36, 39, 42, 45, 48, 51, 53, 56,
+  59, 62, 65, 68, 71, 74, 76, 79, 82, 85, 89, 91, 94, 96, 99,
+].map((n) => `https://randomuser.me/api/portraits/men/${n}.jpg`);
+
+const WOMEN_PORTRAITS: string[] = [
+  1, 4, 7, 8, 11, 14, 15, 18, 21, 23, 25, 28, 33, 36, 39, 42, 44, 47, 50,
+  52, 55, 58, 62, 65, 68, 71, 74, 77, 79, 82, 85, 88, 92, 95, 97,
+].map((n) => `https://randomuser.me/api/portraits/women/${n}.jpg`);
 
 function hash(s: string): number {
   let h = 0;
@@ -64,8 +60,17 @@ function initials(name: string): string {
   return (pool[0][0] + pool[pool.length - 1][0]).toUpperCase();
 }
 
-export function portraitFor(key: string): string {
-  return PORTRAITS[hash(key) % PORTRAITS.length];
+/**
+ * Resolve a stable, gender-correct portrait for a person. An explicit override
+ * (keyed by display name) wins so demo-critical faces stay identical
+ * everywhere; otherwise a deterministic face is chosen from the pool matching
+ * the person's gender, hashed by a stable key (One Edu ID or name).
+ */
+export function portraitFor(key: string, name?: string): string {
+  const override = name ? photoOverride(name) : undefined;
+  if (override) return override;
+  const pool = genderFor(name ?? key) === "female" ? WOMEN_PORTRAITS : MEN_PORTRAITS;
+  return pool[hash(key) % pool.length];
 }
 
 export function Avatar({
@@ -79,7 +84,7 @@ export function Avatar({
 }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
   const hashKey = seed ?? name;
-  const photo = src === undefined ? portraitFor(hashKey) : src;
+  const photo = src === undefined ? portraitFor(hashKey, name) : src;
   const showPhoto = !!photo && !imgError;
 
   const c =

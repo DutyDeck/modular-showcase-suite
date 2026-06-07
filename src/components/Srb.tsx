@@ -526,19 +526,31 @@ export function SrbComposer({
 
 /* ---------- Timeline ---------- */
 
-export function SrbTimeline({ studentId }: { studentId: string }) {
+export function SrbTimeline({
+  studentId,
+  institutionId,
+}: {
+  studentId: string;
+  /** When set, only show entries from this institute (tenant isolation for an
+   *  institute admin). Parents/students/teachers omit it to see every institute. */
+  institutionId?: string;
+}) {
   const all = useCollection("srb");
   const [filter, setFilter] = useState<SrbType | "all" | "needs-ack">("all");
   const studentEntries = useMemo(
     () =>
       all
-        .filter((e) => e.studentId === studentId)
+        .filter(
+          (e) =>
+            e.studentId === studentId &&
+            (!institutionId || e.institutionId === institutionId),
+        )
         .sort((a, b) => {
           if ((a.pinned ?? false) !== (b.pinned ?? false))
             return a.pinned ? -1 : 1;
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         }),
-    [all, studentId],
+    [all, studentId, institutionId],
   );
 
   const counts = useMemo(() => {

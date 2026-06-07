@@ -70,19 +70,34 @@ function SrbStudentPage() {
     return null;
   }, [students, studentId]);
 
-  const studentSrb = useMemo(() => srb.filter((e) => e.studentId === studentId), [
-    srb,
-    studentId,
-  ]);
+  // An institute admin only sees record-book entries from their own institute.
+  const scopeInst =
+    user?.adminScope === "institute" ? user.institutionId : undefined;
+  const studentSrb = useMemo(
+    () =>
+      srb.filter(
+        (e) =>
+          e.studentId === studentId &&
+          (!scopeInst || e.institutionId === scopeInst),
+      ),
+    [srb, studentId, scopeInst],
+  );
   const needsAck = studentSrb.filter((e) => e.requiresAck && !e.ackAt).length;
 
-  const enrolments = useMemo(
-    () =>
-      student
-        ? getEnrollments({ id: student.id, grade: student.grade, batch: student.batch })
-        : [],
-    [student],
-  );
+  const enrolments = useMemo(() => {
+    if (!student) return [];
+    const all = getEnrollments({
+      id: student.id,
+      grade: student.grade,
+      batch: student.batch,
+    });
+    // An institute admin must only see their own institute's relationship with
+    // the student, not the other institutions the student attends.
+    if (user?.adminScope === "institute") {
+      return all.filter((e) => e.institutionId === user.institutionId);
+    }
+    return all;
+  }, [student, user?.adminScope, user?.institutionId]);
 
   if (!student) {
     return (
@@ -249,7 +264,7 @@ function SrbStudentPage() {
       )}
 
       {/* Timeline */}
-      <SrbTimeline studentId={student.id} />
+      <SrbTimeline studentId={student.id} institutionId={scopeInst} />
 
       <SrbComposer
         open={composer.open}

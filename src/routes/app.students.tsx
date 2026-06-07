@@ -76,8 +76,8 @@ function StudentsPage() {
     [crossEnrollments, user?.institutionId],
   );
 
-  // Display helper: a student's static enrolments PLUS any runtime cross-tenant
-  // enrolments, so a newly enrolled student shows the new institute too.
+  // A student's static enrolments PLUS any runtime cross-tenant enrolments, so a
+  // newly enrolled student shows the new institute too.
   const mergedEnrollments = (s: Student): StudentEnrollment[] => {
     const base = getEnrollments(s);
     const extra = crossEnrollments
@@ -90,6 +90,17 @@ function StudentsPage() {
         since: e.since,
       }));
     return [...base, ...extra];
+  };
+
+  // What an admin is ALLOWED to see. An institute admin must only ever see their
+  // own institute's relationship with a student — never the other institutions
+  // that student also attends (tenant isolation). The global admin sees all.
+  const displayEnrollments = (s: Student): StudentEnrollment[] => {
+    const all = mergedEnrollments(s);
+    if (isInstituteScoped) {
+      return all.filter((e) => e.institutionId === user?.institutionId);
+    }
+    return all;
   };
 
   const students = useMemo(() => {
@@ -263,7 +274,7 @@ function StudentsPage() {
           emptyText="No matching students"
           renderCell={(row, key) => {
             if (key === "id") {
-              const enrolments = mergedEnrollments(row);
+              const enrolments = displayEnrollments(row);
               const primary = enrolments.find((e) => e.primary) ?? enrolments[0];
               return (
                 <div className="leading-tight">
@@ -282,7 +293,7 @@ function StudentsPage() {
               );
             }
             if (key === "_institutes") {
-              const enrolments = mergedEnrollments(row);
+              const enrolments = displayEnrollments(row);
               const primary = enrolments.find((e) => e.primary) ?? enrolments[0];
               const extras = enrolments.length - 1;
               return (
