@@ -20,6 +20,8 @@ export type ModuleId =
   | "grades"
   | "srb"
   | "teaching"
+  | "training"
+  | "appraisal"
   | "family"
   | "finance"
   | "marketing"
@@ -117,6 +119,20 @@ export const MODULES: ModuleDef[] = [
     description: "My Classes, lesson plans, and teaching tools.",
     routePrefixes: ["/app/teacher-classes"],
     plan: "Starter",
+  },
+  {
+    id: "training",
+    name: "Teacher Training (CPD)",
+    description: "Professional development — teachers enrol and learn as students.",
+    routePrefixes: ["/app/training"],
+    plan: "Growth",
+  },
+  {
+    id: "appraisal",
+    name: "Teacher Appraisal",
+    description: "Parent & performance-based teacher ratings to guide selection (add-on).",
+    routePrefixes: ["/app/appraisals"],
+    plan: "Enterprise",
   },
   {
     id: "family",

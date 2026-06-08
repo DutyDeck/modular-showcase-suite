@@ -11,12 +11,16 @@ import {
   marketplaceCourses as initialMarketplace,
   messages as initialMessages,
   srbEntries as initialSrb,
+  teacherRatings as initialTeacherRatings,
+  trainingEnrollments as initialTrainingEnrollments,
 } from "./mockData";
 
 export type {
   SrbEntry,
   SrbReply,
   SrbType,
+  TeacherRating,
+  TrainingEnrollment,
 } from "./mockData";
 
 export type Student = (typeof initialStudents)[number];
@@ -30,7 +34,7 @@ export type AttendanceRow = (typeof initialAttendance)[number];
 export type MarketplaceCourse = (typeof initialMarketplace)[number];
 export type Message = (typeof initialMessages)[number];
 
-import type { SrbEntry } from "./mockData";
+import type { SrbEntry, TeacherRating, TrainingEnrollment } from "./mockData";
 
 /* A cross-tenant enrolment created at runtime — i.e. a tenant admin enrolled an
  * existing One Edu student (from another tenant) after the student/guardian
@@ -63,6 +67,8 @@ interface State {
   messages: Message[];
   srb: SrbEntry[];
   enrollments: CrossEnrollment[];
+  teacherRatings: TeacherRating[];
+  trainingEnrollments: TrainingEnrollment[];
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
@@ -81,6 +87,8 @@ function makeInitialState(): State {
     messages: [...initialMessages],
     srb: [...initialSrb],
     enrollments: [],
+    teacherRatings: [...initialTeacherRatings],
+    trainingEnrollments: [...initialTrainingEnrollments],
   };
 }
 

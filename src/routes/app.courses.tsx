@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
@@ -13,6 +13,11 @@ import {
 } from "@/components/ui-kit";
 import { useCollection, addItem, nextId, type Course } from "@/lib/store";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
+import { Stars } from "@/components/StarRating";
+import { useAuth } from "@/lib/auth";
+import { useEnabledModules } from "@/lib/modules";
+import { teacherByName } from "@/lib/mockData";
+import { computeAppraisal } from "@/lib/appraisal";
 import { Star, Users, Clock, Plus, Search, BookOpen, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/app/courses")({
@@ -33,6 +38,10 @@ const COURSE_IMPORT_FIELDS: ImportField[] = [
 ];
 
 function CoursesPage() {
+  const { user } = useAuth();
+  const enabledModules = useEnabledModules(user?.institution ?? "");
+  const appraisalOn = enabledModules.has("appraisal");
+  const ratings = useCollection("teacherRatings");
   const courses = useCollection("courses");
   const add = useDisclosure();
   const importer = useDisclosure();
@@ -163,6 +172,23 @@ function CoursesPage() {
               <div className="p-4">
                 <h3 className="font-semibold">{c.title}</h3>
                 <div className="text-xs text-muted-foreground mt-0.5">{c.teacher}</div>
+                {appraisalOn && (() => {
+                  const t = teacherByName[c.teacher];
+                  if (!t) return null;
+                  const a = computeAppraisal(t, ratings);
+                  return (
+                    <Link
+                      to="/app/appraisals/$teacherId"
+                      params={{ teacherId: t.id }}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-md border bg-muted/40 px-2 py-1 hover:border-primary hover:bg-muted transition-colors"
+                      title={`Teacher appraisal · ${a.ratingCount} review${a.ratingCount === 1 ? "" : "s"}`}
+                    >
+                      <Stars value={a.blended} size={12} />
+                      <span className="text-[11px] font-semibold">{a.blended.toFixed(1)}</span>
+                      <span className="text-[10px] text-muted-foreground">teacher</span>
+                    </Link>
+                  );
+                })()}
                 <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground flex-wrap">
                   <span className="flex items-center gap-1">
                     <Users className="h-3 w-3" />

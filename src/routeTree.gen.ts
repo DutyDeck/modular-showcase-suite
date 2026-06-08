@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppUsersRouteImport } from './routes/app.users'
+import { Route as AppTrainingRouteImport } from './routes/app.training'
 import { Route as AppTenantsRouteImport } from './routes/app.tenants'
 import { Route as AppTeacherClassesRouteImport } from './routes/app.teacher-classes'
 import { Route as AppStudentsRouteImport } from './routes/app.students'
@@ -36,12 +37,17 @@ import { Route as AppChildrenRouteImport } from './routes/app.children'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
 import { Route as AppAssignmentsRouteImport } from './routes/app.assignments'
+import { Route as AppAppraisalsRouteImport } from './routes/app.appraisals'
 import { Route as AppAiInsightsRouteImport } from './routes/app.ai-insights'
+import { Route as AppTrainingIndexRouteImport } from './routes/app.training.index'
 import { Route as AppSrbIndexRouteImport } from './routes/app.srb.index'
 import { Route as AppAttendanceIndexRouteImport } from './routes/app.attendance.index'
+import { Route as AppAppraisalsIndexRouteImport } from './routes/app.appraisals.index'
+import { Route as AppTrainingCourseIdRouteImport } from './routes/app.training.$courseId'
 import { Route as AppSrbStudentIdRouteImport } from './routes/app.srb.$studentId'
 import { Route as AppInvoiceIdRouteImport } from './routes/app.invoice.$id'
 import { Route as AppAttendanceTakeRouteImport } from './routes/app.attendance.take'
+import { Route as AppAppraisalsTeacherIdRouteImport } from './routes/app.appraisals.$teacherId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -66,6 +72,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTrainingRoute = AppTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTenantsRoute = AppTenantsRouteImport.update({
@@ -178,10 +189,20 @@ const AppAssignmentsRoute = AppAssignmentsRouteImport.update({
   path: '/assignments',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAppraisalsRoute = AppAppraisalsRouteImport.update({
+  id: '/appraisals',
+  path: '/appraisals',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAiInsightsRoute = AppAiInsightsRouteImport.update({
   id: '/ai-insights',
   path: '/ai-insights',
   getParentRoute: () => AppRoute,
+} as any)
+const AppTrainingIndexRoute = AppTrainingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppTrainingRoute,
 } as any)
 const AppSrbIndexRoute = AppSrbIndexRouteImport.update({
   id: '/',
@@ -192,6 +213,16 @@ const AppAttendanceIndexRoute = AppAttendanceIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppAttendanceRoute,
+} as any)
+const AppAppraisalsIndexRoute = AppAppraisalsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAppraisalsRoute,
+} as any)
+const AppTrainingCourseIdRoute = AppTrainingCourseIdRouteImport.update({
+  id: '/$courseId',
+  path: '/$courseId',
+  getParentRoute: () => AppTrainingRoute,
 } as any)
 const AppSrbStudentIdRoute = AppSrbStudentIdRouteImport.update({
   id: '/$studentId',
@@ -208,12 +239,18 @@ const AppAttendanceTakeRoute = AppAttendanceTakeRouteImport.update({
   path: '/take',
   getParentRoute: () => AppAttendanceRoute,
 } as any)
+const AppAppraisalsTeacherIdRoute = AppAppraisalsTeacherIdRouteImport.update({
+  id: '/$teacherId',
+  path: '/$teacherId',
+  getParentRoute: () => AppAppraisalsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/app/ai-insights': typeof AppAiInsightsRoute
+  '/app/appraisals': typeof AppAppraisalsRouteWithChildren
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
   '/app/calendar': typeof AppCalendarRoute
@@ -236,13 +273,18 @@ export interface FileRoutesByFullPath {
   '/app/students': typeof AppStudentsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
+  '/app/training': typeof AppTrainingRouteWithChildren
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
+  '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
   '/app/srb/$studentId': typeof AppSrbStudentIdRoute
+  '/app/training/$courseId': typeof AppTrainingCourseIdRoute
+  '/app/appraisals/': typeof AppAppraisalsIndexRoute
   '/app/attendance/': typeof AppAttendanceIndexRoute
   '/app/srb/': typeof AppSrbIndexRoute
+  '/app/training/': typeof AppTrainingIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -270,11 +312,15 @@ export interface FileRoutesByTo {
   '/app/tenants': typeof AppTenantsRoute
   '/app/users': typeof AppUsersRoute
   '/app': typeof AppIndexRoute
+  '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
   '/app/srb/$studentId': typeof AppSrbStudentIdRoute
+  '/app/training/$courseId': typeof AppTrainingCourseIdRoute
+  '/app/appraisals': typeof AppAppraisalsIndexRoute
   '/app/attendance': typeof AppAttendanceIndexRoute
   '/app/srb': typeof AppSrbIndexRoute
+  '/app/training': typeof AppTrainingIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -282,6 +328,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/app/ai-insights': typeof AppAiInsightsRoute
+  '/app/appraisals': typeof AppAppraisalsRouteWithChildren
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
   '/app/calendar': typeof AppCalendarRoute
@@ -304,13 +351,18 @@ export interface FileRoutesById {
   '/app/students': typeof AppStudentsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
+  '/app/training': typeof AppTrainingRouteWithChildren
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
+  '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
   '/app/srb/$studentId': typeof AppSrbStudentIdRoute
+  '/app/training/$courseId': typeof AppTrainingCourseIdRoute
+  '/app/appraisals/': typeof AppAppraisalsIndexRoute
   '/app/attendance/': typeof AppAttendanceIndexRoute
   '/app/srb/': typeof AppSrbIndexRoute
+  '/app/training/': typeof AppTrainingIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -319,6 +371,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/app/ai-insights'
+    | '/app/appraisals'
     | '/app/assignments'
     | '/app/attendance'
     | '/app/calendar'
@@ -341,13 +394,18 @@ export interface FileRouteTypes {
     | '/app/students'
     | '/app/teacher-classes'
     | '/app/tenants'
+    | '/app/training'
     | '/app/users'
     | '/app/'
+    | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
     | '/app/invoice/$id'
     | '/app/srb/$studentId'
+    | '/app/training/$courseId'
+    | '/app/appraisals/'
     | '/app/attendance/'
     | '/app/srb/'
+    | '/app/training/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -375,17 +433,22 @@ export interface FileRouteTypes {
     | '/app/tenants'
     | '/app/users'
     | '/app'
+    | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
     | '/app/invoice/$id'
     | '/app/srb/$studentId'
+    | '/app/training/$courseId'
+    | '/app/appraisals'
     | '/app/attendance'
     | '/app/srb'
+    | '/app/training'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/login'
     | '/app/ai-insights'
+    | '/app/appraisals'
     | '/app/assignments'
     | '/app/attendance'
     | '/app/calendar'
@@ -408,13 +471,18 @@ export interface FileRouteTypes {
     | '/app/students'
     | '/app/teacher-classes'
     | '/app/tenants'
+    | '/app/training'
     | '/app/users'
     | '/app/'
+    | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
     | '/app/invoice/$id'
     | '/app/srb/$studentId'
+    | '/app/training/$courseId'
+    | '/app/appraisals/'
     | '/app/attendance/'
     | '/app/srb/'
+    | '/app/training/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -458,6 +526,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/app/users'
       preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/training': {
+      id: '/app/training'
+      path: '/training'
+      fullPath: '/app/training'
+      preLoaderRoute: typeof AppTrainingRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/tenants': {
@@ -614,12 +689,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssignmentsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/appraisals': {
+      id: '/app/appraisals'
+      path: '/appraisals'
+      fullPath: '/app/appraisals'
+      preLoaderRoute: typeof AppAppraisalsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/ai-insights': {
       id: '/app/ai-insights'
       path: '/ai-insights'
       fullPath: '/app/ai-insights'
       preLoaderRoute: typeof AppAiInsightsRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/training/': {
+      id: '/app/training/'
+      path: '/'
+      fullPath: '/app/training/'
+      preLoaderRoute: typeof AppTrainingIndexRouteImport
+      parentRoute: typeof AppTrainingRoute
     }
     '/app/srb/': {
       id: '/app/srb/'
@@ -634,6 +723,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/attendance/'
       preLoaderRoute: typeof AppAttendanceIndexRouteImport
       parentRoute: typeof AppAttendanceRoute
+    }
+    '/app/appraisals/': {
+      id: '/app/appraisals/'
+      path: '/'
+      fullPath: '/app/appraisals/'
+      preLoaderRoute: typeof AppAppraisalsIndexRouteImport
+      parentRoute: typeof AppAppraisalsRoute
+    }
+    '/app/training/$courseId': {
+      id: '/app/training/$courseId'
+      path: '/$courseId'
+      fullPath: '/app/training/$courseId'
+      preLoaderRoute: typeof AppTrainingCourseIdRouteImport
+      parentRoute: typeof AppTrainingRoute
     }
     '/app/srb/$studentId': {
       id: '/app/srb/$studentId'
@@ -656,8 +759,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAttendanceTakeRouteImport
       parentRoute: typeof AppAttendanceRoute
     }
+    '/app/appraisals/$teacherId': {
+      id: '/app/appraisals/$teacherId'
+      path: '/$teacherId'
+      fullPath: '/app/appraisals/$teacherId'
+      preLoaderRoute: typeof AppAppraisalsTeacherIdRouteImport
+      parentRoute: typeof AppAppraisalsRoute
+    }
   }
 }
+
+interface AppAppraisalsRouteChildren {
+  AppAppraisalsTeacherIdRoute: typeof AppAppraisalsTeacherIdRoute
+  AppAppraisalsIndexRoute: typeof AppAppraisalsIndexRoute
+}
+
+const AppAppraisalsRouteChildren: AppAppraisalsRouteChildren = {
+  AppAppraisalsTeacherIdRoute: AppAppraisalsTeacherIdRoute,
+  AppAppraisalsIndexRoute: AppAppraisalsIndexRoute,
+}
+
+const AppAppraisalsRouteWithChildren = AppAppraisalsRoute._addFileChildren(
+  AppAppraisalsRouteChildren,
+)
 
 interface AppAttendanceRouteChildren {
   AppAttendanceTakeRoute: typeof AppAttendanceTakeRoute
@@ -686,8 +810,23 @@ const AppSrbRouteChildren: AppSrbRouteChildren = {
 const AppSrbRouteWithChildren =
   AppSrbRoute._addFileChildren(AppSrbRouteChildren)
 
+interface AppTrainingRouteChildren {
+  AppTrainingCourseIdRoute: typeof AppTrainingCourseIdRoute
+  AppTrainingIndexRoute: typeof AppTrainingIndexRoute
+}
+
+const AppTrainingRouteChildren: AppTrainingRouteChildren = {
+  AppTrainingCourseIdRoute: AppTrainingCourseIdRoute,
+  AppTrainingIndexRoute: AppTrainingIndexRoute,
+}
+
+const AppTrainingRouteWithChildren = AppTrainingRoute._addFileChildren(
+  AppTrainingRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAiInsightsRoute: typeof AppAiInsightsRoute
+  AppAppraisalsRoute: typeof AppAppraisalsRouteWithChildren
   AppAssignmentsRoute: typeof AppAssignmentsRoute
   AppAttendanceRoute: typeof AppAttendanceRouteWithChildren
   AppCalendarRoute: typeof AppCalendarRoute
@@ -710,6 +849,7 @@ interface AppRouteChildren {
   AppStudentsRoute: typeof AppStudentsRoute
   AppTeacherClassesRoute: typeof AppTeacherClassesRoute
   AppTenantsRoute: typeof AppTenantsRoute
+  AppTrainingRoute: typeof AppTrainingRouteWithChildren
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
   AppInvoiceIdRoute: typeof AppInvoiceIdRoute
@@ -717,6 +857,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAiInsightsRoute: AppAiInsightsRoute,
+  AppAppraisalsRoute: AppAppraisalsRouteWithChildren,
   AppAssignmentsRoute: AppAssignmentsRoute,
   AppAttendanceRoute: AppAttendanceRouteWithChildren,
   AppCalendarRoute: AppCalendarRoute,
@@ -739,6 +880,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppStudentsRoute: AppStudentsRoute,
   AppTeacherClassesRoute: AppTeacherClassesRoute,
   AppTenantsRoute: AppTenantsRoute,
+  AppTrainingRoute: AppTrainingRouteWithChildren,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
   AppInvoiceIdRoute: AppInvoiceIdRoute,

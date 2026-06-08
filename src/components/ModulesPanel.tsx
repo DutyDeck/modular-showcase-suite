@@ -27,7 +27,7 @@ const PLAN_PRESETS: Record<string, ModuleId[]> = {
   ],
   Growth: [
     "core", "students", "courses", "attendance", "calendar", "lms",
-    "assignments", "grades", "srb", "teaching", "family", "finance",
+    "assignments", "grades", "srb", "teaching", "training", "family", "finance",
     "marketplace", "messages", "reports", "users",
   ],
   Enterprise: MODULES.map((m) => m.id),

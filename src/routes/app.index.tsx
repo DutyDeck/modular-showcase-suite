@@ -5,13 +5,17 @@ import { AreaTrend, BarTrend } from "@/components/Charts";
 import {
   Users, BookOpen, DollarSign, TrendingUp, GraduationCap, Wallet,
   CalendarCheck, Award, Sparkles, AlertTriangle, Building2,
-  UserCheck, ShieldCheck, CreditCard,
+  UserCheck, ShieldCheck, CreditCard, Star, ChevronRight,
 } from "lucide-react";
 import {
   notifications, attendanceTrend, revenueTrend, grades,
   aiInsights, teacherClasses, children, getEnrollments, ageOn,
+  teacherByName,
 } from "@/lib/mockData";
 import { useCollection } from "@/lib/store";
+import { useEnabledModules } from "@/lib/modules";
+import { computeAppraisal } from "@/lib/appraisal";
+import { Stars } from "@/components/StarRating";
 import { usePrefs } from "@/lib/prefs";
 
 export const Route = createFileRoute("/app/")({
@@ -270,6 +274,18 @@ function ParentDash() {
 }
 
 function TeacherDash() {
+  const { user } = useAuth();
+  const enabled = useEnabledModules(user?.institution ?? "");
+  const ratings = useCollection("teacherRatings");
+  const me = user ? teacherByName[user.name] : undefined;
+  const myAppraisal = me ? computeAppraisal(me, ratings) : null;
+  const recentReviews = me
+    ? ratings
+        .filter((r) => r.teacherId === me.id)
+        .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+        .slice(0, 2)
+    : [];
+
   return (
     <>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -278,6 +294,52 @@ function TeacherDash() {
         <StatCard label="To Grade" value="23" hint="Quizzes & essays" icon={<BookOpen className="h-5 w-5" />} accent="warning" />
         <StatCard label="At-Risk Students" value="4" hint="AI flagged" icon={<AlertTriangle className="h-5 w-5" />} accent="destructive" />
       </div>
+
+      {enabled.has("appraisal") && me && myAppraisal && (
+        <Section title="My Appraisal" description="How families and student outcomes rate your teaching.">
+          <div className="flex flex-col sm:flex-row gap-5">
+            <div className="flex items-center gap-4 sm:border-r sm:pr-6">
+              <div className="text-center">
+                <div className="text-4xl font-bold leading-none">{myAppraisal.blended.toFixed(1)}</div>
+                <div className="mt-1.5">
+                  <Stars value={myAppraisal.blended} size={15} />
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-1">
+                  {myAppraisal.ratingCount} review{myAppraisal.ratingCount === 1 ? "" : "s"}
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              {recentReviews.length > 0 ? (
+                <ul className="space-y-2.5">
+                  {recentReviews.map((r) => (
+                    <li key={r.id} className="text-sm">
+                      <div className="flex items-center gap-2">
+                        <Stars value={r.stars} size={12} />
+                        <span className="text-xs font-medium">{r.authorName}</span>
+                      </div>
+                      {r.comment && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">"{r.comment}"</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">No written reviews yet.</p>
+              )}
+              <Link
+                to="/app/appraisals/$teacherId"
+                params={{ teacherId: me.id }}
+                className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                <Star className="h-3.5 w-3.5" />
+                View full appraisal
+                <ChevronRight className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+        </Section>
+      )}
       <div className="grid lg:grid-cols-3 gap-6">
         <Section title="Today's Schedule" className="lg:col-span-2">
           <ul className="space-y-3">

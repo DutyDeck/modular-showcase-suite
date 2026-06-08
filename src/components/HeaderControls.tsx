@@ -216,7 +216,7 @@ const ENTITLEMENT_PROFILES: Array<{
     hint: "Adds LMS, grades, finance",
     modules: [
       "core", "students", "courses", "attendance", "calendar", "lms",
-      "assignments", "grades", "srb", "teaching", "family", "finance",
+      "assignments", "grades", "srb", "teaching", "training", "family", "finance",
       "marketplace", "messages", "reports", "users",
     ],
   },

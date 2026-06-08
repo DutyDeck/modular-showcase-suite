@@ -934,4 +934,283 @@ export const srbEntries: SrbEntry[] = [
     institutionId: "T-002",
     institutionName: "EduStar International",
   },
+  /* Teacher ⇄ adult-student two-way thread used to demo cross-account SRB
+   * chat: posted by the demo teacher login (Dr. Saman Silva, teacher@demo.com)
+   * on the adult, self-managed student Senuli (adult@demo.com / S-2001). Both
+   * accounts see — and can answer — the same thread, which persists across
+   * logins until the demo is reset. */
+  {
+    id: "SRB-545",
+    studentId: "S-2001",
+    studentName: "Senuli Fernando",
+    authorName: "Dr. Saman Silva",
+    authorRole: "teacher",
+    type: "communication",
+    title: "A/L Physics revision — can you join Monday's live class?",
+    body:
+      "Hi Senuli — you asked about adding A/L Physics revision. I run a live online class Mon/Wed 4 PM. Please confirm here if you'd like a seat and I'll share the joining link. (Reply right here — this thread stays in your record book.)",
+    date: d(1, 16, 30),
+    requiresAck: true,
+    replies: [
+      {
+        id: "r-se2",
+        authorName: "Senuli Fernando",
+        authorRole: "student",
+        text: "Yes please, Monday works for me. I'll manage the enrolment and fee myself — please send the link. Thank you!",
+        at: d(1, 17, 10),
+      },
+    ],
+    institutionId: "T-001",
+    institutionName: "Global Coaching Hub",
+  },
+];
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Teacher Appraisal (separately-purchasable add-on module)
+ *
+ * Parents — and adult, self-managed students — star-rate and comment on the
+ * teachers/coaches who teach them. Each teacher also carries student-outcome
+ * signals (avg GPA of their students, exam pass-rate, attendance) which are
+ * blended with the submitted stars into a single appraisal score. The blended
+ * score is shown to the teacher (self-reflection), admins (staffing decisions),
+ * and parents/students (choosing teachers & courses). See computeAppraisal()
+ * in src/lib/appraisal.ts for the weighting.
+ * ──────────────────────────────────────────────────────────────────────── */
+export interface Teacher {
+  id: string;
+  name: string;
+  subject: string;
+  institutionId: string;
+  institutionName: string;
+  photo: string;
+  experienceYears: number;
+  /** Student-outcome signals — the "performance" half of the appraisal. */
+  avgStudentGpa: number; // 0–4
+  passRate: number; // 0–100 (% of students passing)
+  attendanceRate: number; // 0–100 (% class attendance)
+}
+
+export const teachers: Teacher[] = [
+  { id: "TCH-01", name: "Dr. Saman Silva", subject: "Physics", institutionId: "T-001", institutionName: "Global Coaching Hub", photo: portrait("men/45.jpg"), experienceYears: 12, avgStudentGpa: 3.6, passRate: 94, attendanceRate: 92 },
+  { id: "TCH-02", name: "Mrs. Lalani Perera", subject: "Chemistry", institutionId: "T-006", institutionName: "Royal Vista College", photo: portrait("women/68.jpg"), experienceYears: 9, avgStudentGpa: 3.4, passRate: 90, attendanceRate: 89 },
+  { id: "TCH-03", name: "Mr. Asanka Gunasekara", subject: "Combined Maths", institutionId: "T-007", institutionName: "Apex Tuition Hub", photo: portrait("men/41.jpg"), experienceYears: 15, avgStudentGpa: 3.8, passRate: 96, attendanceRate: 95 },
+  { id: "TCH-04", name: "Ms. Chandrika Soysa", subject: "English Literature", institutionId: "T-008", institutionName: "LittleSparks Academy", photo: portrait("women/52.jpg"), experienceYears: 7, avgStudentGpa: 3.5, passRate: 91, attendanceRate: 93 },
+  { id: "TCH-05", name: "Dr. Ramya Jayaweera", subject: "Biology", institutionId: "T-006", institutionName: "Royal Vista College", photo: portrait("women/65.jpg"), experienceYears: 11, avgStudentGpa: 3.3, passRate: 88, attendanceRate: 90 },
+  { id: "TCH-06", name: "Ms. Chathuri Wijesinghe", subject: "IELTS / English", institutionId: "T-003", institutionName: "BrightPath Institute", photo: portrait("women/44.jpg"), experienceYears: 6, avgStudentGpa: 3.2, passRate: 86, attendanceRate: 88 },
+  { id: "TCH-07", name: "Mr. Dineth Wickrama", subject: "ICT", institutionId: "T-006", institutionName: "Royal Vista College", photo: portrait("men/36.jpg"), experienceYears: 8, avgStudentGpa: 3.5, passRate: 92, attendanceRate: 87 },
+  { id: "TCH-08", name: "Dr. Nadia Khan", subject: "Chemistry (Foundation)", institutionId: "T-002", institutionName: "EduStar International", photo: portrait("women/30.jpg"), experienceYears: 10, avgStudentGpa: 3.7, passRate: 93, attendanceRate: 91 },
+];
+
+export const teacherByName: Record<string, Teacher> = Object.fromEntries(
+  teachers.map((t) => [t.name, t]),
+);
+
+export interface TeacherRating {
+  id: string;
+  teacherId: string;
+  teacherName: string;
+  authorName: string;
+  authorRole: "parent" | "student";
+  stars: number; // 1–5
+  comment: string;
+  at: string; // ISO
+  /** For a parent rating: the child whose class informed the review. */
+  childName?: string;
+}
+
+export const teacherRatings: TeacherRating[] = [
+  { id: "TR-001", teacherId: "TCH-01", teacherName: "Dr. Saman Silva", authorName: "Nimal Perera", authorRole: "parent", stars: 5, comment: "Aarav's physics has transformed this year. Dr. Silva explains hard concepts clearly and always replies to our record-book notes quickly.", at: d(3, 19, 0), childName: "Aarav Perera" },
+  { id: "TR-002", teacherId: "TCH-01", teacherName: "Dr. Saman Silva", authorName: "Sunil Bandara", authorRole: "parent", stars: 4, comment: "Very knowledgeable and patient. Would love a little more written feedback on practice papers.", at: d(8, 11, 0), childName: "Tharindu Bandara" },
+  { id: "TR-003", teacherId: "TCH-01", teacherName: "Dr. Saman Silva", authorName: "Senuli Fernando", authorRole: "student", stars: 5, comment: "Joined his online revision as a self-managed student — fantastic pace and the recordings are a lifesaver.", at: d(2, 9, 30) },
+  { id: "TR-004", teacherId: "TCH-03", teacherName: "Mr. Asanka Gunasekara", authorName: "Nimal Perera", authorRole: "parent", stars: 5, comment: "Best maths coach we've had. Aarav scored 92 on the integration paper after just one term.", at: d(5, 18, 0), childName: "Aarav Perera" },
+  { id: "TR-005", teacherId: "TCH-03", teacherName: "Mr. Asanka Gunasekara", authorName: "Mahesh Rathnayake", authorRole: "parent", stars: 5, comment: "Exceptional. Clear weekly targets and the Saturday cohort keeps the kids motivated.", at: d(12, 10, 0), childName: "Kavindu Rathnayake" },
+  { id: "TR-006", teacherId: "TCH-04", teacherName: "Ms. Chandrika Soysa", authorName: "Nimal Perera", authorRole: "parent", stars: 5, comment: "Tashi's writing placed 2nd in the inter-school contest under Ms. Soysa's guidance. Wonderful encouragement.", at: d(6, 12, 30), childName: "Tashi Perera" },
+  { id: "TR-007", teacherId: "TCH-02", teacherName: "Mrs. Lalani Perera", authorName: "Nimal Perera", authorRole: "parent", stars: 4, comment: "Organised and thorough chemistry teaching. Lab reports feedback is detailed.", at: d(4, 20, 0), childName: "Aarav Perera" },
+  { id: "TR-008", teacherId: "TCH-02", teacherName: "Mrs. Lalani Perera", authorName: "Kumara Wijesinghe", authorRole: "parent", stars: 4, comment: "Good teacher, my daughter enjoys the practicals.", at: d(10, 9, 0), childName: "Sara Wijesinghe" },
+  { id: "TR-009", teacherId: "TCH-06", teacherName: "Ms. Chathuri Wijesinghe", authorName: "Nimal Perera", authorRole: "parent", stars: 4, comment: "IELTS prep is well structured. Mock tests every week are very useful.", at: d(7, 16, 0), childName: "Aarav Perera" },
+  { id: "TR-010", teacherId: "TCH-08", teacherName: "Dr. Nadia Khan", authorName: "Senuli Fernando", authorRole: "student", stars: 5, comment: "Top of the Foundation cohort thanks to her clear lab teaching. Highly recommend for Chemistry.", at: d(3, 14, 0) },
+  { id: "TR-011", teacherId: "TCH-05", teacherName: "Dr. Ramya Jayaweera", authorName: "Anjali Fernando", authorRole: "parent", stars: 4, comment: "Nethmi loves biology now. Cell systems were made so approachable.", at: d(9, 11, 0), childName: "Nethmi Fernando" },
+];
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Teacher Training / CPD (separate module)
+ *
+ * Teachers, coaches and trainers enrol in professional-development courses and
+ * participate AS STUDENTS — they progress through lessons, track completion and
+ * earn certificates. Kept deliberately separate from the student-facing LMS.
+ * Demonstrated with the existing teacher account (Dr. Saman Silva), who has one
+ * course already in progress so the screen looks lived-in.
+ * ──────────────────────────────────────────────────────────────────────── */
+export interface TrainingLesson {
+  id: string;
+  title: string;
+  minutes: number;
+}
+
+export interface TrainingCourse {
+  id: string;
+  title: string;
+  provider: string;
+  category: string;
+  level: "Foundation" | "Intermediate" | "Advanced";
+  hours: number;
+  rating: number;
+  enrolledCount: number;
+  certificate: boolean;
+  blurb: string;
+  lessons: TrainingLesson[];
+}
+
+const lessons = (titles: Array<[string, number]>): TrainingLesson[] =>
+  titles.map(([title, minutes], i) => ({ id: `L${i + 1}`, title, minutes }));
+
+export const trainingCourses: TrainingCourse[] = [
+  {
+    id: "TRN-CM01",
+    title: "Classroom Management Essentials",
+    provider: "One Edu Academy",
+    category: "Pedagogy",
+    level: "Foundation",
+    hours: 4,
+    rating: 4.8,
+    enrolledCount: 1284,
+    certificate: true,
+    blurb: "Practical routines for engagement, behaviour and a calm, focused classroom — online or in person.",
+    lessons: lessons([
+      ["Setting expectations from day one", 18],
+      ["De-escalation & positive reinforcement", 22],
+      ["Managing the hybrid / online room", 20],
+      ["Building classroom routines that stick", 16],
+      ["Assessment of the management plan", 14],
+    ]),
+  },
+  {
+    id: "TRN-AFL",
+    title: "Assessment for Learning",
+    provider: "Cambridge PD",
+    category: "Assessment",
+    level: "Intermediate",
+    hours: 6,
+    rating: 4.9,
+    enrolledCount: 962,
+    certificate: true,
+    blurb: "Use formative assessment, feedback and rubrics to move every learner forward.",
+    lessons: lessons([
+      ["Formative vs summative — when to use what", 20],
+      ["Writing effective rubrics", 24],
+      ["Feedback that changes outcomes", 22],
+      ["Questioning techniques", 18],
+      ["Data-informed reteaching", 26],
+    ]),
+  },
+  {
+    id: "TRN-EDT",
+    title: "EdTech Tools for Modern Teaching",
+    provider: "One Edu Academy",
+    category: "Technology",
+    level: "Foundation",
+    hours: 3,
+    rating: 4.6,
+    enrolledCount: 1731,
+    certificate: true,
+    blurb: "Run engaging live classes, build interactive content and automate the busywork.",
+    lessons: lessons([
+      ["Live classes & recordings done right", 16],
+      ["Interactive content & quizzes", 18],
+      ["Automating grading & attendance", 20],
+      ["Accessibility in digital learning", 15],
+    ]),
+  },
+  {
+    id: "TRN-INC",
+    title: "Inclusive Education & Differentiation",
+    provider: "UNESCO Learning",
+    category: "Inclusion",
+    level: "Intermediate",
+    hours: 5,
+    rating: 4.7,
+    enrolledCount: 644,
+    certificate: true,
+    blurb: "Design lessons that reach diverse learners, including SEN and multilingual classrooms.",
+    lessons: lessons([
+      ["Universal Design for Learning", 22],
+      ["Differentiating tasks & outcomes", 20],
+      ["Supporting SEN learners", 24],
+      ["Multilingual classroom strategies", 18],
+      ["Inclusive assessment", 16],
+    ]),
+  },
+  {
+    id: "TRN-SAFE",
+    title: "Child Safeguarding & Wellbeing",
+    provider: "One Edu Academy",
+    category: "Compliance",
+    level: "Foundation",
+    hours: 2,
+    rating: 4.9,
+    enrolledCount: 2410,
+    certificate: true,
+    blurb: "Mandatory safeguarding fundamentals: recognising, responding and reporting concerns.",
+    lessons: lessons([
+      ["Your duty of care", 14],
+      ["Recognising signs of harm", 18],
+      ["Responding & reporting correctly", 16],
+      ["Online safety & digital conduct", 12],
+    ]),
+  },
+  {
+    id: "TRN-LEAD",
+    title: "From Teacher to Mentor: Coaching Skills",
+    provider: "Cambridge PD",
+    category: "Leadership",
+    level: "Advanced",
+    hours: 6,
+    rating: 4.8,
+    enrolledCount: 388,
+    certificate: true,
+    blurb: "Coach and mentor peers, run observations and lead professional learning communities.",
+    lessons: lessons([
+      ["The coaching mindset", 20],
+      ["Lesson observation & feedback", 24],
+      ["Running a PLC", 22],
+      ["Mentoring early-career teachers", 20],
+      ["Leading change in your department", 26],
+    ]),
+  },
+];
+
+export const trainingCourseById: Record<string, TrainingCourse> = Object.fromEntries(
+  trainingCourses.map((c) => [c.id, c]),
+);
+
+export interface TrainingEnrollment {
+  id: string;
+  courseId: string;
+  teacherName: string;
+  enrolledAt: string; // ISO
+  completedLessonIds: string[];
+  status: "enrolled" | "in-progress" | "completed";
+  certificateIssuedAt?: string; // ISO, set when 100% complete
+}
+
+export const trainingEnrollments: TrainingEnrollment[] = [
+  /* The demo teacher is mid-way through Assessment for Learning … */
+  {
+    id: "TRE-001",
+    courseId: "TRN-AFL",
+    teacherName: "Dr. Saman Silva",
+    enrolledAt: d(9, 9, 0),
+    completedLessonIds: ["L1", "L2", "L3"],
+    status: "in-progress",
+  },
+  /* … and has already certified in Child Safeguarding. */
+  {
+    id: "TRE-002",
+    courseId: "TRN-SAFE",
+    teacherName: "Dr. Saman Silva",
+    enrolledAt: d(20, 10, 0),
+    completedLessonIds: ["L1", "L2", "L3", "L4"],
+    status: "completed",
+    certificateIssuedAt: d(15, 14, 0),
+  },
 ];

@@ -21,6 +21,11 @@ const ALL: Record<string, MenuItem> = {
   grades: { label: "Grades", to: "/app/grades", icon: "Award", group: "Academics", moduleId: "grades" },
   myClasses: { label: "My Classes", to: "/app/teacher-classes", icon: "School", group: "Teaching", moduleId: "teaching" },
   grading: { label: "Grading", to: "/app/grading", icon: "ClipboardCheck", group: "Teaching", moduleId: "grades" },
+  training: { label: "Teacher Training", to: "/app/training", icon: "GraduationCap", group: "Professional Development", moduleId: "training" },
+  appraisalTeacher: { label: "My Appraisal", to: "/app/appraisals", icon: "Star", group: "Professional Development", moduleId: "appraisal" },
+  appraisalAdmin: { label: "Teacher Appraisals", to: "/app/appraisals", icon: "Star", group: "Academics", moduleId: "appraisal" },
+  appraisalParent: { label: "Teacher Appraisals", to: "/app/appraisals", icon: "Star", group: "Family", moduleId: "appraisal" },
+  appraisalStudent: { label: "Teacher Appraisals", to: "/app/appraisals", icon: "Star", group: "Academics", moduleId: "appraisal" },
   children: { label: "My Children", to: "/app/children", icon: "Baby", group: "Family", moduleId: "family" },
   srb: { label: "Record Book", to: "/app/srb", icon: "NotebookPen", group: "Family", moduleId: "srb" },
   srbTeacher: { label: "Record Books", to: "/app/srb", icon: "NotebookPen", group: "Teaching", moduleId: "srb" },
@@ -44,17 +49,17 @@ const ALL: Record<string, MenuItem> = {
 export const menusByRole: Record<Role, MenuItem[]> = {
   student: [
     ALL.dashboard, ALL.courses, ALL.attendance, ALL.calendar, ALL.lms, ALL.assignments, ALL.grades,
-    ALL.srbStudent, ALL.fees, ALL.messages, ALL.marketplace, ALL.profile,
+    ALL.srbStudent, ALL.appraisalStudent, ALL.fees, ALL.messages, ALL.marketplace, ALL.profile,
   ],
   parent: [
-    ALL.dashboard, ALL.children, ALL.srb, ALL.attendance, ALL.calendar, ALL.grades, ALL.fees, ALL.messages, ALL.profile,
+    ALL.dashboard, ALL.children, ALL.srb, ALL.attendance, ALL.calendar, ALL.grades, ALL.appraisalParent, ALL.fees, ALL.messages, ALL.profile,
   ],
   teacher: [
     ALL.dashboard, ALL.myClasses, ALL.attendance, ALL.calendar, ALL.lms, ALL.grading, ALL.students,
-    ALL.srbTeacher, ALL.messages, ALL.ai, ALL.profile,
+    ALL.srbTeacher, ALL.training, ALL.appraisalTeacher, ALL.messages, ALL.ai, ALL.profile,
   ],
   admin: [
-    ALL.dashboard, ALL.students, ALL.srbAdmin, ALL.courses, ALL.attendance, ALL.calendar, ALL.lms, ALL.finance,
+    ALL.dashboard, ALL.students, ALL.srbAdmin, ALL.appraisalAdmin, ALL.courses, ALL.attendance, ALL.calendar, ALL.lms, ALL.training, ALL.finance,
     ALL.marketing, ALL.marketplace, ALL.ai, ALL.reports, ALL.tenants, ALL.users,
     ALL.migration, ALL.compliance, ALL.settings, ALL.messages, ALL.profile,
   ],
