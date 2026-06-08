@@ -13,6 +13,7 @@ import {
   srbEntries as initialSrb,
   teacherRatings as initialTeacherRatings,
   trainingEnrollments as initialTrainingEnrollments,
+  sessionAttendance as initialSessionAttendance,
 } from "./mockData";
 
 export type {
@@ -21,6 +22,7 @@ export type {
   SrbType,
   TeacherRating,
   TrainingEnrollment,
+  SessionAttendance,
 } from "./mockData";
 
 export type Student = (typeof initialStudents)[number];
@@ -34,7 +36,7 @@ export type AttendanceRow = (typeof initialAttendance)[number];
 export type MarketplaceCourse = (typeof initialMarketplace)[number];
 export type Message = (typeof initialMessages)[number];
 
-import type { SrbEntry, TeacherRating, TrainingEnrollment } from "./mockData";
+import type { SrbEntry, TeacherRating, TrainingEnrollment, SessionAttendance } from "./mockData";
 
 /* A cross-tenant enrolment created at runtime — i.e. a tenant admin enrolled an
  * existing One Edu student (from another tenant) after the student/guardian
@@ -69,6 +71,7 @@ interface State {
   enrollments: CrossEnrollment[];
   teacherRatings: TeacherRating[];
   trainingEnrollments: TrainingEnrollment[];
+  sessionAttendance: SessionAttendance[];
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
@@ -89,6 +92,7 @@ function makeInitialState(): State {
     enrollments: [],
     teacherRatings: [...initialTeacherRatings],
     trainingEnrollments: [...initialTrainingEnrollments],
+    sessionAttendance: [...initialSessionAttendance],
   };
 }
 
@@ -153,9 +157,7 @@ export function updateItem<K extends keyof State>(
 ) {
   state = {
     ...state,
-    [key]: state[key].map((row) =>
-      predicate(row) ? { ...row, ...patch } : row,
-    ) as State[K],
+    [key]: state[key].map((row) => (predicate(row) ? { ...row, ...patch } : row)) as State[K],
   };
   emit();
 }

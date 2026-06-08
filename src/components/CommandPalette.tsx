@@ -50,11 +50,7 @@ export function CommandPalette({
           {items.map((m) => {
             const Icon = (Icons as any)[m.icon] ?? Icons.Circle;
             return (
-              <CommandItem
-                key={m.to}
-                value={`go ${m.label}`}
-                onSelect={() => go(m.to)}
-              >
+              <CommandItem key={m.to} value={`go ${m.label}`} onSelect={() => go(m.to)}>
                 <Icon />
                 <span>{m.label}</span>
                 <CommandShortcut>{m.group ?? "Main"}</CommandShortcut>
@@ -168,7 +164,10 @@ export function CommandPalette({
                 <CommandItem
                   key={c.id}
                   value={`course ${c.code} ${c.title} ${c.teacher}`}
-                  onSelect={() => go("/app/courses")}
+                  onSelect={() => {
+                    close();
+                    navigate({ to: "/app/courses/$courseId", params: { courseId: c.id } });
+                  }}
                 >
                   <Icons.BookOpen />
                   <span>{c.title}</span>

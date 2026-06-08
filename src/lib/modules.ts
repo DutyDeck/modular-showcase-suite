@@ -67,8 +67,8 @@ export const MODULES: ModuleDef[] = [
   {
     id: "courses",
     name: "Courses & Curriculum",
-    description: "Course catalog, syllabi, and offerings.",
-    routePrefixes: ["/app/courses"],
+    description: "Course catalog, syllabi, classes, sessions and offerings.",
+    routePrefixes: ["/app/courses", "/app/sessions"],
     plan: "Starter",
   },
   {

@@ -2,7 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { PageHeader, Section, Badge, Button } from "@/components/ui-kit";
 import { Avatar } from "@/components/Avatar";
-import { children, getEnrollments, type StudentEnrollment } from "@/lib/mockData";
+import {
+  children,
+  getEnrollments,
+  sessionsForSwimmer,
+  poolById,
+  type StudentEnrollment,
+} from "@/lib/mockData";
 import { useCollection } from "@/lib/store";
 import {
   NotebookPen,
@@ -14,6 +20,8 @@ import {
   Wallet,
   User2,
   MessageSquare,
+  Waves,
+  ChevronRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/children")({
@@ -60,8 +68,8 @@ function ChildrenPage() {
               {totalEnrolments} institute apps · {children.length} children
             </div>
             <p className="text-xs sm:text-sm opacity-85 mt-1.5 max-w-xl">
-              Each institute below keeps its own timetable, fees, record-book entries and
-              teacher contacts — but you never log in twice.
+              Each institute below keeps its own timetable, fees, record-book entries and teacher
+              contacts — but you never log in twice.
             </p>
           </div>
         </div>
@@ -69,13 +77,7 @@ function ChildrenPage() {
 
       <div className="space-y-6">
         {childRows.map(({ child: c, enrolments }) => (
-          <ChildBlock
-            key={c.id}
-            child={c}
-            enrolments={enrolments}
-            srb={srb}
-            invoices={invoices}
-          />
+          <ChildBlock key={c.id} child={c} enrolments={enrolments} srb={srb} invoices={invoices} />
         ))}
       </div>
     </div>
@@ -97,6 +99,7 @@ function ChildBlock({
 }) {
   const childSrb = srb.filter((e) => e.studentId === child.id);
   const childInvoices = invoices.filter((i) => i.studentId === child.id);
+  const swimSessions = sessionsForSwimmer(child.id);
   const needsAck = childSrb.filter((e) => e.requiresAck && !e.ackAt).length;
   const totalDue = childInvoices
     .filter((i) => i.status === "Due" || i.status === "Upcoming")
@@ -138,7 +141,7 @@ function ChildBlock({
       </div>
 
       {/* Per-institute sub-cards */}
-      <div className="p-4 sm:p-5">
+      <div className="p-4 sm:p-5 space-y-4">
         <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
           {enrolments.map((e) => (
             <InstituteCard
@@ -150,6 +153,54 @@ function ChildBlock({
             />
           ))}
         </div>
+
+        {swimSessions.length > 0 && (
+          <div className="rounded-xl border bg-sky-500/5 overflow-hidden">
+            <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b bg-sky-500/10">
+              <div className="flex items-center gap-2">
+                <Waves className="h-4 w-4 text-sky-600" />
+                <span className="text-sm font-semibold">Swim Academy</span>
+                <Badge tone="info">
+                  {swimSessions.length} session{swimSessions.length === 1 ? "" : "s"}
+                </Badge>
+              </div>
+              <Link
+                to="/app/courses/$courseId"
+                params={{ courseId: swimSessions[0].courseId }}
+                className="text-[11px] font-medium text-primary hover:underline inline-flex items-center gap-1"
+              >
+                Open club
+                <ChevronRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <ul className="divide-y">
+              {swimSessions.map((s) => {
+                const pool = poolById[s.poolId];
+                return (
+                  <li key={s.id}>
+                    <Link
+                      to="/app/sessions/$sessionId"
+                      params={{ sessionId: s.id }}
+                      className="flex items-center gap-3 px-3.5 py-2.5 hover:bg-muted/40 transition-colors"
+                    >
+                      <div className="text-center shrink-0 w-12">
+                        <div className="text-[11px] font-semibold">{s.day}</div>
+                        <div className="text-[10px] text-muted-foreground">{s.start}</div>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium truncate">{s.title}</div>
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          {pool?.name} · lanes {s.laneFrom}–{s.laneTo} · {s.coachNames.join(", ")}
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
     </Section>
   );
@@ -220,7 +271,10 @@ function InstituteCard({
               <span className={`font-medium ${due > 0 ? "text-warning-foreground" : ""}`}>
                 ${due}
               </span>
-              <span className="text-muted-foreground"> · {paid} paid invoice{paid === 1 ? "" : "s"}</span>
+              <span className="text-muted-foreground">
+                {" "}
+                · {paid} paid invoice{paid === 1 ? "" : "s"}
+              </span>
             </span>
           </li>
           {enrolment.contactTeacher && (
@@ -314,11 +368,7 @@ function MiniStat({
   className?: string;
 }) {
   const valueClass =
-    tone === "alert"
-      ? "text-destructive"
-      : tone === "warn"
-        ? "text-warning-foreground"
-        : "";
+    tone === "alert" ? "text-destructive" : tone === "warn" ? "text-warning-foreground" : "";
   return (
     <div className={className}>
       <div className={`text-base sm:text-lg font-bold ${valueClass}`}>{value}</div>

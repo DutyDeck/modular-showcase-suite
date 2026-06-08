@@ -39,17 +39,106 @@ export function ageOn(dob: string, on: Date = new Date()): number {
 }
 
 export const demoUsers: DemoUser[] = [
-  { id: "u1", email: "student@demo.com", password: "demo", name: "Aarav Perera", role: "student", photo: portrait("men/32.jpg"), institution: "Royal Vista College + 3 tuition classes", tagline: "1 app · 4 institutes · A/L Science", meta: { grade: "Grade 12", batch: "Science-A", institutions: "4" }, dob: "2009-03-14", selfManaged: false, guardianName: "Nimal Perera", oneEduId: "S-1001" },
+  {
+    id: "u1",
+    email: "student@demo.com",
+    password: "demo",
+    name: "Aarav Perera",
+    role: "student",
+    photo: portrait("men/32.jpg"),
+    institution: "Royal Vista College + 3 tuition classes",
+    tagline: "1 app · 4 institutes · A/L Science",
+    meta: { grade: "Grade 12", batch: "Science-A", institutions: "4" },
+    dob: "2009-03-14",
+    selfManaged: false,
+    guardianName: "Nimal Perera",
+    oneEduId: "S-1001",
+  },
   /* Adult, self-managed student (18+) — no guardian. Owns her account and
    * authorises her own enrolments, payments and course selection. Also the
    * subject of the cross-tenant enrolment demo (searchable as S-2001). */
-  { id: "u6", email: "adult@demo.com", password: "demo", name: "Senuli Fernando", role: "student", photo: portrait("women/29.jpg"), institution: "EduStar International + self-managed", tagline: "18+ · Self-managed · own fees & enrolments", meta: { grade: "Foundation Year", age: "19", account: "Self-managed" }, dob: "2007-02-20", selfManaged: true, oneEduId: "S-2001" },
-  { id: "u2", email: "parent@demo.com", password: "demo", name: "Nimal Perera", role: "parent", photo: portrait("men/65.jpg"), institution: "Manages 2 children across 6 institutes", tagline: "1 login · 2 children · 6 institutes", meta: { children: "2", institutions: "6" } },
-  { id: "u3", email: "teacher@demo.com", password: "demo", name: "Dr. Saman Silva", role: "teacher", photo: portrait("men/45.jpg"), institution: "Global Coaching Hub", tagline: "Physics faculty · 12 yrs experience", meta: { subject: "Physics" } },
+  {
+    id: "u6",
+    email: "adult@demo.com",
+    password: "demo",
+    name: "Senuli Fernando",
+    role: "student",
+    photo: portrait("women/29.jpg"),
+    institution: "EduStar International + self-managed",
+    tagline: "18+ · Self-managed · own fees & enrolments",
+    meta: { grade: "Foundation Year", age: "19", account: "Self-managed" },
+    dob: "2007-02-20",
+    selfManaged: true,
+    oneEduId: "S-2001",
+  },
+  {
+    id: "u2",
+    email: "parent@demo.com",
+    password: "demo",
+    name: "Nimal Perera",
+    role: "parent",
+    photo: portrait("men/65.jpg"),
+    institution: "Manages 2 children across 6 institutes",
+    tagline: "1 login · 2 children · 6 institutes",
+    meta: { children: "2", institutions: "6" },
+  },
+  {
+    id: "u3",
+    email: "teacher@demo.com",
+    password: "demo",
+    name: "Dr. Saman Silva",
+    role: "teacher",
+    photo: portrait("men/45.jpg"),
+    institution: "Global Coaching Hub",
+    tagline: "Physics faculty · 12 yrs experience",
+    meta: { subject: "Physics" },
+  },
   /* Global super-admin — sees every tenant. */
-  { id: "u4", email: "admin@demo.com", password: "demo", name: "Priya Kumar", role: "admin", photo: portrait("women/44.jpg"), institution: "One Edu — Platform HQ", tagline: "Global admin · 8 tenants", meta: { tenants: "8" }, adminScope: "global" },
+  {
+    id: "u4",
+    email: "admin@demo.com",
+    password: "demo",
+    name: "Priya Kumar",
+    role: "admin",
+    photo: portrait("women/44.jpg"),
+    institution: "One Edu — Platform HQ",
+    tagline: "Global admin · 8 tenants",
+    meta: { tenants: "8" },
+    adminScope: "global",
+  },
   /* Institute-scoped admin — principal of Royal Vista College, sees only T-006. */
-  { id: "u5", email: "principal@royalvista.com", password: "demo", name: "Ananda Wijesinghe", role: "admin", photo: portrait("men/52.jpg"), institution: "Royal Vista College", tagline: "Institute admin · Royal Vista only", meta: { tenant: "T-006" }, adminScope: "institute", institutionId: "T-006", institutionName: "Royal Vista College" },
+  {
+    id: "u5",
+    email: "principal@royalvista.com",
+    password: "demo",
+    name: "Ananda Wijesinghe",
+    role: "admin",
+    photo: portrait("men/52.jpg"),
+    institution: "Royal Vista College",
+    tagline: "Institute admin · Royal Vista only",
+    meta: { tenant: "T-006" },
+    adminScope: "institute",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
+  /* Swim coach — instructor on the Royal Vista Swim Academy (multi-coach club).
+   * Demonstrates the holistic pool view + per-session attendance & record-book
+   * tasks. Role is "teacher"; the login screen labels her "Swim coach" via the
+   * meta.discipline flag. Her name matches a coach record in `teachers`/sessions
+   * so instructor-scoping (by name) lights up her sessions. */
+  {
+    id: "u7",
+    email: "coach@demo.com",
+    password: "demo",
+    name: "Coach Mariana Cruz",
+    role: "teacher",
+    photo: portrait("women/63.jpg"),
+    institution: "Royal Vista Aquatics Centre",
+    tagline: "Head Swim Coach · Learn-to-Swim & Squad",
+    meta: { discipline: "Swimming" },
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
 ];
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -64,91 +153,691 @@ export const demoUsers: DemoUser[] = [
  * institute admins (and migrated reports/grade sheets) keep working.
  * ──────────────────────────────────────────────────────────────────────── */
 export interface StudentEnrollment {
-  institutionId: string;     // tenant id, e.g. "T-006"
-  institution: string;       // display name
-  role: string;              // "Main school" | "A/L tuition" | "IELTS prep" …
-  classLabel: string;        // institute-specific class/grade label
-  legacyId?: string;         // student id used in the institute's prior system
-  legacySystem?: string;     // e.g. "Moodle (migrated Feb 2026)"
-  since: string;             // year the student joined that institute
-  primary?: boolean;         // marks the institute used for top-line summary
-  nextSession?: string;      // human-readable next class at this institute
-  contactTeacher?: string;   // primary contact at this institute
+  institutionId: string; // tenant id, e.g. "T-006"
+  institution: string; // display name
+  role: string; // "Main school" | "A/L tuition" | "IELTS prep" …
+  classLabel: string; // institute-specific class/grade label
+  legacyId?: string; // student id used in the institute's prior system
+  legacySystem?: string; // e.g. "Moodle (migrated Feb 2026)"
+  since: string; // year the student joined that institute
+  primary?: boolean; // marks the institute used for top-line summary
+  nextSession?: string; // human-readable next class at this institute
+  contactTeacher?: string; // primary contact at this institute
 }
 
 export const students = [
-  { id: "S-1001", name: "Aarav Perera", grade: "Grade 12", batch: "Science-A", attendance: 94, gpa: 3.8, status: "Active", parent: "Nimal Perera", risk: "low" },
-  { id: "S-1002", name: "Sara Wijesinghe", grade: "Grade 12", batch: "Science-A", attendance: 88, gpa: 3.5, status: "Active", parent: "Kumara Wijesinghe", risk: "low" },
-  { id: "S-1003", name: "Mihir Jayasuriya", grade: "Grade 11", batch: "Commerce-B", attendance: 72, gpa: 2.7, status: "Active", parent: "Ravi Jayasuriya", risk: "medium" },
-  { id: "S-1004", name: "Nethmi Fernando", grade: "Grade 12", batch: "Arts-A", attendance: 96, gpa: 3.9, status: "Active", parent: "Anjali Fernando", risk: "low" },
-  { id: "S-1005", name: "Tharindu Bandara", grade: "Grade 10", batch: "Science-B", attendance: 61, gpa: 2.2, status: "At Risk", parent: "Sunil Bandara", risk: "high" },
-  { id: "S-1006", name: "Hiruni Senanayake", grade: "Grade 11", batch: "Science-A", attendance: 91, gpa: 3.6, status: "Active", parent: "Dilani Senanayake", risk: "low" },
-  { id: "S-1007", name: "Kavindu Rathnayake", grade: "Grade 12", batch: "Commerce-A", attendance: 84, gpa: 3.2, status: "Active", parent: "Mahesh Rathnayake", risk: "low" },
-  { id: "S-1008", name: "Lasitha De Silva", grade: "Grade 10", batch: "Science-A", attendance: 79, gpa: 3.0, status: "Active", parent: "Suresh De Silva", risk: "medium" },
+  {
+    id: "S-1001",
+    name: "Aarav Perera",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 94,
+    gpa: 3.8,
+    status: "Active",
+    parent: "Nimal Perera",
+    risk: "low",
+  },
+  {
+    id: "S-1002",
+    name: "Sara Wijesinghe",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 88,
+    gpa: 3.5,
+    status: "Active",
+    parent: "Kumara Wijesinghe",
+    risk: "low",
+  },
+  {
+    id: "S-1003",
+    name: "Mihir Jayasuriya",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 72,
+    gpa: 2.7,
+    status: "Active",
+    parent: "Ravi Jayasuriya",
+    risk: "medium",
+  },
+  {
+    id: "S-1004",
+    name: "Nethmi Fernando",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 96,
+    gpa: 3.9,
+    status: "Active",
+    parent: "Anjali Fernando",
+    risk: "low",
+  },
+  {
+    id: "S-1005",
+    name: "Tharindu Bandara",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 61,
+    gpa: 2.2,
+    status: "At Risk",
+    parent: "Sunil Bandara",
+    risk: "high",
+  },
+  {
+    id: "S-1006",
+    name: "Hiruni Senanayake",
+    grade: "Grade 11",
+    batch: "Science-A",
+    attendance: 91,
+    gpa: 3.6,
+    status: "Active",
+    parent: "Dilani Senanayake",
+    risk: "low",
+  },
+  {
+    id: "S-1007",
+    name: "Kavindu Rathnayake",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 84,
+    gpa: 3.2,
+    status: "Active",
+    parent: "Mahesh Rathnayake",
+    risk: "low",
+  },
+  {
+    id: "S-1008",
+    name: "Lasitha De Silva",
+    grade: "Grade 10",
+    batch: "Science-A",
+    attendance: 79,
+    gpa: 3.0,
+    status: "Active",
+    parent: "Suresh De Silva",
+    risk: "medium",
+  },
   /* Tashi — second child for the demo parent. Lives at a different main school
      (LittleSparks Academy) and shares a tuition-class with her brother. */
-  { id: "S-1009", name: "Tashi Perera", grade: "Grade 8", batch: "Junior-A", attendance: 97, gpa: 3.7, status: "Active", parent: "Nimal Perera", risk: "low" },
+  {
+    id: "S-1009",
+    name: "Tashi Perera",
+    grade: "Grade 8",
+    batch: "Junior-A",
+    attendance: 97,
+    gpa: 3.7,
+    status: "Active",
+    parent: "Nimal Perera",
+    risk: "low",
+  },
   // ---- Extended roster (realistic class sizes — 10-14 students per batch) ----
   // Science-A · Grade 12
-  { id: "S-1010", name: "Imesha Karunaratne", grade: "Grade 12", batch: "Science-A", attendance: 92, gpa: 3.7, status: "Active", parent: "Pradeep Karunaratne", risk: "low" },
-  { id: "S-1011", name: "Pasindu Wickramasinghe", grade: "Grade 12", batch: "Science-A", attendance: 87, gpa: 3.4, status: "Active", parent: "Chamara Wickramasinghe", risk: "low" },
-  { id: "S-1012", name: "Sandeepa Liyanage", grade: "Grade 12", batch: "Science-A", attendance: 95, gpa: 3.8, status: "Active", parent: "Ruwan Liyanage", risk: "low" },
-  { id: "S-1013", name: "Bhanuka Dissanayake", grade: "Grade 12", batch: "Science-A", attendance: 81, gpa: 3.1, status: "Active", parent: "Janaka Dissanayake", risk: "medium" },
-  { id: "S-1014", name: "Nuwan Senarathne", grade: "Grade 12", batch: "Science-A", attendance: 89, gpa: 3.5, status: "Active", parent: "Sampath Senarathne", risk: "low" },
-  { id: "S-1015", name: "Tushari Munasinghe", grade: "Grade 12", batch: "Science-A", attendance: 93, gpa: 3.7, status: "Active", parent: "Bandula Munasinghe", risk: "low" },
-  { id: "S-1016", name: "Roshan Karunaratne", grade: "Grade 12", batch: "Science-A", attendance: 76, gpa: 2.9, status: "Active", parent: "Lakmal Karunaratne", risk: "medium" },
-  { id: "S-1017", name: "Niluka Hettiarachchi", grade: "Grade 12", batch: "Science-A", attendance: 90, gpa: 3.6, status: "Active", parent: "Rohan Hettiarachchi", risk: "low" },
-  { id: "S-1018", name: "Sachini Goonewardene", grade: "Grade 12", batch: "Science-A", attendance: 97, gpa: 3.9, status: "Active", parent: "Nisha Goonewardene", risk: "low" },
-  { id: "S-1019", name: "Arjun Mehta", grade: "Grade 12", batch: "Science-A", attendance: 84, gpa: 3.3, status: "Active", parent: "Vikram Mehta", risk: "low" },
+  {
+    id: "S-1010",
+    name: "Imesha Karunaratne",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 92,
+    gpa: 3.7,
+    status: "Active",
+    parent: "Pradeep Karunaratne",
+    risk: "low",
+  },
+  {
+    id: "S-1011",
+    name: "Pasindu Wickramasinghe",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 87,
+    gpa: 3.4,
+    status: "Active",
+    parent: "Chamara Wickramasinghe",
+    risk: "low",
+  },
+  {
+    id: "S-1012",
+    name: "Sandeepa Liyanage",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 95,
+    gpa: 3.8,
+    status: "Active",
+    parent: "Ruwan Liyanage",
+    risk: "low",
+  },
+  {
+    id: "S-1013",
+    name: "Bhanuka Dissanayake",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 81,
+    gpa: 3.1,
+    status: "Active",
+    parent: "Janaka Dissanayake",
+    risk: "medium",
+  },
+  {
+    id: "S-1014",
+    name: "Nuwan Senarathne",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 89,
+    gpa: 3.5,
+    status: "Active",
+    parent: "Sampath Senarathne",
+    risk: "low",
+  },
+  {
+    id: "S-1015",
+    name: "Tushari Munasinghe",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 93,
+    gpa: 3.7,
+    status: "Active",
+    parent: "Bandula Munasinghe",
+    risk: "low",
+  },
+  {
+    id: "S-1016",
+    name: "Roshan Karunaratne",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 76,
+    gpa: 2.9,
+    status: "Active",
+    parent: "Lakmal Karunaratne",
+    risk: "medium",
+  },
+  {
+    id: "S-1017",
+    name: "Niluka Hettiarachchi",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 90,
+    gpa: 3.6,
+    status: "Active",
+    parent: "Rohan Hettiarachchi",
+    risk: "low",
+  },
+  {
+    id: "S-1018",
+    name: "Sachini Goonewardene",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 97,
+    gpa: 3.9,
+    status: "Active",
+    parent: "Nisha Goonewardene",
+    risk: "low",
+  },
+  {
+    id: "S-1019",
+    name: "Arjun Mehta",
+    grade: "Grade 12",
+    batch: "Science-A",
+    attendance: 84,
+    gpa: 3.3,
+    status: "Active",
+    parent: "Vikram Mehta",
+    risk: "low",
+  },
 
   // Science-B · Grade 10
-  { id: "S-1020", name: "Kavya Subramaniam", grade: "Grade 10", batch: "Science-B", attendance: 88, gpa: 3.4, status: "Active", parent: "Karthik Subramaniam", risk: "low" },
-  { id: "S-1021", name: "Dhanuka Rajapakse", grade: "Grade 10", batch: "Science-B", attendance: 73, gpa: 2.8, status: "Active", parent: "Sunethra Rajapakse", risk: "medium" },
-  { id: "S-1022", name: "Prabath Kumarasinghe", grade: "Grade 10", batch: "Science-B", attendance: 91, gpa: 3.6, status: "Active", parent: "Tilak Kumarasinghe", risk: "low" },
-  { id: "S-1023", name: "Meera Iyer", grade: "Grade 10", batch: "Science-B", attendance: 94, gpa: 3.8, status: "Active", parent: "Suresh Iyer", risk: "low" },
-  { id: "S-1024", name: "Chamath Abeysekera", grade: "Grade 10", batch: "Science-B", attendance: 68, gpa: 2.5, status: "At Risk", parent: "Wijaya Abeysekera", risk: "high" },
-  { id: "S-1025", name: "Hashini Wijesundara", grade: "Grade 10", batch: "Science-B", attendance: 89, gpa: 3.5, status: "Active", parent: "Lalith Wijesundara", risk: "low" },
-  { id: "S-1026", name: "Tharindu Ekanayake", grade: "Grade 10", batch: "Science-B", attendance: 82, gpa: 3.2, status: "Active", parent: "Indra Ekanayake", risk: "low" },
-  { id: "S-1027", name: "Vihanga Samaratunga", grade: "Grade 10", batch: "Science-B", attendance: 96, gpa: 3.9, status: "Active", parent: "Manel Samaratunga", risk: "low" },
-  { id: "S-1028", name: "Yasiru Ratnaweera", grade: "Grade 10", batch: "Science-B", attendance: 78, gpa: 3.0, status: "Active", parent: "Damayanthi Ratnaweera", risk: "medium" },
-  { id: "S-1029", name: "Anjali Patel", grade: "Grade 10", batch: "Science-B", attendance: 86, gpa: 3.4, status: "Active", parent: "Rakesh Patel", risk: "low" },
-  { id: "S-1030", name: "Raveen Wijewardena", grade: "Grade 10", batch: "Science-B", attendance: 71, gpa: 2.7, status: "Active", parent: "Chandana Wijewardena", risk: "medium" },
+  {
+    id: "S-1020",
+    name: "Kavya Subramaniam",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 88,
+    gpa: 3.4,
+    status: "Active",
+    parent: "Karthik Subramaniam",
+    risk: "low",
+  },
+  {
+    id: "S-1021",
+    name: "Dhanuka Rajapakse",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 73,
+    gpa: 2.8,
+    status: "Active",
+    parent: "Sunethra Rajapakse",
+    risk: "medium",
+  },
+  {
+    id: "S-1022",
+    name: "Prabath Kumarasinghe",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 91,
+    gpa: 3.6,
+    status: "Active",
+    parent: "Tilak Kumarasinghe",
+    risk: "low",
+  },
+  {
+    id: "S-1023",
+    name: "Meera Iyer",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 94,
+    gpa: 3.8,
+    status: "Active",
+    parent: "Suresh Iyer",
+    risk: "low",
+  },
+  {
+    id: "S-1024",
+    name: "Chamath Abeysekera",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 68,
+    gpa: 2.5,
+    status: "At Risk",
+    parent: "Wijaya Abeysekera",
+    risk: "high",
+  },
+  {
+    id: "S-1025",
+    name: "Hashini Wijesundara",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 89,
+    gpa: 3.5,
+    status: "Active",
+    parent: "Lalith Wijesundara",
+    risk: "low",
+  },
+  {
+    id: "S-1026",
+    name: "Tharindu Ekanayake",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 82,
+    gpa: 3.2,
+    status: "Active",
+    parent: "Indra Ekanayake",
+    risk: "low",
+  },
+  {
+    id: "S-1027",
+    name: "Vihanga Samaratunga",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 96,
+    gpa: 3.9,
+    status: "Active",
+    parent: "Manel Samaratunga",
+    risk: "low",
+  },
+  {
+    id: "S-1028",
+    name: "Yasiru Ratnaweera",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 78,
+    gpa: 3.0,
+    status: "Active",
+    parent: "Damayanthi Ratnaweera",
+    risk: "medium",
+  },
+  {
+    id: "S-1029",
+    name: "Anjali Patel",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 86,
+    gpa: 3.4,
+    status: "Active",
+    parent: "Rakesh Patel",
+    risk: "low",
+  },
+  {
+    id: "S-1030",
+    name: "Raveen Wijewardena",
+    grade: "Grade 10",
+    batch: "Science-B",
+    attendance: 71,
+    gpa: 2.7,
+    status: "Active",
+    parent: "Chandana Wijewardena",
+    risk: "medium",
+  },
 
   // Commerce-A · Grade 12
-  { id: "S-1031", name: "Dilini Amarasinghe", grade: "Grade 12", batch: "Commerce-A", attendance: 92, gpa: 3.6, status: "Active", parent: "Senaka Amarasinghe", risk: "low" },
-  { id: "S-1032", name: "Asela Wickramaratne", grade: "Grade 12", batch: "Commerce-A", attendance: 85, gpa: 3.3, status: "Active", parent: "Ananda Wickramaratne", risk: "low" },
-  { id: "S-1033", name: "Pooja Krishnan", grade: "Grade 12", batch: "Commerce-A", attendance: 94, gpa: 3.7, status: "Active", parent: "Ravi Krishnan", risk: "low" },
-  { id: "S-1034", name: "Charith Nanayakkara", grade: "Grade 12", batch: "Commerce-A", attendance: 79, gpa: 3.0, status: "Active", parent: "Sumith Nanayakkara", risk: "medium" },
-  { id: "S-1035", name: "Yashodhara Pieris", grade: "Grade 12", batch: "Commerce-A", attendance: 88, gpa: 3.4, status: "Active", parent: "Asanga Pieris", risk: "low" },
-  { id: "S-1036", name: "Janith Gunatilake", grade: "Grade 12", batch: "Commerce-A", attendance: 75, gpa: 2.8, status: "Active", parent: "Wasantha Gunatilake", risk: "medium" },
-  { id: "S-1037", name: "Sanduni Marasinghe", grade: "Grade 12", batch: "Commerce-A", attendance: 96, gpa: 3.8, status: "Active", parent: "Niranjan Marasinghe", risk: "low" },
-  { id: "S-1038", name: "Rohan Sharma", grade: "Grade 12", batch: "Commerce-A", attendance: 83, gpa: 3.2, status: "Active", parent: "Vinod Sharma", risk: "low" },
-  { id: "S-1039", name: "Madushika Jayasekera", grade: "Grade 12", batch: "Commerce-A", attendance: 91, gpa: 3.5, status: "Active", parent: "Chandika Jayasekera", risk: "low" },
-  { id: "S-1040", name: "Tharaka Wickrematunge", grade: "Grade 12", batch: "Commerce-A", attendance: 87, gpa: 3.4, status: "Active", parent: "Roshani Wickrematunge", risk: "low" },
+  {
+    id: "S-1031",
+    name: "Dilini Amarasinghe",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 92,
+    gpa: 3.6,
+    status: "Active",
+    parent: "Senaka Amarasinghe",
+    risk: "low",
+  },
+  {
+    id: "S-1032",
+    name: "Asela Wickramaratne",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 85,
+    gpa: 3.3,
+    status: "Active",
+    parent: "Ananda Wickramaratne",
+    risk: "low",
+  },
+  {
+    id: "S-1033",
+    name: "Pooja Krishnan",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 94,
+    gpa: 3.7,
+    status: "Active",
+    parent: "Ravi Krishnan",
+    risk: "low",
+  },
+  {
+    id: "S-1034",
+    name: "Charith Nanayakkara",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 79,
+    gpa: 3.0,
+    status: "Active",
+    parent: "Sumith Nanayakkara",
+    risk: "medium",
+  },
+  {
+    id: "S-1035",
+    name: "Yashodhara Pieris",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 88,
+    gpa: 3.4,
+    status: "Active",
+    parent: "Asanga Pieris",
+    risk: "low",
+  },
+  {
+    id: "S-1036",
+    name: "Janith Gunatilake",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 75,
+    gpa: 2.8,
+    status: "Active",
+    parent: "Wasantha Gunatilake",
+    risk: "medium",
+  },
+  {
+    id: "S-1037",
+    name: "Sanduni Marasinghe",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 96,
+    gpa: 3.8,
+    status: "Active",
+    parent: "Niranjan Marasinghe",
+    risk: "low",
+  },
+  {
+    id: "S-1038",
+    name: "Rohan Sharma",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 83,
+    gpa: 3.2,
+    status: "Active",
+    parent: "Vinod Sharma",
+    risk: "low",
+  },
+  {
+    id: "S-1039",
+    name: "Madushika Jayasekera",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 91,
+    gpa: 3.5,
+    status: "Active",
+    parent: "Chandika Jayasekera",
+    risk: "low",
+  },
+  {
+    id: "S-1040",
+    name: "Tharaka Wickrematunge",
+    grade: "Grade 12",
+    batch: "Commerce-A",
+    attendance: 87,
+    gpa: 3.4,
+    status: "Active",
+    parent: "Roshani Wickrematunge",
+    risk: "low",
+  },
 
   // Commerce-B · Grade 11
-  { id: "S-1041", name: "Ishini Gomes", grade: "Grade 11", batch: "Commerce-B", attendance: 90, gpa: 3.5, status: "Active", parent: "Felix Gomes", risk: "low" },
-  { id: "S-1042", name: "Dilshan Karunatilake", grade: "Grade 11", batch: "Commerce-B", attendance: 67, gpa: 2.4, status: "At Risk", parent: "Saroja Karunatilake", risk: "high" },
-  { id: "S-1043", name: "Nimesha Bandaranayake", grade: "Grade 11", batch: "Commerce-B", attendance: 84, gpa: 3.2, status: "Active", parent: "Indika Bandaranayake", risk: "low" },
-  { id: "S-1044", name: "Kasun Rajakaruna", grade: "Grade 11", batch: "Commerce-B", attendance: 78, gpa: 3.0, status: "Active", parent: "Champika Rajakaruna", risk: "medium" },
-  { id: "S-1045", name: "Sithara Embuldeniya", grade: "Grade 11", batch: "Commerce-B", attendance: 93, gpa: 3.7, status: "Active", parent: "Anura Embuldeniya", risk: "low" },
-  { id: "S-1046", name: "Praveen Rajan", grade: "Grade 11", batch: "Commerce-B", attendance: 81, gpa: 3.1, status: "Active", parent: "Mohan Rajan", risk: "low" },
-  { id: "S-1047", name: "Tharushi Kahawita", grade: "Grade 11", batch: "Commerce-B", attendance: 89, gpa: 3.5, status: "Active", parent: "Lalantha Kahawita", risk: "low" },
-  { id: "S-1048", name: "Ashan Premaratne", grade: "Grade 11", batch: "Commerce-B", attendance: 72, gpa: 2.7, status: "Active", parent: "Saman Premaratne", risk: "medium" },
-  { id: "S-1049", name: "Devni Wickramanayake", grade: "Grade 11", batch: "Commerce-B", attendance: 95, gpa: 3.8, status: "Active", parent: "Anoma Wickramanayake", risk: "low" },
-  { id: "S-1050", name: "Sahan Liyanagamage", grade: "Grade 11", batch: "Commerce-B", attendance: 86, gpa: 3.3, status: "Active", parent: "Buddhika Liyanagamage", risk: "low" },
+  {
+    id: "S-1041",
+    name: "Ishini Gomes",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 90,
+    gpa: 3.5,
+    status: "Active",
+    parent: "Felix Gomes",
+    risk: "low",
+  },
+  {
+    id: "S-1042",
+    name: "Dilshan Karunatilake",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 67,
+    gpa: 2.4,
+    status: "At Risk",
+    parent: "Saroja Karunatilake",
+    risk: "high",
+  },
+  {
+    id: "S-1043",
+    name: "Nimesha Bandaranayake",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 84,
+    gpa: 3.2,
+    status: "Active",
+    parent: "Indika Bandaranayake",
+    risk: "low",
+  },
+  {
+    id: "S-1044",
+    name: "Kasun Rajakaruna",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 78,
+    gpa: 3.0,
+    status: "Active",
+    parent: "Champika Rajakaruna",
+    risk: "medium",
+  },
+  {
+    id: "S-1045",
+    name: "Sithara Embuldeniya",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 93,
+    gpa: 3.7,
+    status: "Active",
+    parent: "Anura Embuldeniya",
+    risk: "low",
+  },
+  {
+    id: "S-1046",
+    name: "Praveen Rajan",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 81,
+    gpa: 3.1,
+    status: "Active",
+    parent: "Mohan Rajan",
+    risk: "low",
+  },
+  {
+    id: "S-1047",
+    name: "Tharushi Kahawita",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 89,
+    gpa: 3.5,
+    status: "Active",
+    parent: "Lalantha Kahawita",
+    risk: "low",
+  },
+  {
+    id: "S-1048",
+    name: "Ashan Premaratne",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 72,
+    gpa: 2.7,
+    status: "Active",
+    parent: "Saman Premaratne",
+    risk: "medium",
+  },
+  {
+    id: "S-1049",
+    name: "Devni Wickramanayake",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 95,
+    gpa: 3.8,
+    status: "Active",
+    parent: "Anoma Wickramanayake",
+    risk: "low",
+  },
+  {
+    id: "S-1050",
+    name: "Sahan Liyanagamage",
+    grade: "Grade 11",
+    batch: "Commerce-B",
+    attendance: 86,
+    gpa: 3.3,
+    status: "Active",
+    parent: "Buddhika Liyanagamage",
+    risk: "low",
+  },
 
   // Arts-A · Grade 12
-  { id: "S-1051", name: "Anushka Wijegunaratne", grade: "Grade 12", batch: "Arts-A", attendance: 92, gpa: 3.6, status: "Active", parent: "Chinthaka Wijegunaratne", risk: "low" },
-  { id: "S-1052", name: "Kithmin Perera", grade: "Grade 12", batch: "Arts-A", attendance: 88, gpa: 3.4, status: "Active", parent: "Chamari Perera", risk: "low" },
-  { id: "S-1053", name: "Diluni Sirisena", grade: "Grade 12", batch: "Arts-A", attendance: 94, gpa: 3.7, status: "Active", parent: "Rajitha Sirisena", risk: "low" },
-  { id: "S-1054", name: "Maleesha Jayatissa", grade: "Grade 12", batch: "Arts-A", attendance: 83, gpa: 3.2, status: "Active", parent: "Upali Jayatissa", risk: "low" },
-  { id: "S-1055", name: "Heshan Wickramage", grade: "Grade 12", batch: "Arts-A", attendance: 76, gpa: 2.9, status: "Active", parent: "Niranjan Wickramage", risk: "medium" },
-  { id: "S-1056", name: "Saritha Devraj", grade: "Grade 12", batch: "Arts-A", attendance: 91, gpa: 3.5, status: "Active", parent: "Anil Devraj", risk: "low" },
-  { id: "S-1057", name: "Mihina Senarath", grade: "Grade 12", batch: "Arts-A", attendance: 85, gpa: 3.3, status: "Active", parent: "Padmini Senarath", risk: "low" },
-  { id: "S-1058", name: "Lakshan Edirisuriya", grade: "Grade 12", batch: "Arts-A", attendance: 79, gpa: 3.0, status: "Active", parent: "Kanchana Edirisuriya", risk: "medium" },
-  { id: "S-1059", name: "Tashmi Welikala", grade: "Grade 12", batch: "Arts-A", attendance: 96, gpa: 3.9, status: "Active", parent: "Buddhi Welikala", risk: "low" },
-  { id: "S-1060", name: "Rikitha Vidanapathirana", grade: "Grade 12", batch: "Arts-A", attendance: 89, gpa: 3.5, status: "Active", parent: "Sirimal Vidanapathirana", risk: "low" },
+  {
+    id: "S-1051",
+    name: "Anushka Wijegunaratne",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 92,
+    gpa: 3.6,
+    status: "Active",
+    parent: "Chinthaka Wijegunaratne",
+    risk: "low",
+  },
+  {
+    id: "S-1052",
+    name: "Kithmin Perera",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 88,
+    gpa: 3.4,
+    status: "Active",
+    parent: "Chamari Perera",
+    risk: "low",
+  },
+  {
+    id: "S-1053",
+    name: "Diluni Sirisena",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 94,
+    gpa: 3.7,
+    status: "Active",
+    parent: "Rajitha Sirisena",
+    risk: "low",
+  },
+  {
+    id: "S-1054",
+    name: "Maleesha Jayatissa",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 83,
+    gpa: 3.2,
+    status: "Active",
+    parent: "Upali Jayatissa",
+    risk: "low",
+  },
+  {
+    id: "S-1055",
+    name: "Heshan Wickramage",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 76,
+    gpa: 2.9,
+    status: "Active",
+    parent: "Niranjan Wickramage",
+    risk: "medium",
+  },
+  {
+    id: "S-1056",
+    name: "Saritha Devraj",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 91,
+    gpa: 3.5,
+    status: "Active",
+    parent: "Anil Devraj",
+    risk: "low",
+  },
+  {
+    id: "S-1057",
+    name: "Mihina Senarath",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 85,
+    gpa: 3.3,
+    status: "Active",
+    parent: "Padmini Senarath",
+    risk: "low",
+  },
+  {
+    id: "S-1058",
+    name: "Lakshan Edirisuriya",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 79,
+    gpa: 3.0,
+    status: "Active",
+    parent: "Kanchana Edirisuriya",
+    risk: "medium",
+  },
+  {
+    id: "S-1059",
+    name: "Tashmi Welikala",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 96,
+    gpa: 3.9,
+    status: "Active",
+    parent: "Buddhi Welikala",
+    risk: "low",
+  },
+  {
+    id: "S-1060",
+    name: "Rikitha Vidanapathirana",
+    grade: "Grade 12",
+    batch: "Arts-A",
+    attendance: 89,
+    gpa: 3.5,
+    status: "Active",
+    parent: "Sirimal Vidanapathirana",
+    risk: "low",
+  },
 
   /* ── Cross-tenant directory students ──────────────────────────────────────
    * These two are enrolled at EduStar International (T-002), NOT at Royal Vista
@@ -156,8 +845,28 @@ export const students = [
    * another tenant" demo: a Royal Vista admin can find them by email/reference
    * but cannot see their details until the student (adult) or guardian (minor)
    * approves. Senuli (S-2001) is also the adult self-managed demo login. */
-  { id: "S-2001", name: "Senuli Fernando", grade: "Foundation Year", batch: "Foundation-A", attendance: 90, gpa: 3.6, status: "Active", parent: "—", risk: "low" },
-  { id: "S-2002", name: "Rehan Gupta", grade: "Grade 9", batch: "Science-B", attendance: 85, gpa: 3.3, status: "Active", parent: "Anil Gupta", risk: "low" },
+  {
+    id: "S-2001",
+    name: "Senuli Fernando",
+    grade: "Foundation Year",
+    batch: "Foundation-A",
+    attendance: 90,
+    gpa: 3.6,
+    status: "Active",
+    parent: "—",
+    risk: "low",
+  },
+  {
+    id: "S-2002",
+    name: "Rehan Gupta",
+    grade: "Grade 9",
+    batch: "Science-B",
+    attendance: 85,
+    gpa: 3.3,
+    status: "Active",
+    parent: "Anil Gupta",
+    risk: "low",
+  },
 ];
 
 /* Per-student institute enrolments. Students NOT listed here fall back to a
@@ -171,51 +880,200 @@ export const studentEnrollments: Record<string, StudentEnrollment[]> = {
   /* Aarav — A/L student at a main school plus 3 separate tuition cohorts.
      This is THE shape of the demo: one parent login replaces 4 institute apps. */
   "S-1001": [
-    { institutionId: "T-006", institution: "Royal Vista College", role: "Main school", classLabel: "Grade 12 · Science-A", legacyId: "RVC/2021/3084", legacySystem: "Moodle (migrated Feb 2026)", since: "2021", primary: true, nextSession: "Mon 8:00 AM · Chemistry Lab", contactTeacher: "Mrs. Lalani Perera" },
-    { institutionId: "T-007", institution: "Apex Tuition Hub", role: "A/L Combined Maths", classLabel: "Saturday 7-10 AM cohort", legacyId: "ATH-MTH-24-0341", legacySystem: "In-house SIS (migrated Jan 2026)", since: "2024", nextSession: "Sat 7:00 AM · Integration paper review", contactTeacher: "Mr. Asanka Gunasekara" },
-    { institutionId: "T-001", institution: "Global Coaching Hub", role: "A/L Physics", classLabel: "Online live · Mon/Wed", legacyId: "GCH-22-PHY-117", legacySystem: "Custom CRM (migrated Dec 2025)", since: "2022", nextSession: "Today 4:00 PM · Quantum Mechanics", contactTeacher: "Dr. Saman Silva" },
-    { institutionId: "T-003", institution: "BrightPath Institute", role: "IELTS Prep", classLabel: "Evening batch · Tue/Thu", since: "2026", nextSession: "Tue 6:00 PM · Writing Task 2 workshop", contactTeacher: "Ms. Chathuri Wijesinghe" },
+    {
+      institutionId: "T-006",
+      institution: "Royal Vista College",
+      role: "Main school",
+      classLabel: "Grade 12 · Science-A",
+      legacyId: "RVC/2021/3084",
+      legacySystem: "Moodle (migrated Feb 2026)",
+      since: "2021",
+      primary: true,
+      nextSession: "Mon 8:00 AM · Chemistry Lab",
+      contactTeacher: "Mrs. Lalani Perera",
+    },
+    {
+      institutionId: "T-007",
+      institution: "Apex Tuition Hub",
+      role: "A/L Combined Maths",
+      classLabel: "Saturday 7-10 AM cohort",
+      legacyId: "ATH-MTH-24-0341",
+      legacySystem: "In-house SIS (migrated Jan 2026)",
+      since: "2024",
+      nextSession: "Sat 7:00 AM · Integration paper review",
+      contactTeacher: "Mr. Asanka Gunasekara",
+    },
+    {
+      institutionId: "T-001",
+      institution: "Global Coaching Hub",
+      role: "A/L Physics",
+      classLabel: "Online live · Mon/Wed",
+      legacyId: "GCH-22-PHY-117",
+      legacySystem: "Custom CRM (migrated Dec 2025)",
+      since: "2022",
+      nextSession: "Today 4:00 PM · Quantum Mechanics",
+      contactTeacher: "Dr. Saman Silva",
+    },
+    {
+      institutionId: "T-003",
+      institution: "BrightPath Institute",
+      role: "IELTS Prep",
+      classLabel: "Evening batch · Tue/Thu",
+      since: "2026",
+      nextSession: "Tue 6:00 PM · Writing Task 2 workshop",
+      contactTeacher: "Ms. Chathuri Wijesinghe",
+    },
   ],
 
   /* Tashi — primary school + one weekend tuition. Different main school from
      her brother, which is exactly the parent pain-point we're solving. */
   "S-1009": [
-    { institutionId: "T-008", institution: "LittleSparks Academy", role: "Main school", classLabel: "Grade 8 · Junior-A", legacyId: "LS/M/2019/0042", legacySystem: "Spreadsheet roster (migrated Mar 2026)", since: "2019", primary: true, nextSession: "Tomorrow 9:00 AM · English Literature", contactTeacher: "Ms. Chandrika Soysa" },
-    { institutionId: "T-007", institution: "Apex Tuition Hub", role: "Math Coaching", classLabel: "Sat 10-12 PM · Grade 8 group", since: "2025", nextSession: "Sat 10:00 AM · Algebra review", contactTeacher: "Mr. Nimal Bandara" },
+    {
+      institutionId: "T-008",
+      institution: "LittleSparks Academy",
+      role: "Main school",
+      classLabel: "Grade 8 · Junior-A",
+      legacyId: "LS/M/2019/0042",
+      legacySystem: "Spreadsheet roster (migrated Mar 2026)",
+      since: "2019",
+      primary: true,
+      nextSession: "Tomorrow 9:00 AM · English Literature",
+      contactTeacher: "Ms. Chandrika Soysa",
+    },
+    {
+      institutionId: "T-007",
+      institution: "Apex Tuition Hub",
+      role: "Math Coaching",
+      classLabel: "Sat 10-12 PM · Grade 8 group",
+      since: "2025",
+      nextSession: "Sat 10:00 AM · Algebra review",
+      contactTeacher: "Mr. Nimal Bandara",
+    },
   ],
 
   /* A few peers of Aarav who also cross institutes — keeps the table honest. */
   "S-1002": [
-    { institutionId: "T-006", institution: "Royal Vista College", role: "Main school", classLabel: "Grade 12 · Science-A", legacyId: "RVC/2021/3055", legacySystem: "Moodle (migrated Feb 2026)", since: "2021", primary: true },
-    { institutionId: "T-001", institution: "Global Coaching Hub", role: "Chemistry tuition", classLabel: "Online · Tue/Thu", since: "2024" },
+    {
+      institutionId: "T-006",
+      institution: "Royal Vista College",
+      role: "Main school",
+      classLabel: "Grade 12 · Science-A",
+      legacyId: "RVC/2021/3055",
+      legacySystem: "Moodle (migrated Feb 2026)",
+      since: "2021",
+      primary: true,
+    },
+    {
+      institutionId: "T-001",
+      institution: "Global Coaching Hub",
+      role: "Chemistry tuition",
+      classLabel: "Online · Tue/Thu",
+      since: "2024",
+    },
   ],
   "S-1005": [
     /* Tharindu — tuition-only, no main-school enrolment in One Edu. */
-    { institutionId: "T-007", institution: "Apex Tuition Hub", role: "A/L Combined Maths", classLabel: "Weekend revision cohort", legacyId: "ATH-MTH-23-0156", legacySystem: "In-house SIS (migrated Jan 2026)", since: "2023", primary: true },
-    { institutionId: "T-001", institution: "Global Coaching Hub", role: "A/L Physics", classLabel: "Online · Wed", since: "2024" },
+    {
+      institutionId: "T-007",
+      institution: "Apex Tuition Hub",
+      role: "A/L Combined Maths",
+      classLabel: "Weekend revision cohort",
+      legacyId: "ATH-MTH-23-0156",
+      legacySystem: "In-house SIS (migrated Jan 2026)",
+      since: "2023",
+      primary: true,
+    },
+    {
+      institutionId: "T-001",
+      institution: "Global Coaching Hub",
+      role: "A/L Physics",
+      classLabel: "Online · Wed",
+      since: "2024",
+    },
   ],
   "S-1023": [
     /* Meera — high achiever in an international olympiad cohort. */
-    { institutionId: "T-006", institution: "Royal Vista College", role: "Main school", classLabel: "Grade 10 · Science-B", legacyId: "RVC/2023/4710", legacySystem: "Moodle (migrated Feb 2026)", since: "2023", primary: true },
-    { institutionId: "T-002", institution: "EduStar International", role: "Cambridge Olympiad", classLabel: "Online weekend cohort", since: "2025" },
+    {
+      institutionId: "T-006",
+      institution: "Royal Vista College",
+      role: "Main school",
+      classLabel: "Grade 10 · Science-B",
+      legacyId: "RVC/2023/4710",
+      legacySystem: "Moodle (migrated Feb 2026)",
+      since: "2023",
+      primary: true,
+    },
+    {
+      institutionId: "T-002",
+      institution: "EduStar International",
+      role: "Cambridge Olympiad",
+      classLabel: "Online weekend cohort",
+      since: "2025",
+    },
   ],
   "S-1031": [
-    { institutionId: "T-006", institution: "Royal Vista College", role: "Main school", classLabel: "Grade 12 · Commerce-A", legacyId: "RVC/2021/3210", legacySystem: "Moodle (migrated Feb 2026)", since: "2021", primary: true },
-    { institutionId: "T-003", institution: "BrightPath Institute", role: "IELTS Prep", classLabel: "Saturday batch", legacyId: "BPI-IELTS-24-088", legacySystem: "In-house SIS (migrated Dec 2025)", since: "2024" },
+    {
+      institutionId: "T-006",
+      institution: "Royal Vista College",
+      role: "Main school",
+      classLabel: "Grade 12 · Commerce-A",
+      legacyId: "RVC/2021/3210",
+      legacySystem: "Moodle (migrated Feb 2026)",
+      since: "2021",
+      primary: true,
+    },
+    {
+      institutionId: "T-003",
+      institution: "BrightPath Institute",
+      role: "IELTS Prep",
+      classLabel: "Saturday batch",
+      legacyId: "BPI-IELTS-24-088",
+      legacySystem: "In-house SIS (migrated Dec 2025)",
+      since: "2024",
+    },
   ],
   "S-1042": [
     /* Dilshan — at-risk; both institutes can see the same red flags here. */
-    { institutionId: "T-006", institution: "Royal Vista College", role: "Main school", classLabel: "Grade 11 · Commerce-B", legacyId: "RVC/2022/4112", legacySystem: "Moodle (migrated Feb 2026)", since: "2022", primary: true },
-    { institutionId: "T-005", institution: "Lingua Vista", role: "French Beginner", classLabel: "Online evening", since: "2025" },
+    {
+      institutionId: "T-006",
+      institution: "Royal Vista College",
+      role: "Main school",
+      classLabel: "Grade 11 · Commerce-B",
+      legacyId: "RVC/2022/4112",
+      legacySystem: "Moodle (migrated Feb 2026)",
+      since: "2022",
+      primary: true,
+    },
+    {
+      institutionId: "T-005",
+      institution: "Lingua Vista",
+      role: "French Beginner",
+      classLabel: "Online evening",
+      since: "2025",
+    },
   ],
 
   /* Cross-tenant directory students — enrolled only at EduStar (T-002) until a
      different tenant enrols them with consent. Deliberately NOT at T-006. */
   "S-2001": [
-    { institutionId: "T-002", institution: "EduStar International", role: "Main school", classLabel: "Foundation Year · Science", since: "2025", primary: true },
+    {
+      institutionId: "T-002",
+      institution: "EduStar International",
+      role: "Main school",
+      classLabel: "Foundation Year · Science",
+      since: "2025",
+      primary: true,
+    },
   ],
   "S-2002": [
-    { institutionId: "T-002", institution: "EduStar International", role: "Main school", classLabel: "Grade 9 · Science-B", since: "2024", primary: true },
+    {
+      institutionId: "T-002",
+      institution: "EduStar International",
+      role: "Main school",
+      classLabel: "Grade 9 · Science-B",
+      since: "2024",
+      primary: true,
+    },
   ],
 };
 
@@ -318,7 +1176,11 @@ const DEFAULT_SECONDARY_SCHOOLS = [
 /** Resolve enrollments for a student. Falls back to a single-institute default
  *  spread across the pool so the demo roster looks like a real cross-tenant
  *  platform (and institute admins see only their slice). */
-export function getEnrollments(student: { id: string; grade: string; batch: string }): StudentEnrollment[] {
+export function getEnrollments(student: {
+  id: string;
+  grade: string;
+  batch: string;
+}): StudentEnrollment[] {
   const explicit = studentEnrollments[student.id];
   if (explicit) return explicit;
   const idNum = parseInt(student.id.replace(/\D/g, ""), 10) || 0;
@@ -352,30 +1214,165 @@ export function getEnrollments(student: { id: string; grade: string; batch: stri
 }
 
 export const courses = [
-  { id: "C-PHY12", title: "Advanced Physics", code: "PHY-12", teacher: "Dr. Saman Silva", students: 42, credits: 4, schedule: "Mon/Wed 4-6 PM", rating: 4.8, price: 120, category: "Science" },
-  { id: "C-CHEM12", title: "Organic Chemistry", code: "CHEM-12", teacher: "Mrs. Lalani Perera", students: 38, credits: 4, schedule: "Tue/Thu 4-6 PM", rating: 4.7, price: 110, category: "Science" },
-  { id: "C-MATH12", title: "Combined Mathematics", code: "MATH-12", teacher: "Mr. Asanka Gunasekara", students: 56, credits: 5, schedule: "Mon-Fri 8-10 AM", rating: 4.9, price: 150, category: "Mathematics" },
-  { id: "C-BIO12", title: "Biology — Cellular Systems", code: "BIO-12", teacher: "Dr. Ramya Jayaweera", students: 33, credits: 4, schedule: "Wed/Fri 3-5 PM", rating: 4.6, price: 115, category: "Science" },
-  { id: "C-ENG12", title: "English Literature", code: "ENG-12", teacher: "Ms. Chandrika Soysa", students: 28, credits: 3, schedule: "Tue 6-8 PM", rating: 4.5, price: 80, category: "Languages" },
-  { id: "C-ICT12", title: "Information & Communication Tech", code: "ICT-12", teacher: "Mr. Dineth Wickrama", students: 47, credits: 4, schedule: "Sat 9-12 AM", rating: 4.7, price: 100, category: "Technology" },
+  {
+    id: "C-PHY12",
+    title: "Advanced Physics",
+    code: "PHY-12",
+    teacher: "Dr. Saman Silva",
+    students: 42,
+    credits: 4,
+    schedule: "Mon/Wed 4-6 PM",
+    rating: 4.8,
+    price: 120,
+    category: "Science",
+  },
+  {
+    id: "C-CHEM12",
+    title: "Organic Chemistry",
+    code: "CHEM-12",
+    teacher: "Mrs. Lalani Perera",
+    students: 38,
+    credits: 4,
+    schedule: "Tue/Thu 4-6 PM",
+    rating: 4.7,
+    price: 110,
+    category: "Science",
+  },
+  {
+    id: "C-MATH12",
+    title: "Combined Mathematics",
+    code: "MATH-12",
+    teacher: "Mr. Asanka Gunasekara",
+    students: 56,
+    credits: 5,
+    schedule: "Mon-Fri 8-10 AM",
+    rating: 4.9,
+    price: 150,
+    category: "Mathematics",
+  },
+  {
+    id: "C-BIO12",
+    title: "Biology — Cellular Systems",
+    code: "BIO-12",
+    teacher: "Dr. Ramya Jayaweera",
+    students: 33,
+    credits: 4,
+    schedule: "Wed/Fri 3-5 PM",
+    rating: 4.6,
+    price: 115,
+    category: "Science",
+  },
+  {
+    id: "C-ENG12",
+    title: "English Literature",
+    code: "ENG-12",
+    teacher: "Ms. Chandrika Soysa",
+    students: 28,
+    credits: 3,
+    schedule: "Tue 6-8 PM",
+    rating: 4.5,
+    price: 80,
+    category: "Languages",
+  },
+  {
+    id: "C-ICT12",
+    title: "Information & Communication Tech",
+    code: "ICT-12",
+    teacher: "Mr. Dineth Wickrama",
+    students: 47,
+    credits: 4,
+    schedule: "Sat 9-12 AM",
+    rating: 4.7,
+    price: 100,
+    category: "Technology",
+  },
+  /* Multi-coach swimming club — opens the rich aquatic course experience
+   * (pool map, sessions, several instructors per session). See swimCourses /
+   * pools / poolSessions below. The "+3" hints that the club is led by a team
+   * of coaches rather than a single teacher. */
+  {
+    id: "C-SWIM",
+    title: "Royal Vista Swim Academy",
+    code: "SWIM",
+    teacher: "Coach Mariana Cruz +3",
+    students: 64,
+    credits: 0,
+    schedule: "Mon–Sat · multiple sessions",
+    rating: 4.9,
+    price: 70,
+    category: "Sports",
+  },
 ];
 
 export const attendanceToday = [
-  { id: "S-1001", name: "Aarav Perera", time: "08:02 AM", method: "Facial Recognition", status: "Present" },
+  {
+    id: "S-1001",
+    name: "Aarav Perera",
+    time: "08:02 AM",
+    method: "Facial Recognition",
+    status: "Present",
+  },
   { id: "S-1002", name: "Sara Wijesinghe", time: "08:05 AM", method: "QR Scan", status: "Present" },
   { id: "S-1003", name: "Mihir Jayasuriya", time: "—", method: "—", status: "Absent" },
   { id: "S-1004", name: "Nethmi Fernando", time: "07:58 AM", method: "RFID", status: "Present" },
   { id: "S-1005", name: "Tharindu Bandara", time: "08:42 AM", method: "GPS", status: "Late" },
-  { id: "S-1006", name: "Hiruni Senanayake", time: "08:01 AM", method: "QR Scan", status: "Present" },
-  { id: "S-1009", name: "Tashi Perera", time: "07:55 AM", method: "Facial Recognition", status: "Present" },
+  {
+    id: "S-1006",
+    name: "Hiruni Senanayake",
+    time: "08:01 AM",
+    method: "QR Scan",
+    status: "Present",
+  },
+  {
+    id: "S-1009",
+    name: "Tashi Perera",
+    time: "07:55 AM",
+    method: "Facial Recognition",
+    status: "Present",
+  },
 ];
 
 export const assignments = [
-  { id: "A-201", course: "Advanced Physics", title: "Quantum Mechanics Problem Set", due: "2026-06-02", status: "Pending", score: null },
-  { id: "A-202", course: "Combined Mathematics", title: "Calculus II — Integrals", due: "2026-05-30", status: "Submitted", score: 92 },
-  { id: "A-203", course: "Organic Chemistry", title: "Lab Report: Alkenes", due: "2026-06-05", status: "Pending", score: null },
-  { id: "A-204", course: "English Literature", title: "Essay: Modernism in Poetry", due: "2026-05-28", status: "Graded", score: 88 },
-  { id: "A-205", course: "ICT", title: "Database Design Project", due: "2026-06-10", status: "Pending", score: null },
+  {
+    id: "A-201",
+    course: "Advanced Physics",
+    title: "Quantum Mechanics Problem Set",
+    due: "2026-06-02",
+    status: "Pending",
+    score: null,
+  },
+  {
+    id: "A-202",
+    course: "Combined Mathematics",
+    title: "Calculus II — Integrals",
+    due: "2026-05-30",
+    status: "Submitted",
+    score: 92,
+  },
+  {
+    id: "A-203",
+    course: "Organic Chemistry",
+    title: "Lab Report: Alkenes",
+    due: "2026-06-05",
+    status: "Pending",
+    score: null,
+  },
+  {
+    id: "A-204",
+    course: "English Literature",
+    title: "Essay: Modernism in Poetry",
+    due: "2026-05-28",
+    status: "Graded",
+    score: 88,
+  },
+  {
+    id: "A-205",
+    course: "ICT",
+    title: "Database Design Project",
+    due: "2026-06-10",
+    status: "Pending",
+    score: null,
+  },
 ];
 
 export const grades = [
@@ -406,28 +1403,152 @@ export interface InvoiceRow {
 
 export const invoices: InvoiceRow[] = [
   /* Aarav at Royal Vista College — main school. */
-  { id: "INV-2026-0421", date: "2026-05-01", desc: "Term 2 main-school tuition", amount: 180, status: "Paid", method: "Visa •••• 4242", studentId: "S-1001", institutionId: "T-006", institutionName: "Royal Vista College" },
-  { id: "INV-2026-0508", date: "2026-05-15", desc: "Chemistry lab fee", amount: 45, status: "Paid", method: "PayPal", studentId: "S-1001", institutionId: "T-006", institutionName: "Royal Vista College" },
-  { id: "INV-2026-0615", date: "2026-06-01", desc: "Term 3 main-school tuition", amount: 180, status: "Due", method: "—", studentId: "S-1001", institutionId: "T-006", institutionName: "Royal Vista College" },
+  {
+    id: "INV-2026-0421",
+    date: "2026-05-01",
+    desc: "Term 2 main-school tuition",
+    amount: 180,
+    status: "Paid",
+    method: "Visa •••• 4242",
+    studentId: "S-1001",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
+  {
+    id: "INV-2026-0508",
+    date: "2026-05-15",
+    desc: "Chemistry lab fee",
+    amount: 45,
+    status: "Paid",
+    method: "PayPal",
+    studentId: "S-1001",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
+  {
+    id: "INV-2026-0615",
+    date: "2026-06-01",
+    desc: "Term 3 main-school tuition",
+    amount: 180,
+    status: "Due",
+    method: "—",
+    studentId: "S-1001",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
   /* Aarav at Apex Tuition Hub — A/L Combined Maths. */
-  { id: "INV-2026-0612", date: "2026-05-28", desc: "Combined Maths · May fees", amount: 90, status: "Paid", method: "PayHere", studentId: "S-1001", institutionId: "T-007", institutionName: "Apex Tuition Hub" },
-  { id: "INV-2026-0701", date: "2026-06-05", desc: "Combined Maths · June fees", amount: 90, status: "Due", method: "—", studentId: "S-1001", institutionId: "T-007", institutionName: "Apex Tuition Hub" },
+  {
+    id: "INV-2026-0612",
+    date: "2026-05-28",
+    desc: "Combined Maths · May fees",
+    amount: 90,
+    status: "Paid",
+    method: "PayHere",
+    studentId: "S-1001",
+    institutionId: "T-007",
+    institutionName: "Apex Tuition Hub",
+  },
+  {
+    id: "INV-2026-0701",
+    date: "2026-06-05",
+    desc: "Combined Maths · June fees",
+    amount: 90,
+    status: "Due",
+    method: "—",
+    studentId: "S-1001",
+    institutionId: "T-007",
+    institutionName: "Apex Tuition Hub",
+  },
   /* Aarav at Global Coaching Hub — A/L Physics online. */
-  { id: "INV-2026-0702", date: "2026-06-01", desc: "A/L Physics online · June fees", amount: 120, status: "Due", method: "—", studentId: "S-1001", institutionId: "T-001", institutionName: "Global Coaching Hub" },
+  {
+    id: "INV-2026-0702",
+    date: "2026-06-01",
+    desc: "A/L Physics online · June fees",
+    amount: 120,
+    status: "Due",
+    method: "—",
+    studentId: "S-1001",
+    institutionId: "T-001",
+    institutionName: "Global Coaching Hub",
+  },
   /* Aarav at BrightPath — IELTS prep upcoming. */
-  { id: "INV-2026-0703", date: "2026-06-15", desc: "IELTS prep · enrolment fee", amount: 120, status: "Upcoming", method: "—", studentId: "S-1001", institutionId: "T-003", institutionName: "BrightPath Institute" },
+  {
+    id: "INV-2026-0703",
+    date: "2026-06-15",
+    desc: "IELTS prep · enrolment fee",
+    amount: 120,
+    status: "Upcoming",
+    method: "—",
+    studentId: "S-1001",
+    institutionId: "T-003",
+    institutionName: "BrightPath Institute",
+  },
   /* Tashi at LittleSparks Academy — main school. */
-  { id: "INV-2026-0431", date: "2026-05-01", desc: "Term 2 tuition · Grade 8", amount: 200, status: "Paid", method: "Visa •••• 4242", studentId: "S-1009", institutionId: "T-008", institutionName: "LittleSparks Academy" },
-  { id: "INV-2026-0631", date: "2026-06-10", desc: "Annual excursion fee", amount: 80, status: "Due", method: "—", studentId: "S-1009", institutionId: "T-008", institutionName: "LittleSparks Academy" },
+  {
+    id: "INV-2026-0431",
+    date: "2026-05-01",
+    desc: "Term 2 tuition · Grade 8",
+    amount: 200,
+    status: "Paid",
+    method: "Visa •••• 4242",
+    studentId: "S-1009",
+    institutionId: "T-008",
+    institutionName: "LittleSparks Academy",
+  },
+  {
+    id: "INV-2026-0631",
+    date: "2026-06-10",
+    desc: "Annual excursion fee",
+    amount: 80,
+    status: "Due",
+    method: "—",
+    studentId: "S-1009",
+    institutionId: "T-008",
+    institutionName: "LittleSparks Academy",
+  },
   /* Tashi at Apex Tuition Hub — Math coaching. */
-  { id: "INV-2026-0641", date: "2026-06-01", desc: "Math coaching · June fees", amount: 60, status: "Due", method: "—", studentId: "S-1009", institutionId: "T-007", institutionName: "Apex Tuition Hub" },
+  {
+    id: "INV-2026-0641",
+    date: "2026-06-01",
+    desc: "Math coaching · June fees",
+    amount: 60,
+    status: "Due",
+    method: "—",
+    studentId: "S-1009",
+    institutionId: "T-007",
+    institutionName: "Apex Tuition Hub",
+  },
 ];
 
 export const messages = [
-  { from: "Dr. Saman Silva", role: "Teacher", preview: "Reminder: Lab tomorrow at 3 PM.", time: "10:42 AM", unread: true },
-  { from: "Finance Office", role: "Admin", preview: "Your June invoice is now available.", time: "Yesterday", unread: true },
-  { from: "Mrs. Lalani Perera", role: "Teacher", preview: "Great work on your chemistry essay.", time: "2 days ago", unread: false },
-  { from: "Counselor Riya", role: "Counselor", preview: "Let's schedule our monthly catch-up.", time: "3 days ago", unread: false },
+  {
+    from: "Dr. Saman Silva",
+    role: "Teacher",
+    preview: "Reminder: Lab tomorrow at 3 PM.",
+    time: "10:42 AM",
+    unread: true,
+  },
+  {
+    from: "Finance Office",
+    role: "Admin",
+    preview: "Your June invoice is now available.",
+    time: "Yesterday",
+    unread: true,
+  },
+  {
+    from: "Mrs. Lalani Perera",
+    role: "Teacher",
+    preview: "Great work on your chemistry essay.",
+    time: "2 days ago",
+    unread: false,
+  },
+  {
+    from: "Counselor Riya",
+    role: "Counselor",
+    preview: "Let's schedule our monthly catch-up.",
+    time: "3 days ago",
+    unread: false,
+  },
 ];
 
 export const notifications = [
@@ -438,32 +1559,183 @@ export const notifications = [
 ];
 
 export const leads = [
-  { name: "Ishara Madushani", source: "Facebook Ad", interest: "A/L Science", stage: "Qualified", owner: "Marketing — Rajiv", value: 1200 },
-  { name: "Yasodha Perera", source: "Google Search", interest: "O/L Math", stage: "Contacted", owner: "Marketing — Anu", value: 600 },
-  { name: "Kasun Wijeratne", source: "Referral", interest: "ICT Advanced", stage: "Demo Booked", owner: "Marketing — Rajiv", value: 900 },
-  { name: "Dilshan Kumara", source: "Instagram", interest: "English", stage: "New", owner: "Unassigned", value: 320 },
-  { name: "Rashmi Edirisinghe", source: "Web Form", interest: "Combined Maths", stage: "Closed Won", owner: "Marketing — Anu", value: 1500 },
+  {
+    name: "Ishara Madushani",
+    source: "Facebook Ad",
+    interest: "A/L Science",
+    stage: "Qualified",
+    owner: "Marketing — Rajiv",
+    value: 1200,
+  },
+  {
+    name: "Yasodha Perera",
+    source: "Google Search",
+    interest: "O/L Math",
+    stage: "Contacted",
+    owner: "Marketing — Anu",
+    value: 600,
+  },
+  {
+    name: "Kasun Wijeratne",
+    source: "Referral",
+    interest: "ICT Advanced",
+    stage: "Demo Booked",
+    owner: "Marketing — Rajiv",
+    value: 900,
+  },
+  {
+    name: "Dilshan Kumara",
+    source: "Instagram",
+    interest: "English",
+    stage: "New",
+    owner: "Unassigned",
+    value: 320,
+  },
+  {
+    name: "Rashmi Edirisinghe",
+    source: "Web Form",
+    interest: "Combined Maths",
+    stage: "Closed Won",
+    owner: "Marketing — Anu",
+    value: 1500,
+  },
 ];
 
 export const marketplaceCourses = [
-  { id: "MP-1", title: "IELTS Mastery 2026", provider: "BrightPath Institute", rating: 4.9, students: 12483, price: 79, tag: "Bestseller", category: "Languages" },
-  { id: "MP-2", title: "AP Calculus BC Crash Course", provider: "MathLab Pro", rating: 4.8, students: 7421, price: 99, tag: "New", category: "Mathematics" },
-  { id: "MP-3", title: "Full-Stack Web Dev Bootcamp", provider: "CodeCraft Academy", rating: 4.9, students: 22301, price: 149, tag: "Bestseller", category: "Technology" },
-  { id: "MP-4", title: "MCAT Biology Intensive", provider: "PreMed Global", rating: 4.7, students: 5612, price: 129, category: "Science" },
-  { id: "MP-5", title: "Cambridge A/L Physics", provider: "Global Coaching Hub", rating: 4.8, students: 3120, price: 89, category: "Science" },
-  { id: "MP-6", title: "Spoken French — Beginner", provider: "Lingua Vista", rating: 4.6, students: 9870, price: 49, tag: "Trending", category: "Languages" },
+  {
+    id: "MP-1",
+    title: "IELTS Mastery 2026",
+    provider: "BrightPath Institute",
+    rating: 4.9,
+    students: 12483,
+    price: 79,
+    tag: "Bestseller",
+    category: "Languages",
+  },
+  {
+    id: "MP-2",
+    title: "AP Calculus BC Crash Course",
+    provider: "MathLab Pro",
+    rating: 4.8,
+    students: 7421,
+    price: 99,
+    tag: "New",
+    category: "Mathematics",
+  },
+  {
+    id: "MP-3",
+    title: "Full-Stack Web Dev Bootcamp",
+    provider: "CodeCraft Academy",
+    rating: 4.9,
+    students: 22301,
+    price: 149,
+    tag: "Bestseller",
+    category: "Technology",
+  },
+  {
+    id: "MP-4",
+    title: "MCAT Biology Intensive",
+    provider: "PreMed Global",
+    rating: 4.7,
+    students: 5612,
+    price: 129,
+    category: "Science",
+  },
+  {
+    id: "MP-5",
+    title: "Cambridge A/L Physics",
+    provider: "Global Coaching Hub",
+    rating: 4.8,
+    students: 3120,
+    price: 89,
+    category: "Science",
+  },
+  {
+    id: "MP-6",
+    title: "Spoken French — Beginner",
+    provider: "Lingua Vista",
+    rating: 4.6,
+    students: 9870,
+    price: 49,
+    tag: "Trending",
+    category: "Languages",
+  },
 ];
 
 export const tenants = [
-  { id: "T-001", name: "Global Coaching Hub", country: "Sri Lanka", students: 1842, plan: "Enterprise", status: "Active", mrr: 4900 },
-  { id: "T-002", name: "EduStar International", country: "India", students: 3210, plan: "Enterprise", status: "Active", mrr: 7200 },
-  { id: "T-003", name: "BrightPath Institute", country: "UAE", students: 642, plan: "Growth", status: "Active", mrr: 1450 },
-  { id: "T-004", name: "MathLab Pro", country: "USA", students: 980, plan: "Growth", status: "Trial", mrr: 0 },
-  { id: "T-005", name: "Lingua Vista", country: "France", students: 412, plan: "Starter", status: "Active", mrr: 320 },
+  {
+    id: "T-001",
+    name: "Global Coaching Hub",
+    country: "Sri Lanka",
+    students: 1842,
+    plan: "Enterprise",
+    status: "Active",
+    mrr: 4900,
+  },
+  {
+    id: "T-002",
+    name: "EduStar International",
+    country: "India",
+    students: 3210,
+    plan: "Enterprise",
+    status: "Active",
+    mrr: 7200,
+  },
+  {
+    id: "T-003",
+    name: "BrightPath Institute",
+    country: "UAE",
+    students: 642,
+    plan: "Growth",
+    status: "Active",
+    mrr: 1450,
+  },
+  {
+    id: "T-004",
+    name: "MathLab Pro",
+    country: "USA",
+    students: 980,
+    plan: "Growth",
+    status: "Trial",
+    mrr: 0,
+  },
+  {
+    id: "T-005",
+    name: "Lingua Vista",
+    country: "France",
+    students: 412,
+    plan: "Starter",
+    status: "Active",
+    mrr: 320,
+  },
   /* Local institutes used by the multi-enrolment demo (Aarav + Tashi). */
-  { id: "T-006", name: "Royal Vista College", country: "Sri Lanka", students: 1840, plan: "Enterprise", status: "Active", mrr: 4200 },
-  { id: "T-007", name: "Apex Tuition Hub", country: "Sri Lanka", students: 760, plan: "Growth", status: "Active", mrr: 1850 },
-  { id: "T-008", name: "LittleSparks Academy", country: "Sri Lanka", students: 320, plan: "Growth", status: "Active", mrr: 980 },
+  {
+    id: "T-006",
+    name: "Royal Vista College",
+    country: "Sri Lanka",
+    students: 1840,
+    plan: "Enterprise",
+    status: "Active",
+    mrr: 4200,
+  },
+  {
+    id: "T-007",
+    name: "Apex Tuition Hub",
+    country: "Sri Lanka",
+    students: 760,
+    plan: "Growth",
+    status: "Active",
+    mrr: 1850,
+  },
+  {
+    id: "T-008",
+    name: "LittleSparks Academy",
+    country: "Sri Lanka",
+    students: 320,
+    plan: "Growth",
+    status: "Active",
+    mrr: 980,
+  },
 ];
 
 /* Each platform user belongs to a tenant (institutionId). The global admin
@@ -483,66 +1755,268 @@ export interface PlatformUserRow {
 
 export const platformUsers: PlatformUserRow[] = [
   /* Global admin — no institute affiliation. */
-  { name: "Priya Kumar", email: "priya@platform.io", role: "Super Admin", lastLogin: "10 min ago", mfa: true },
+  {
+    name: "Priya Kumar",
+    email: "priya@platform.io",
+    role: "Super Admin",
+    lastLogin: "10 min ago",
+    mfa: true,
+  },
 
   /* Royal Vista College (T-006) — staff Ananda manages directly. */
-  { name: "Ananda Wijesinghe", email: "principal@royalvista.com", role: "Institute Admin", lastLogin: "1 min ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
-  { name: "Mrs. Lalani Perera", email: "lalani@royalvista.com", role: "Teacher", lastLogin: "12 min ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
-  { name: "Counselor Riya", email: "riya@royalvista.com", role: "Counselor", lastLogin: "3h ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
-  { name: "Janaki Premarathne", email: "finance@royalvista.com", role: "Finance Officer", lastLogin: "45 min ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
-  { name: "Aarav Perera", email: "aarav@royalvista.com", role: "Student", lastLogin: "5 min ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
-  { name: "Sara Wijesinghe", email: "sara@royalvista.com", role: "Student", lastLogin: "1h ago", mfa: true, institutionId: "T-006", institutionName: "Royal Vista College" },
-  { name: "Nimal Perera", email: "nimal@gmail.com", role: "Parent", lastLogin: "1d ago", mfa: false, institutionId: "T-006", institutionName: "Royal Vista College" },
+  {
+    name: "Ananda Wijesinghe",
+    email: "principal@royalvista.com",
+    role: "Institute Admin",
+    lastLogin: "1 min ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
+  {
+    name: "Mrs. Lalani Perera",
+    email: "lalani@royalvista.com",
+    role: "Teacher",
+    lastLogin: "12 min ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
+  {
+    name: "Counselor Riya",
+    email: "riya@royalvista.com",
+    role: "Counselor",
+    lastLogin: "3h ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
+  {
+    name: "Janaki Premarathne",
+    email: "finance@royalvista.com",
+    role: "Finance Officer",
+    lastLogin: "45 min ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
+  {
+    name: "Aarav Perera",
+    email: "aarav@royalvista.com",
+    role: "Student",
+    lastLogin: "5 min ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
+  {
+    name: "Sara Wijesinghe",
+    email: "sara@royalvista.com",
+    role: "Student",
+    lastLogin: "1h ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
+  {
+    name: "Nimal Perera",
+    email: "nimal@gmail.com",
+    role: "Parent",
+    lastLogin: "1d ago",
+    mfa: false,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+  },
 
   /* Global Coaching Hub (T-001). */
-  { name: "Dr. Saman Silva", email: "saman@gch.lk", role: "Teacher", lastLogin: "2h ago", mfa: true, institutionId: "T-001", institutionName: "Global Coaching Hub" },
-  { name: "Rajiv Marketing", email: "rajiv@gch.lk", role: "Marketing Officer", lastLogin: "30 min ago", mfa: true, institutionId: "T-001", institutionName: "Global Coaching Hub" },
+  {
+    name: "Dr. Saman Silva",
+    email: "saman@gch.lk",
+    role: "Teacher",
+    lastLogin: "2h ago",
+    mfa: true,
+    institutionId: "T-001",
+    institutionName: "Global Coaching Hub",
+  },
+  {
+    name: "Rajiv Marketing",
+    email: "rajiv@gch.lk",
+    role: "Marketing Officer",
+    lastLogin: "30 min ago",
+    mfa: true,
+    institutionId: "T-001",
+    institutionName: "Global Coaching Hub",
+  },
 
   /* Apex Tuition Hub (T-007). */
-  { name: "Mr. Asanka Gunasekara", email: "asanka@apextuition.lk", role: "Teacher", lastLogin: "4h ago", mfa: true, institutionId: "T-007", institutionName: "Apex Tuition Hub" },
+  {
+    name: "Mr. Asanka Gunasekara",
+    email: "asanka@apextuition.lk",
+    role: "Teacher",
+    lastLogin: "4h ago",
+    mfa: true,
+    institutionId: "T-007",
+    institutionName: "Apex Tuition Hub",
+  },
 
   /* LittleSparks Academy (T-008). */
-  { name: "Ms. Chandrika Soysa", email: "chandrika@littlesparks.lk", role: "Teacher", lastLogin: "6h ago", mfa: true, institutionId: "T-008", institutionName: "LittleSparks Academy" },
+  {
+    name: "Ms. Chandrika Soysa",
+    email: "chandrika@littlesparks.lk",
+    role: "Teacher",
+    lastLogin: "6h ago",
+    mfa: true,
+    institutionId: "T-008",
+    institutionName: "LittleSparks Academy",
+  },
 
   /* BrightPath Institute (T-003). */
-  { name: "Ms. Chathuri Wijesinghe", email: "chathuri@brightpath.ae", role: "Teacher", lastLogin: "1d ago", mfa: true, institutionId: "T-003", institutionName: "BrightPath Institute" },
+  {
+    name: "Ms. Chathuri Wijesinghe",
+    email: "chathuri@brightpath.ae",
+    role: "Teacher",
+    lastLogin: "1d ago",
+    mfa: true,
+    institutionId: "T-003",
+    institutionName: "BrightPath Institute",
+  },
 ];
 
 export const auditLog = [
-  { time: "11:42 AM", actor: "priya@platform.io", action: "Updated tenant plan", target: "T-003 BrightPath", severity: "info" },
-  { time: "10:15 AM", actor: "saman@gch.lk", action: "Published grades", target: "PHY-12 Mid Term", severity: "info" },
-  { time: "09:01 AM", actor: "system", action: "Backup completed", target: "tenant-data-eu", severity: "success" },
-  { time: "Yesterday", actor: "unknown", action: "Failed MFA attempt", target: "admin@demo.com", severity: "warning" },
-  { time: "Yesterday", actor: "rajiv@gch.lk", action: "Exported lead list", target: "leads-q2.csv", severity: "info" },
+  {
+    time: "11:42 AM",
+    actor: "priya@platform.io",
+    action: "Updated tenant plan",
+    target: "T-003 BrightPath",
+    severity: "info",
+  },
+  {
+    time: "10:15 AM",
+    actor: "saman@gch.lk",
+    action: "Published grades",
+    target: "PHY-12 Mid Term",
+    severity: "info",
+  },
+  {
+    time: "09:01 AM",
+    actor: "system",
+    action: "Backup completed",
+    target: "tenant-data-eu",
+    severity: "success",
+  },
+  {
+    time: "Yesterday",
+    actor: "unknown",
+    action: "Failed MFA attempt",
+    target: "admin@demo.com",
+    severity: "warning",
+  },
+  {
+    time: "Yesterday",
+    actor: "rajiv@gch.lk",
+    action: "Exported lead list",
+    target: "leads-q2.csv",
+    severity: "info",
+  },
 ];
 
 export const aiInsights = [
-  { title: "12 students predicted at risk of failing", desc: "Combined Maths cohort — pattern: attendance < 70% and weak quiz scores.", action: "Schedule counselor intervention", confidence: 0.87, severity: "high" },
-  { title: "Course recommendation for Aarav Perera", desc: "Based on performance, suggest 'AP Calculus BC Crash Course' from marketplace.", action: "Send recommendation", confidence: 0.92, severity: "info" },
-  { title: "Dropout risk: Tharindu Bandara", desc: "Behavioural + attendance + finance signals indicate elevated risk.", action: "Notify parent + counselor", confidence: 0.79, severity: "high" },
-  { title: "Optimal exam date suggestion", desc: "Model predicts 14% higher pass rate if mid-term moved to June 18.", action: "Propose to academic board", confidence: 0.71, severity: "info" },
+  {
+    title: "12 students predicted at risk of failing",
+    desc: "Combined Maths cohort — pattern: attendance < 70% and weak quiz scores.",
+    action: "Schedule counselor intervention",
+    confidence: 0.87,
+    severity: "high",
+  },
+  {
+    title: "Course recommendation for Aarav Perera",
+    desc: "Based on performance, suggest 'AP Calculus BC Crash Course' from marketplace.",
+    action: "Send recommendation",
+    confidence: 0.92,
+    severity: "info",
+  },
+  {
+    title: "Dropout risk: Tharindu Bandara",
+    desc: "Behavioural + attendance + finance signals indicate elevated risk.",
+    action: "Notify parent + counselor",
+    confidence: 0.79,
+    severity: "high",
+  },
+  {
+    title: "Optimal exam date suggestion",
+    desc: "Model predicts 14% higher pass rate if mid-term moved to June 18.",
+    action: "Propose to academic board",
+    confidence: 0.71,
+    severity: "info",
+  },
 ];
 
 export const children = [
-  { id: "S-1001", name: "Aarav Perera", grade: "Grade 12 — Science", attendance: 94, gpa: 3.8, nextClass: "A/L Physics (Global Coaching Hub) @ 4 PM", duesUSD: 510 },
-  { id: "S-1009", name: "Tashi Perera", grade: "Grade 8", attendance: 97, gpa: 3.7, nextClass: "Math Coaching (Apex Tuition Hub) @ 10 AM Sat", duesUSD: 140 },
+  {
+    id: "S-1001",
+    name: "Aarav Perera",
+    grade: "Grade 12 — Science",
+    attendance: 94,
+    gpa: 3.8,
+    nextClass: "A/L Physics (Global Coaching Hub) @ 4 PM",
+    duesUSD: 510,
+  },
+  {
+    id: "S-1009",
+    name: "Tashi Perera",
+    grade: "Grade 8",
+    attendance: 97,
+    gpa: 3.7,
+    nextClass: "Math Coaching (Apex Tuition Hub) @ 10 AM Sat",
+    duesUSD: 140,
+  },
 ];
 
 export const teacherClasses = [
-  { id: "PHY-12", name: "Advanced Physics", batch: "Science-A", students: 42, nextSession: "Today 4:00 PM", room: "Lab 3 / Zoom" },
-  { id: "PHY-11", name: "Physics Foundations", batch: "Science-B", students: 38, nextSession: "Tomorrow 10:00 AM", room: "Room 2B" },
-  { id: "PHY-AL", name: "A/L Revision Cohort", batch: "Revision", students: 64, nextSession: "Sat 9:00 AM", room: "Hall + Zoom" },
+  {
+    id: "PHY-12",
+    name: "Advanced Physics",
+    batch: "Science-A",
+    students: 42,
+    nextSession: "Today 4:00 PM",
+    room: "Lab 3 / Zoom",
+  },
+  {
+    id: "PHY-11",
+    name: "Physics Foundations",
+    batch: "Science-B",
+    students: 38,
+    nextSession: "Tomorrow 10:00 AM",
+    room: "Room 2B",
+  },
+  {
+    id: "PHY-AL",
+    name: "A/L Revision Cohort",
+    batch: "Revision",
+    students: 64,
+    nextSession: "Sat 9:00 AM",
+    room: "Hall + Zoom",
+  },
 ];
 
 export const attendanceTrend = [
-  { week: "W1", rate: 92 }, { week: "W2", rate: 89 }, { week: "W3", rate: 94 },
-  { week: "W4", rate: 88 }, { week: "W5", rate: 91 }, { week: "W6", rate: 95 },
-  { week: "W7", rate: 93 }, { week: "W8", rate: 90 },
+  { week: "W1", rate: 92 },
+  { week: "W2", rate: 89 },
+  { week: "W3", rate: 94 },
+  { week: "W4", rate: 88 },
+  { week: "W5", rate: 91 },
+  { week: "W6", rate: 95 },
+  { week: "W7", rate: 93 },
+  { week: "W8", rate: 90 },
 ];
 
 export const revenueTrend = [
-  { m: "Jan", v: 42 }, { m: "Feb", v: 51 }, { m: "Mar", v: 58 },
-  { m: "Apr", v: 62 }, { m: "May", v: 71 }, { m: "Jun", v: 79 },
+  { m: "Jan", v: 42 },
+  { m: "Feb", v: 51 },
+  { m: "Mar", v: 58 },
+  { m: "Apr", v: 62 },
+  { m: "May", v: 71 },
+  { m: "Jun", v: 79 },
 ];
 
 export type SrbType =
@@ -601,8 +2075,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "permission",
     title: "Field trip — Planetarium (Jun 14)",
-    body:
-      "We're visiting the Colombo Planetarium on Friday, 14 June, 8 AM – 1 PM. Please acknowledge before Wednesday. Bus departs from the main gate. Pack a snack and water bottle.",
+    body: "We're visiting the Colombo Planetarium on Friday, 14 June, 8 AM – 1 PM. Please acknowledge before Wednesday. Bus departs from the main gate. Pack a snack and water bottle.",
     date: d(0, 8, 12),
     pinned: true,
     requiresAck: true,
@@ -618,8 +2091,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "achievement",
     title: "Top score in physics quiz",
-    body:
-      "Aarav scored 49/50 on this week's Quantum Mechanics quiz — class average was 36/50. Excellent grasp of wave-particle duality. Keep it up!",
+    body: "Aarav scored 49/50 on this week's Quantum Mechanics quiz — class average was 36/50. Excellent grasp of wave-particle duality. Keep it up!",
     date: d(1, 14, 30),
     replies: [
       {
@@ -643,8 +2115,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "homework",
     title: "Chemistry: Lab report due Friday",
-    body:
-      "Write up the alkene addition experiment we did today. 2–3 pages with hand-drawn mechanisms. Due Friday 8 AM.",
+    body: "Write up the alkene addition experiment we did today. 2–3 pages with hand-drawn mechanisms. Due Friday 8 AM.",
     date: d(2, 15, 0),
     ackBy: "Nimal Perera",
     ackAt: d(2, 19, 22),
@@ -659,8 +2130,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "counselor",
     type: "remark",
     title: "Counseling check-in — June",
-    body:
-      "Had our monthly chat. Aarav is feeling positive about A/Ls and has joined the chess club. No concerns at this time.",
+    body: "Had our monthly chat. Aarav is feeling positive about A/Ls and has joined the chess club. No concerns at this time.",
     date: d(4, 11, 0),
     replies: [],
     institutionId: "T-006",
@@ -674,8 +2144,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "parent",
     type: "communication",
     title: "Aarav will be 15 min late tomorrow",
-    body:
-      "We have a dental appointment in the morning. Aarav will join the second period. Apologies for the late notice.",
+    body: "We have a dental appointment in the morning. Aarav will join the second period. Apologies for the late notice.",
     date: d(3, 20, 30),
     replies: [
       {
@@ -710,8 +2179,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "behavior",
     title: "Excellent group leadership",
-    body:
-      "Aarav led the maths problem-solving group today and helped two classmates understand integration. Strong collaborative behaviour.",
+    body: "Aarav led the maths problem-solving group today and helped two classmates understand integration. Strong collaborative behaviour.",
     date: d(5, 13, 45),
     ackBy: "Nimal Perera",
     ackAt: d(5, 18, 22),
@@ -726,8 +2194,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "homework",
     title: "IELTS — Mock test scheduled Saturday",
-    body:
-      "Full timed mock test (Listening + Reading) on Saturday 6 PM. Bring HB pencils and headphones. We'll review band scores next Tue.",
+    body: "Full timed mock test (Listening + Reading) on Saturday 6 PM. Bring HB pencils and headphones. We'll review band scores next Tue.",
     date: d(2, 11, 30),
     requiresAck: true,
     institutionId: "T-003",
@@ -741,8 +2208,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "achievement",
     title: "Integration paper — 92/100",
-    body:
-      "Aarav's June practice paper on integration techniques scored 92/100 — second-highest in the Saturday cohort. Well done!",
+    body: "Aarav's June practice paper on integration techniques scored 92/100 — second-highest in the Saturday cohort. Well done!",
     date: d(6, 10, 0),
     institutionId: "T-007",
     institutionName: "Apex Tuition Hub",
@@ -756,8 +2222,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "homework",
     title: "English: Read chapters 4–6 by Monday",
-    body:
-      "Reading assignment from 'The Giver'. Be ready to discuss the role of Sameness in the community.",
+    body: "Reading assignment from 'The Giver'. Be ready to discuss the role of Sameness in the community.",
     date: d(1, 16, 0),
     institutionId: "T-008",
     institutionName: "LittleSparks Academy",
@@ -770,8 +2235,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "achievement",
     title: "Story-writing competition: 2nd place",
-    body:
-      "Tashi's short story 'The Lantern Keeper' placed 2nd in the inter-school writing contest. A certificate will follow.",
+    body: "Tashi's short story 'The Lantern Keeper' placed 2nd in the inter-school writing contest. A certificate will follow.",
     date: d(6, 9, 30),
     replies: [
       {
@@ -795,8 +2259,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "behavior",
     title: "Disrupting class — June 5",
-    body:
-      "Tashi was chatting during the silent reading period and needed two reminders. Please have a brief conversation at home.",
+    body: "Tashi was chatting during the silent reading period and needed two reminders. Please have a brief conversation at home.",
     date: d(8, 11, 0),
     requiresAck: true,
     institutionId: "T-008",
@@ -810,8 +2273,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "homework",
     title: "Algebra practice sheet · Sat",
-    body:
-      "Please complete questions 1–12 on page 34 before Saturday's class. We'll review the harder word-problems together.",
+    body: "Please complete questions 1–12 on page 34 before Saturday's class. We'll review the harder word-problems together.",
     date: d(2, 14, 0),
     institutionId: "T-007",
     institutionName: "Apex Tuition Hub",
@@ -825,8 +2287,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "remark",
     title: "Attendance concern — please call us",
-    body:
-      "Tharindu has missed 4 consecutive physics classes. Could we set up a parent-teacher call this week?",
+    body: "Tharindu has missed 4 consecutive physics classes. Could we set up a parent-teacher call this week?",
     date: d(2, 17, 30),
     pinned: true,
     requiresAck: true,
@@ -841,8 +2302,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "counselor",
     type: "communication",
     title: "Wellness check-in scheduled",
-    body:
-      "I've blocked 30 minutes on Thursday at 11 AM for a check-in with Tharindu. Parents are welcome to join.",
+    body: "I've blocked 30 minutes on Thursday at 11 AM for a check-in with Tharindu. Parents are welcome to join.",
     date: d(3, 14, 0),
     institutionId: "T-007",
     institutionName: "Apex Tuition Hub",
@@ -861,8 +2321,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "achievement",
     title: "Top of the Foundation cohort — Chemistry",
-    body:
-      "Senuli scored 96/100 in the Foundation Chemistry mid-module — the highest in the cohort. Excellent lab technique and written analysis.",
+    body: "Senuli scored 96/100 in the Foundation Chemistry mid-module — the highest in the cohort. Excellent lab technique and written analysis.",
     date: d(2, 14, 0),
     institutionId: "T-002",
     institutionName: "EduStar International",
@@ -875,8 +2334,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "admin",
     type: "permission",
     title: "Lab safety induction — please confirm",
-    body:
-      "Mandatory lab safety induction before this term's practicals. As a self-managed (18+) student you confirm your own attendance here — no guardian sign-off is required.",
+    body: "Mandatory lab safety induction before this term's practicals. As a self-managed (18+) student you confirm your own attendance here — no guardian sign-off is required.",
     date: d(1, 9, 0),
     pinned: true,
     requiresAck: true,
@@ -891,8 +2349,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "student",
     type: "communication",
     title: "Will miss Friday's lab — medical appointment",
-    body:
-      "I have a medical appointment on Friday morning and will miss the 9 AM practical. I'll catch up on the worksheet over the weekend. (Managing this myself — no guardian on file.)",
+    body: "I have a medical appointment on Friday morning and will miss the 9 AM practical. I'll catch up on the worksheet over the weekend. (Managing this myself — no guardian on file.)",
     date: d(1, 8, 20),
     replies: [
       {
@@ -914,8 +2371,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "admin",
     type: "communication",
     title: "Self-service billing active",
-    body:
-      "Your account is set to self-managed billing. Invoices and reminders go directly to you, and you authorise your own course enrolments and payments.",
+    body: "Your account is set to self-managed billing. Invoices and reminders go directly to you, and you authorise your own course enrolments and payments.",
     date: d(5, 11, 0),
     institutionId: "T-002",
     institutionName: "EduStar International",
@@ -928,8 +2384,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "counselor",
     type: "remark",
     title: "Pathway check-in — adding an external A/L class",
-    body:
-      "Discussed Senuli's plan to add an A/L Chemistry class at another institute. She'll approve any cross-institute enrolment herself via One Edu (OTP / one-click). No concerns.",
+    body: "Discussed Senuli's plan to add an A/L Chemistry class at another institute. She'll approve any cross-institute enrolment herself via One Edu (OTP / one-click). No concerns.",
     date: d(6, 13, 0),
     institutionId: "T-002",
     institutionName: "EduStar International",
@@ -947,8 +2402,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "teacher",
     type: "communication",
     title: "A/L Physics revision — can you join Monday's live class?",
-    body:
-      "Hi Senuli — you asked about adding A/L Physics revision. I run a live online class Mon/Wed 4 PM. Please confirm here if you'd like a seat and I'll share the joining link. (Reply right here — this thread stays in your record book.)",
+    body: "Hi Senuli — you asked about adding A/L Physics revision. I run a live online class Mon/Wed 4 PM. Please confirm here if you'd like a seat and I'll share the joining link. (Reply right here — this thread stays in your record book.)",
     date: d(1, 16, 30),
     requiresAck: true,
     replies: [
@@ -991,14 +2445,152 @@ export interface Teacher {
 }
 
 export const teachers: Teacher[] = [
-  { id: "TCH-01", name: "Dr. Saman Silva", subject: "Physics", institutionId: "T-001", institutionName: "Global Coaching Hub", photo: portrait("men/45.jpg"), experienceYears: 12, avgStudentGpa: 3.6, passRate: 94, attendanceRate: 92 },
-  { id: "TCH-02", name: "Mrs. Lalani Perera", subject: "Chemistry", institutionId: "T-006", institutionName: "Royal Vista College", photo: portrait("women/68.jpg"), experienceYears: 9, avgStudentGpa: 3.4, passRate: 90, attendanceRate: 89 },
-  { id: "TCH-03", name: "Mr. Asanka Gunasekara", subject: "Combined Maths", institutionId: "T-007", institutionName: "Apex Tuition Hub", photo: portrait("men/41.jpg"), experienceYears: 15, avgStudentGpa: 3.8, passRate: 96, attendanceRate: 95 },
-  { id: "TCH-04", name: "Ms. Chandrika Soysa", subject: "English Literature", institutionId: "T-008", institutionName: "LittleSparks Academy", photo: portrait("women/52.jpg"), experienceYears: 7, avgStudentGpa: 3.5, passRate: 91, attendanceRate: 93 },
-  { id: "TCH-05", name: "Dr. Ramya Jayaweera", subject: "Biology", institutionId: "T-006", institutionName: "Royal Vista College", photo: portrait("women/65.jpg"), experienceYears: 11, avgStudentGpa: 3.3, passRate: 88, attendanceRate: 90 },
-  { id: "TCH-06", name: "Ms. Chathuri Wijesinghe", subject: "IELTS / English", institutionId: "T-003", institutionName: "BrightPath Institute", photo: portrait("women/44.jpg"), experienceYears: 6, avgStudentGpa: 3.2, passRate: 86, attendanceRate: 88 },
-  { id: "TCH-07", name: "Mr. Dineth Wickrama", subject: "ICT", institutionId: "T-006", institutionName: "Royal Vista College", photo: portrait("men/36.jpg"), experienceYears: 8, avgStudentGpa: 3.5, passRate: 92, attendanceRate: 87 },
-  { id: "TCH-08", name: "Dr. Nadia Khan", subject: "Chemistry (Foundation)", institutionId: "T-002", institutionName: "EduStar International", photo: portrait("women/30.jpg"), experienceYears: 10, avgStudentGpa: 3.7, passRate: 93, attendanceRate: 91 },
+  {
+    id: "TCH-01",
+    name: "Dr. Saman Silva",
+    subject: "Physics",
+    institutionId: "T-001",
+    institutionName: "Global Coaching Hub",
+    photo: portrait("men/45.jpg"),
+    experienceYears: 12,
+    avgStudentGpa: 3.6,
+    passRate: 94,
+    attendanceRate: 92,
+  },
+  {
+    id: "TCH-02",
+    name: "Mrs. Lalani Perera",
+    subject: "Chemistry",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    photo: portrait("women/68.jpg"),
+    experienceYears: 9,
+    avgStudentGpa: 3.4,
+    passRate: 90,
+    attendanceRate: 89,
+  },
+  {
+    id: "TCH-03",
+    name: "Mr. Asanka Gunasekara",
+    subject: "Combined Maths",
+    institutionId: "T-007",
+    institutionName: "Apex Tuition Hub",
+    photo: portrait("men/41.jpg"),
+    experienceYears: 15,
+    avgStudentGpa: 3.8,
+    passRate: 96,
+    attendanceRate: 95,
+  },
+  {
+    id: "TCH-04",
+    name: "Ms. Chandrika Soysa",
+    subject: "English Literature",
+    institutionId: "T-008",
+    institutionName: "LittleSparks Academy",
+    photo: portrait("women/52.jpg"),
+    experienceYears: 7,
+    avgStudentGpa: 3.5,
+    passRate: 91,
+    attendanceRate: 93,
+  },
+  {
+    id: "TCH-05",
+    name: "Dr. Ramya Jayaweera",
+    subject: "Biology",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    photo: portrait("women/65.jpg"),
+    experienceYears: 11,
+    avgStudentGpa: 3.3,
+    passRate: 88,
+    attendanceRate: 90,
+  },
+  {
+    id: "TCH-06",
+    name: "Ms. Chathuri Wijesinghe",
+    subject: "IELTS / English",
+    institutionId: "T-003",
+    institutionName: "BrightPath Institute",
+    photo: portrait("women/44.jpg"),
+    experienceYears: 6,
+    avgStudentGpa: 3.2,
+    passRate: 86,
+    attendanceRate: 88,
+  },
+  {
+    id: "TCH-07",
+    name: "Mr. Dineth Wickrama",
+    subject: "ICT",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    photo: portrait("men/36.jpg"),
+    experienceYears: 8,
+    avgStudentGpa: 3.5,
+    passRate: 92,
+    attendanceRate: 87,
+  },
+  {
+    id: "TCH-08",
+    name: "Dr. Nadia Khan",
+    subject: "Chemistry (Foundation)",
+    institutionId: "T-002",
+    institutionName: "EduStar International",
+    photo: portrait("women/30.jpg"),
+    experienceYears: 10,
+    avgStudentGpa: 3.7,
+    passRate: 93,
+    attendanceRate: 91,
+  },
+  /* Swim Academy coaches (Royal Vista Aquatics, T-006). Mariana is also the
+   * coach demo login. Performance signals here read as squad outcomes. */
+  {
+    id: "TCH-09",
+    name: "Coach Mariana Cruz",
+    subject: "Swimming · Head Coach",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    photo: portrait("women/63.jpg"),
+    experienceYears: 14,
+    avgStudentGpa: 3.7,
+    passRate: 95,
+    attendanceRate: 94,
+  },
+  {
+    id: "TCH-10",
+    name: "Coach Dilan Perera",
+    subject: "Swimming · Squad",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    photo: portrait("men/26.jpg"),
+    experienceYears: 8,
+    avgStudentGpa: 3.5,
+    passRate: 92,
+    attendanceRate: 90,
+  },
+  {
+    id: "TCH-11",
+    name: "Coach Aisha Rahman",
+    subject: "Swimming · Learn-to-Swim",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    photo: portrait("women/48.jpg"),
+    experienceYears: 6,
+    avgStudentGpa: 3.6,
+    passRate: 93,
+    attendanceRate: 92,
+  },
+  {
+    id: "TCH-12",
+    name: "Coach Tomas Berg",
+    subject: "Swimming · Stroke & Dive",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    photo: portrait("men/64.jpg"),
+    experienceYears: 11,
+    avgStudentGpa: 3.4,
+    passRate: 90,
+    attendanceRate: 88,
+  },
 ];
 
 export const teacherByName: Record<string, Teacher> = Object.fromEntries(
@@ -1019,17 +2611,131 @@ export interface TeacherRating {
 }
 
 export const teacherRatings: TeacherRating[] = [
-  { id: "TR-001", teacherId: "TCH-01", teacherName: "Dr. Saman Silva", authorName: "Nimal Perera", authorRole: "parent", stars: 5, comment: "Aarav's physics has transformed this year. Dr. Silva explains hard concepts clearly and always replies to our record-book notes quickly.", at: d(3, 19, 0), childName: "Aarav Perera" },
-  { id: "TR-002", teacherId: "TCH-01", teacherName: "Dr. Saman Silva", authorName: "Sunil Bandara", authorRole: "parent", stars: 4, comment: "Very knowledgeable and patient. Would love a little more written feedback on practice papers.", at: d(8, 11, 0), childName: "Tharindu Bandara" },
-  { id: "TR-003", teacherId: "TCH-01", teacherName: "Dr. Saman Silva", authorName: "Senuli Fernando", authorRole: "student", stars: 5, comment: "Joined his online revision as a self-managed student — fantastic pace and the recordings are a lifesaver.", at: d(2, 9, 30) },
-  { id: "TR-004", teacherId: "TCH-03", teacherName: "Mr. Asanka Gunasekara", authorName: "Nimal Perera", authorRole: "parent", stars: 5, comment: "Best maths coach we've had. Aarav scored 92 on the integration paper after just one term.", at: d(5, 18, 0), childName: "Aarav Perera" },
-  { id: "TR-005", teacherId: "TCH-03", teacherName: "Mr. Asanka Gunasekara", authorName: "Mahesh Rathnayake", authorRole: "parent", stars: 5, comment: "Exceptional. Clear weekly targets and the Saturday cohort keeps the kids motivated.", at: d(12, 10, 0), childName: "Kavindu Rathnayake" },
-  { id: "TR-006", teacherId: "TCH-04", teacherName: "Ms. Chandrika Soysa", authorName: "Nimal Perera", authorRole: "parent", stars: 5, comment: "Tashi's writing placed 2nd in the inter-school contest under Ms. Soysa's guidance. Wonderful encouragement.", at: d(6, 12, 30), childName: "Tashi Perera" },
-  { id: "TR-007", teacherId: "TCH-02", teacherName: "Mrs. Lalani Perera", authorName: "Nimal Perera", authorRole: "parent", stars: 4, comment: "Organised and thorough chemistry teaching. Lab reports feedback is detailed.", at: d(4, 20, 0), childName: "Aarav Perera" },
-  { id: "TR-008", teacherId: "TCH-02", teacherName: "Mrs. Lalani Perera", authorName: "Kumara Wijesinghe", authorRole: "parent", stars: 4, comment: "Good teacher, my daughter enjoys the practicals.", at: d(10, 9, 0), childName: "Sara Wijesinghe" },
-  { id: "TR-009", teacherId: "TCH-06", teacherName: "Ms. Chathuri Wijesinghe", authorName: "Nimal Perera", authorRole: "parent", stars: 4, comment: "IELTS prep is well structured. Mock tests every week are very useful.", at: d(7, 16, 0), childName: "Aarav Perera" },
-  { id: "TR-010", teacherId: "TCH-08", teacherName: "Dr. Nadia Khan", authorName: "Senuli Fernando", authorRole: "student", stars: 5, comment: "Top of the Foundation cohort thanks to her clear lab teaching. Highly recommend for Chemistry.", at: d(3, 14, 0) },
-  { id: "TR-011", teacherId: "TCH-05", teacherName: "Dr. Ramya Jayaweera", authorName: "Anjali Fernando", authorRole: "parent", stars: 4, comment: "Nethmi loves biology now. Cell systems were made so approachable.", at: d(9, 11, 0), childName: "Nethmi Fernando" },
+  {
+    id: "TR-001",
+    teacherId: "TCH-01",
+    teacherName: "Dr. Saman Silva",
+    authorName: "Nimal Perera",
+    authorRole: "parent",
+    stars: 5,
+    comment:
+      "Aarav's physics has transformed this year. Dr. Silva explains hard concepts clearly and always replies to our record-book notes quickly.",
+    at: d(3, 19, 0),
+    childName: "Aarav Perera",
+  },
+  {
+    id: "TR-002",
+    teacherId: "TCH-01",
+    teacherName: "Dr. Saman Silva",
+    authorName: "Sunil Bandara",
+    authorRole: "parent",
+    stars: 4,
+    comment:
+      "Very knowledgeable and patient. Would love a little more written feedback on practice papers.",
+    at: d(8, 11, 0),
+    childName: "Tharindu Bandara",
+  },
+  {
+    id: "TR-003",
+    teacherId: "TCH-01",
+    teacherName: "Dr. Saman Silva",
+    authorName: "Senuli Fernando",
+    authorRole: "student",
+    stars: 5,
+    comment:
+      "Joined his online revision as a self-managed student — fantastic pace and the recordings are a lifesaver.",
+    at: d(2, 9, 30),
+  },
+  {
+    id: "TR-004",
+    teacherId: "TCH-03",
+    teacherName: "Mr. Asanka Gunasekara",
+    authorName: "Nimal Perera",
+    authorRole: "parent",
+    stars: 5,
+    comment:
+      "Best maths coach we've had. Aarav scored 92 on the integration paper after just one term.",
+    at: d(5, 18, 0),
+    childName: "Aarav Perera",
+  },
+  {
+    id: "TR-005",
+    teacherId: "TCH-03",
+    teacherName: "Mr. Asanka Gunasekara",
+    authorName: "Mahesh Rathnayake",
+    authorRole: "parent",
+    stars: 5,
+    comment: "Exceptional. Clear weekly targets and the Saturday cohort keeps the kids motivated.",
+    at: d(12, 10, 0),
+    childName: "Kavindu Rathnayake",
+  },
+  {
+    id: "TR-006",
+    teacherId: "TCH-04",
+    teacherName: "Ms. Chandrika Soysa",
+    authorName: "Nimal Perera",
+    authorRole: "parent",
+    stars: 5,
+    comment:
+      "Tashi's writing placed 2nd in the inter-school contest under Ms. Soysa's guidance. Wonderful encouragement.",
+    at: d(6, 12, 30),
+    childName: "Tashi Perera",
+  },
+  {
+    id: "TR-007",
+    teacherId: "TCH-02",
+    teacherName: "Mrs. Lalani Perera",
+    authorName: "Nimal Perera",
+    authorRole: "parent",
+    stars: 4,
+    comment: "Organised and thorough chemistry teaching. Lab reports feedback is detailed.",
+    at: d(4, 20, 0),
+    childName: "Aarav Perera",
+  },
+  {
+    id: "TR-008",
+    teacherId: "TCH-02",
+    teacherName: "Mrs. Lalani Perera",
+    authorName: "Kumara Wijesinghe",
+    authorRole: "parent",
+    stars: 4,
+    comment: "Good teacher, my daughter enjoys the practicals.",
+    at: d(10, 9, 0),
+    childName: "Sara Wijesinghe",
+  },
+  {
+    id: "TR-009",
+    teacherId: "TCH-06",
+    teacherName: "Ms. Chathuri Wijesinghe",
+    authorName: "Nimal Perera",
+    authorRole: "parent",
+    stars: 4,
+    comment: "IELTS prep is well structured. Mock tests every week are very useful.",
+    at: d(7, 16, 0),
+    childName: "Aarav Perera",
+  },
+  {
+    id: "TR-010",
+    teacherId: "TCH-08",
+    teacherName: "Dr. Nadia Khan",
+    authorName: "Senuli Fernando",
+    authorRole: "student",
+    stars: 5,
+    comment:
+      "Top of the Foundation cohort thanks to her clear lab teaching. Highly recommend for Chemistry.",
+    at: d(3, 14, 0),
+  },
+  {
+    id: "TR-011",
+    teacherId: "TCH-05",
+    teacherName: "Dr. Ramya Jayaweera",
+    authorName: "Anjali Fernando",
+    authorRole: "parent",
+    stars: 4,
+    comment: "Nethmi loves biology now. Cell systems were made so approachable.",
+    at: d(9, 11, 0),
+    childName: "Nethmi Fernando",
+  },
 ];
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -1075,7 +2781,8 @@ export const trainingCourses: TrainingCourse[] = [
     rating: 4.8,
     enrolledCount: 1284,
     certificate: true,
-    blurb: "Practical routines for engagement, behaviour and a calm, focused classroom — online or in person.",
+    blurb:
+      "Practical routines for engagement, behaviour and a calm, focused classroom — online or in person.",
     lessons: lessons([
       ["Setting expectations from day one", 18],
       ["De-escalation & positive reinforcement", 22],
@@ -1212,5 +2919,378 @@ export const trainingEnrollments: TrainingEnrollment[] = [
     completedLessonIds: ["L1", "L2", "L3", "L4"],
     status: "completed",
     certificateIssuedAt: d(15, 14, 0),
+  },
+];
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Courses with MANY instructors + venue/sessions — the Swimming Academy demo.
+ *
+ * A class/course at an institution may be led by one OR several coaches. A
+ * swimming club is the clearest example: a large pool is divided into zones and
+ * lanes so SEVERAL sessions run at once, each with its own coach(es) and group
+ * of swimmers who need close attention. We model the pool, its zones/lanes, the
+ * club (a multi-coach course), and its weekly sessions. Admins/coaches get a
+ * holistic pool-layout view of the day; a session opens to a full page where
+ * coaches mark attendance + post record-book notes and swimmers/parents see
+ * only their own details.
+ * ──────────────────────────────────────────────────────────────────────── */
+export interface PoolZone {
+  id: string;
+  label: string;
+  /** Lane span this zone covers in the pool (1-indexed, inclusive). */
+  laneFrom: number;
+  laneTo: number;
+  depth: string; // e.g. "1.0–1.2 m"
+}
+
+export interface Pool {
+  id: string;
+  name: string;
+  institutionId: string;
+  institutionName: string;
+  lanes: number;
+  lengthM: number;
+  zones: PoolZone[];
+}
+
+export const pools: Pool[] = [
+  {
+    id: "POOL-OLY",
+    name: "Olympic Pool",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    lanes: 8,
+    lengthM: 50,
+    zones: [
+      { id: "z-lap", label: "Lap Lanes", laneFrom: 1, laneTo: 4, depth: "1.8–2.0 m" },
+      {
+        id: "z-learn",
+        label: "Learn-to-Swim (Shallow)",
+        laneFrom: 5,
+        laneTo: 6,
+        depth: "0.9–1.2 m",
+      },
+      { id: "z-dive", label: "Deep / Diving", laneFrom: 7, laneTo: 8, depth: "3.0–5.0 m" },
+    ],
+  },
+  {
+    id: "POOL-TRN",
+    name: "Training Pool",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    lanes: 4,
+    lengthM: 25,
+    zones: [{ id: "z-trn", label: "Training Pool", laneFrom: 1, laneTo: 4, depth: "1.2–1.4 m" }],
+  },
+];
+
+export const poolById: Record<string, Pool> = Object.fromEntries(pools.map((p) => [p.id, p]));
+
+export interface SwimCourse {
+  id: string;
+  name: string;
+  institutionId: string;
+  institutionName: string;
+  poolIds: string[];
+  coachNames: string[];
+  levels: string[];
+  blurb: string;
+}
+
+export const swimCourses: SwimCourse[] = [
+  {
+    id: "C-SWIM",
+    name: "Royal Vista Swim Academy",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    poolIds: ["POOL-OLY", "POOL-TRN"],
+    coachNames: [
+      "Coach Mariana Cruz",
+      "Coach Dilan Perera",
+      "Coach Aisha Rahman",
+      "Coach Tomas Berg",
+    ],
+    levels: ["Learn-to-Swim", "Stroke Development", "Competitive Squad", "Diving"],
+    blurb:
+      "A multi-coach aquatics programme. The Olympic pool is split into zones so several groups train at once — each with its own coach and small swimmer group for close attention.",
+  },
+];
+
+export const swimCourseById: Record<string, SwimCourse> = Object.fromEntries(
+  swimCourses.map((c) => [c.id, c]),
+);
+
+export type Weekday = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
+
+export interface PoolSession {
+  id: string;
+  courseId: string;
+  title: string;
+  level: string;
+  day: Weekday;
+  start: string; // "16:00"
+  end: string; // "17:00"
+  poolId: string;
+  zoneId: string;
+  laneFrom: number;
+  laneTo: number;
+  coachNames: string[];
+  swimmerIds: string[];
+  capacity: number;
+  focus: string;
+}
+
+/* Several Monday sessions run CONCURRENTLY in the Olympic pool (different lane
+ * zones) so the holistic pool view shows simultaneous occupancy. Aarav (S-1001,
+ * the student demo) and Tashi (S-1009, the parent's 2nd child) are swimmers so
+ * the student/parent demos resolve to real sessions. */
+export const poolSessions: PoolSession[] = [
+  // ── Monday 16:00 — three concurrent groups across the Olympic pool ──
+  {
+    id: "PS-01",
+    courseId: "C-SWIM",
+    title: "Competitive Squad — Sprint",
+    level: "Competitive Squad",
+    day: "Mon",
+    start: "16:00",
+    end: "17:00",
+    poolId: "POOL-OLY",
+    zoneId: "z-lap",
+    laneFrom: 1,
+    laneTo: 4,
+    coachNames: ["Coach Mariana Cruz", "Coach Dilan Perera"],
+    swimmerIds: ["S-1001", "S-1002", "S-1005", "S-1010", "S-1011", "S-1012"],
+    capacity: 12,
+    focus: "Freestyle sprint sets · race starts",
+  },
+  {
+    id: "PS-02",
+    courseId: "C-SWIM",
+    title: "Learn-to-Swim · Dolphins",
+    level: "Learn-to-Swim",
+    day: "Mon",
+    start: "16:00",
+    end: "17:00",
+    poolId: "POOL-OLY",
+    zoneId: "z-learn",
+    laneFrom: 5,
+    laneTo: 6,
+    coachNames: ["Coach Aisha Rahman"],
+    swimmerIds: ["S-1009", "S-1006", "S-1020", "S-1004"],
+    capacity: 8,
+    focus: "Water confidence · floating & kicking",
+  },
+  {
+    id: "PS-03",
+    courseId: "C-SWIM",
+    title: "Diving Basics",
+    level: "Diving",
+    day: "Mon",
+    start: "16:00",
+    end: "17:00",
+    poolId: "POOL-OLY",
+    zoneId: "z-dive",
+    laneFrom: 7,
+    laneTo: 8,
+    coachNames: ["Coach Tomas Berg"],
+    swimmerIds: ["S-1023", "S-1027", "S-1015"],
+    capacity: 6,
+    focus: "Standing dives · platform entry technique",
+  },
+  // ── Monday 17:00 — two concurrent groups ──
+  {
+    id: "PS-04",
+    courseId: "C-SWIM",
+    title: "Competitive Squad — Distance",
+    level: "Competitive Squad",
+    day: "Mon",
+    start: "17:00",
+    end: "18:00",
+    poolId: "POOL-OLY",
+    zoneId: "z-lap",
+    laneFrom: 1,
+    laneTo: 4,
+    coachNames: ["Coach Mariana Cruz", "Coach Tomas Berg"],
+    swimmerIds: ["S-1018", "S-1012", "S-1011", "S-1015", "S-1001"],
+    capacity: 12,
+    focus: "Aerobic distance · pacing & turns",
+  },
+  {
+    id: "PS-05",
+    courseId: "C-SWIM",
+    title: "Learn-to-Swim · Turtles",
+    level: "Learn-to-Swim",
+    day: "Mon",
+    start: "17:00",
+    end: "18:00",
+    poolId: "POOL-OLY",
+    zoneId: "z-learn",
+    laneFrom: 5,
+    laneTo: 6,
+    coachNames: ["Coach Aisha Rahman", "Coach Dilan Perera"],
+    swimmerIds: ["S-1006", "S-1020"],
+    capacity: 8,
+    focus: "Submersion & breath control",
+  },
+  // ── Wednesday ──
+  {
+    id: "PS-06",
+    courseId: "C-SWIM",
+    title: "Stroke Clinic — Butterfly",
+    level: "Stroke Development",
+    day: "Wed",
+    start: "16:00",
+    end: "17:00",
+    poolId: "POOL-OLY",
+    zoneId: "z-lap",
+    laneFrom: 1,
+    laneTo: 4,
+    coachNames: ["Coach Dilan Perera"],
+    swimmerIds: ["S-1001", "S-1002", "S-1010", "S-1015", "S-1018"],
+    capacity: 10,
+    focus: "Butterfly timing & undulation",
+  },
+  {
+    id: "PS-07",
+    courseId: "C-SWIM",
+    title: "Learn-to-Swim · Dolphins",
+    level: "Learn-to-Swim",
+    day: "Wed",
+    start: "16:00",
+    end: "17:00",
+    poolId: "POOL-TRN",
+    zoneId: "z-trn",
+    laneFrom: 1,
+    laneTo: 4,
+    coachNames: ["Coach Aisha Rahman"],
+    swimmerIds: ["S-1009", "S-1006", "S-1004", "S-1020"],
+    capacity: 10,
+    focus: "Front-crawl arm action",
+  },
+  // ── Friday ──
+  {
+    id: "PS-08",
+    courseId: "C-SWIM",
+    title: "Competitive Squad — Race Prep",
+    level: "Competitive Squad",
+    day: "Fri",
+    start: "17:00",
+    end: "18:30",
+    poolId: "POOL-OLY",
+    zoneId: "z-lap",
+    laneFrom: 1,
+    laneTo: 6,
+    coachNames: ["Coach Mariana Cruz", "Coach Dilan Perera", "Coach Tomas Berg"],
+    swimmerIds: ["S-1001", "S-1011", "S-1012", "S-1015", "S-1018", "S-1010", "S-1002"],
+    capacity: 18,
+    focus: "Mock meet · timed heats",
+  },
+  // ── Saturday — two concurrent groups ──
+  {
+    id: "PS-09",
+    courseId: "C-SWIM",
+    title: "Family Learn-to-Swim",
+    level: "Learn-to-Swim",
+    day: "Sat",
+    start: "09:00",
+    end: "10:00",
+    poolId: "POOL-OLY",
+    zoneId: "z-learn",
+    laneFrom: 5,
+    laneTo: 6,
+    coachNames: ["Coach Aisha Rahman", "Coach Mariana Cruz"],
+    swimmerIds: ["S-1009", "S-1006", "S-1004", "S-1020", "S-1027"],
+    capacity: 10,
+    focus: "Parent & child water familiarisation",
+  },
+  {
+    id: "PS-10",
+    courseId: "C-SWIM",
+    title: "Diving · Springboard",
+    level: "Diving",
+    day: "Sat",
+    start: "09:00",
+    end: "10:00",
+    poolId: "POOL-OLY",
+    zoneId: "z-dive",
+    laneFrom: 7,
+    laneTo: 8,
+    coachNames: ["Coach Tomas Berg"],
+    swimmerIds: ["S-1023", "S-1027"],
+    capacity: 6,
+    focus: "1 m springboard approach & hurdle",
+  },
+];
+
+export const sessionById: Record<string, PoolSession> = Object.fromEntries(
+  poolSessions.map((s) => [s.id, s]),
+);
+
+export function sessionsByCourse(courseId: string): PoolSession[] {
+  return poolSessions.filter((s) => s.courseId === courseId);
+}
+
+/** The primary swim course (used for coach redirect + children surfacing). */
+export const SWIM_COURSE_ID = "C-SWIM";
+
+const swimCoachNameSet = new Set(swimCourses.flatMap((c) => c.coachNames));
+
+/** True if a person (by display name) coaches any swim session. */
+export function isSwimCoach(name: string): boolean {
+  return swimCoachNameSet.has(name);
+}
+
+/** Sessions a coach leads (by display name). */
+export function sessionsForCoach(name: string): PoolSession[] {
+  return poolSessions.filter((s) => s.coachNames.includes(name));
+}
+
+/** Sessions a swimmer is enrolled in (by One Edu ID). */
+export function sessionsForSwimmer(studentId: string): PoolSession[] {
+  return poolSessions.filter((s) => s.swimmerIds.includes(studentId));
+}
+
+/** Distinct ordered weekdays that have at least one session for a course. */
+export const SESSION_DAYS: Weekday[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+export interface SessionAttendance {
+  id: string;
+  sessionId: string;
+  studentId: string;
+  studentName: string;
+  status: "Present" | "Late" | "Absent";
+  at: string; // ISO
+  by: string; // coach who marked
+}
+
+/* A couple of pre-marked rows on Monday's sprint squad so a coach opening the
+ * session sees existing attendance (and the holistic view shows live counts). */
+export const sessionAttendance: SessionAttendance[] = [
+  {
+    id: "SA-001",
+    sessionId: "PS-01",
+    studentId: "S-1001",
+    studentName: "Aarav Perera",
+    status: "Present",
+    at: d(0, 16, 3),
+    by: "Coach Mariana Cruz",
+  },
+  {
+    id: "SA-002",
+    sessionId: "PS-01",
+    studentId: "S-1002",
+    studentName: "Sara Wijesinghe",
+    status: "Present",
+    at: d(0, 16, 4),
+    by: "Coach Mariana Cruz",
+  },
+  {
+    id: "SA-003",
+    sessionId: "PS-01",
+    studentId: "S-1005",
+    studentName: "Tharindu Bandara",
+    status: "Late",
+    at: d(0, 16, 12),
+    by: "Coach Dilan Perera",
   },
 ];

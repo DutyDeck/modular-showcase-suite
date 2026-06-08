@@ -1,11 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  GraduationCap, Sparkles, Shield, Globe2, ArrowRight,
-  Star, Users, TrendingUp, CheckCircle2, Eye, EyeOff,
+  GraduationCap,
+  Sparkles,
+  Shield,
+  Globe2,
+  ArrowRight,
+  Star,
+  Users,
+  TrendingUp,
+  CheckCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { demoUsers } from "@/lib/mockData";
+import { demoUsers, SWIM_COURSE_ID } from "@/lib/mockData";
 import { Avatar } from "@/components/Avatar";
 import logoUrl from "@/assets/globaledu-logo.png";
 
@@ -40,7 +49,14 @@ function LoginPage() {
       setLoading(false);
       return;
     }
-    navigate({ to: "/app" });
+    // Swim coaches land straight on their swim club — their world is the pool,
+    // not the generic dashboard.
+    const found = demoUsers.find((u) => u.email.toLowerCase() === em.toLowerCase());
+    if (found?.meta?.discipline === "Swimming") {
+      navigate({ to: "/app/courses/$courseId", params: { courseId: SWIM_COURSE_ID } });
+    } else {
+      navigate({ to: "/app" });
+    }
   };
 
   const submit = (e: React.FormEvent) => {
@@ -60,8 +76,14 @@ function LoginPage() {
       <div className="hidden lg:flex relative bg-gradient-hero text-white p-12 flex-col justify-between overflow-hidden">
         {/* Animated orbs */}
         <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-white/20 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -right-20 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/30 blur-3xl animate-pulse" style={{ animationDelay: "1.2s" }} />
-        <div className="absolute top-1/3 right-1/4 h-64 w-64 rounded-full bg-sky-300/20 blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+        <div
+          className="absolute -bottom-40 -right-20 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/30 blur-3xl animate-pulse"
+          style={{ animationDelay: "1.2s" }}
+        />
+        <div
+          className="absolute top-1/3 right-1/4 h-64 w-64 rounded-full bg-sky-300/20 blur-3xl animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
         {/* Grid pattern */}
         <div
           className="absolute inset-0 opacity-[0.08]"
@@ -75,11 +97,19 @@ function LoginPage() {
         <div className="relative">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-2xl bg-white p-1.5 ring-1 ring-white/40 shadow-2xl flex items-center justify-center">
-              <img src={logoUrl} alt="One Edu logo" width={40} height={40} className="h-full w-full object-contain" />
+              <img
+                src={logoUrl}
+                alt="One Edu logo"
+                width={40}
+                height={40}
+                className="h-full w-full object-contain"
+              />
             </div>
             <div>
               <div className="font-bold text-lg tracking-tight">One Edu</div>
-              <div className="text-[11px] uppercase tracking-[0.2em] opacity-70">Education Super App</div>
+              <div className="text-[11px] uppercase tracking-[0.2em] opacity-70">
+                Education Super App
+              </div>
             </div>
           </div>
         </div>
@@ -97,8 +127,8 @@ function LoginPage() {
             </span>
           </h1>
           <p className="opacity-85 text-[15px] leading-relaxed">
-            A unified SaaS combining LMS, SIS, academic ERP, CRM, payments,
-            marketplace and AI intelligence — built for tuition classes today, universities tomorrow.
+            A unified SaaS combining LMS, SIS, academic ERP, CRM, payments, marketplace and AI
+            intelligence — built for tuition classes today, universities tomorrow.
           </p>
 
           {/* Feature chips */}
@@ -108,7 +138,10 @@ function LoginPage() {
               { icon: Sparkles, t: "AI-powered", s: "Predictive insights" },
               { icon: Shield, t: "Compliant", s: "GDPR · FERPA" },
             ].map(({ icon: I, t, s }) => (
-              <div key={t} className="rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/15 p-3.5 hover:bg-white/15 transition-colors">
+              <div
+                key={t}
+                className="rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/15 p-3.5 hover:bg-white/15 transition-colors"
+              >
                 <I className="h-4 w-4 mb-2 opacity-90" />
                 <div className="text-xs font-semibold">{t}</div>
                 <div className="text-[10px] opacity-70 mt-0.5">{s}</div>
@@ -119,7 +152,9 @@ function LoginPage() {
           {/* Live stats card */}
           <div className="rounded-2xl bg-white/10 backdrop-blur-xl ring-1 ring-white/20 p-5 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-[11px] uppercase tracking-wider opacity-70 font-semibold">Platform pulse · live</div>
+              <div className="text-[11px] uppercase tracking-wider opacity-70 font-semibold">
+                Platform pulse · live
+              </div>
               <span className="flex items-center gap-1.5 text-[10px]">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
                 Online
@@ -155,14 +190,18 @@ function LoginPage() {
                 ))}
               </div>
               "One Edu replaced 6 disconnected tools and gave us insight we'd never had."
-              <div className="opacity-70 mt-1 text-[11px]">— Dr. Anjali R., Principal · Horizon Academy</div>
+              <div className="opacity-70 mt-1 text-[11px]">
+                — Dr. Anjali R., Principal · Horizon Academy
+              </div>
             </div>
           </div>
         </div>
 
         <div className="relative text-[11px] opacity-60 flex items-center gap-4">
           <span>© 2026 One Edu</span>
-          <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> SOC 2 Type II</span>
+          <span className="flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" /> SOC 2 Type II
+          </span>
           <span>· 99.9% SLA</span>
         </div>
       </div>
@@ -200,7 +239,12 @@ function LoginPage() {
             <div>
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium">Password</label>
-                <button type="button" className="text-[11px] text-primary hover:underline font-medium">Forgot?</button>
+                <button
+                  type="button"
+                  className="text-[11px] text-primary hover:underline font-medium"
+                >
+                  Forgot?
+                </button>
               </div>
               <div className="relative mt-1.5">
                 <input
@@ -212,7 +256,7 @@ function LoginPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShow(s => !s)}
+                  onClick={() => setShow((s) => !s)}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-muted text-muted-foreground"
                 >
                   {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -226,7 +270,9 @@ function LoginPage() {
             </label>
 
             {error && (
-              <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 px-3 py-2 rounded-md">{error}</div>
+              <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 px-3 py-2 rounded-md">
+                {error}
+              </div>
             )}
 
             <button
@@ -235,11 +281,15 @@ function LoginPage() {
               className="group w-full h-11 rounded-lg bg-gradient-brand text-white font-semibold text-sm hover:opacity-95 shadow-elegant transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {loading ? "Signing you in…" : "Sign in"}
-              {!loading && <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />}
+              {!loading && (
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              )}
             </button>
 
             <div className="relative my-1">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t" /></div>
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t" />
+              </div>
               <div className="relative flex justify-center text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 <span className="bg-background px-3">or continue with</span>
               </div>
@@ -251,10 +301,22 @@ function LoginPage() {
                   n: "Google",
                   icon: (
                     <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-                      <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.44c-.28 1.48-1.12 2.73-2.39 3.58v2.98h3.86c2.26-2.09 3.58-5.17 3.58-8.8z"/>
-                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.93l-3.86-2.98c-1.07.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/>
-                      <path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"/>
-                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/>
+                      <path
+                        fill="#4285F4"
+                        d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.44c-.28 1.48-1.12 2.73-2.39 3.58v2.98h3.86c2.26-2.09 3.58-5.17 3.58-8.8z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 24c3.24 0 5.95-1.08 7.93-2.93l-3.86-2.98c-1.07.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"
+                      />
                     </svg>
                   ),
                 },
@@ -262,10 +324,10 @@ function LoginPage() {
                   n: "Microsoft",
                   icon: (
                     <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-                      <path fill="#F25022" d="M1 1h10v10H1z"/>
-                      <path fill="#7FBA00" d="M13 1h10v10H13z"/>
-                      <path fill="#00A4EF" d="M1 13h10v10H1z"/>
-                      <path fill="#FFB900" d="M13 13h10v10H13z"/>
+                      <path fill="#F25022" d="M1 1h10v10H1z" />
+                      <path fill="#7FBA00" d="M13 1h10v10H13z" />
+                      <path fill="#00A4EF" d="M1 13h10v10H1z" />
+                      <path fill="#FFB900" d="M13 13h10v10H13z" />
                     </svg>
                   ),
                 },
@@ -273,7 +335,7 @@ function LoginPage() {
                   n: "Apple",
                   icon: (
                     <svg viewBox="0 0 24 24" className="h-5 w-5 fill-foreground" aria-hidden="true">
-                      <path d="M17.05 12.7c-.03-2.78 2.27-4.12 2.37-4.18-1.29-1.89-3.3-2.15-4.02-2.18-1.71-.17-3.34 1.01-4.21 1.01-.87 0-2.21-.98-3.63-.96-1.87.03-3.6 1.09-4.56 2.76-1.94 3.37-.5 8.36 1.4 11.1.93 1.34 2.04 2.85 3.49 2.79 1.4-.06 1.93-.91 3.63-.91 1.69 0 2.17.91 3.65.88 1.51-.03 2.46-1.37 3.39-2.71 1.07-1.56 1.51-3.07 1.54-3.15-.03-.02-2.95-1.13-2.98-4.45zM14.28 4.57c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.74-3.26 1.67-.71.82-1.34 2.15-1.17 3.42 1.24.09 2.51-.63 3.28-1.55z"/>
+                      <path d="M17.05 12.7c-.03-2.78 2.27-4.12 2.37-4.18-1.29-1.89-3.3-2.15-4.02-2.18-1.71-.17-3.34 1.01-4.21 1.01-.87 0-2.21-.98-3.63-.96-1.87.03-3.6 1.09-4.56 2.76-1.94 3.37-.5 8.36 1.4 11.1.93 1.34 2.04 2.85 3.49 2.79 1.4-.06 1.93-.91 3.63-.91 1.69 0 2.17.91 3.65.88 1.51-.03 2.46-1.37 3.39-2.71 1.07-1.56 1.51-3.07 1.54-3.15-.03-.02-2.95-1.13-2.98-4.45zM14.28 4.57c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.74-3.26 1.67-.71.82-1.34 2.15-1.17 3.42 1.24.09 2.51-.63 3.28-1.55z" />
                     </svg>
                   ),
                 },
@@ -317,7 +379,9 @@ function LoginPage() {
                       ? u.selfManaged
                         ? "Adult student"
                         : "Student"
-                      : u.role;
+                      : u.role === "teacher" && u.meta?.discipline === "Swimming"
+                        ? "Swim coach"
+                        : u.role;
                 return (
                   <button
                     key={u.id}
@@ -326,7 +390,9 @@ function LoginPage() {
                     onClick={() => quickPick(u.email)}
                     className="group relative text-left p-3 rounded-xl border bg-card hover:border-primary/50 hover:shadow-elegant transition-all overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${roleAccent[u.role]}`} />
+                    <div
+                      className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${roleAccent[u.role]}`}
+                    />
                     <div className="flex items-center gap-2.5">
                       <Avatar
                         name={u.name}
@@ -350,7 +416,9 @@ function LoginPage() {
 
           <div className="mt-8 text-center text-[11px] text-muted-foreground">
             Don't have an account?{" "}
-            <button className="text-primary font-semibold hover:underline">Request institutional access</button>
+            <button className="text-primary font-semibold hover:underline">
+              Request institutional access
+            </button>
           </div>
         </div>
       </div>

@@ -3,14 +3,41 @@ import { useAuth } from "@/lib/auth";
 import { PageHeader, StatCard, Section, Badge } from "@/components/ui-kit";
 import { AreaTrend, BarTrend } from "@/components/Charts";
 import {
-  Users, BookOpen, DollarSign, TrendingUp, GraduationCap, Wallet,
-  CalendarCheck, Award, Sparkles, AlertTriangle, Building2,
-  UserCheck, ShieldCheck, CreditCard, Star, ChevronRight,
+  Users,
+  BookOpen,
+  DollarSign,
+  TrendingUp,
+  GraduationCap,
+  Wallet,
+  CalendarCheck,
+  Award,
+  Sparkles,
+  AlertTriangle,
+  Building2,
+  UserCheck,
+  ShieldCheck,
+  CreditCard,
+  Star,
+  ChevronRight,
+  Waves,
+  MapPin,
+  Clock,
 } from "lucide-react";
 import {
-  notifications, attendanceTrend, revenueTrend, grades,
-  aiInsights, teacherClasses, children, getEnrollments, ageOn,
+  notifications,
+  attendanceTrend,
+  revenueTrend,
+  grades,
+  aiInsights,
+  teacherClasses,
+  children,
+  getEnrollments,
+  ageOn,
   teacherByName,
+  isSwimCoach,
+  sessionsForCoach,
+  poolById,
+  SWIM_COURSE_ID,
 } from "@/lib/mockData";
 import { useCollection } from "@/lib/store";
 import { useEnabledModules } from "@/lib/modules";
@@ -24,18 +51,7 @@ export const Route = createFileRoute("/app/")({
 });
 
 function firstName(fullName: string): string {
-  const titles = new Set([
-    "dr.",
-    "dr",
-    "mr.",
-    "mr",
-    "mrs.",
-    "mrs",
-    "ms.",
-    "ms",
-    "prof.",
-    "prof",
-  ]);
+  const titles = new Set(["dr.", "dr", "mr.", "mr", "mrs.", "mrs", "ms.", "ms", "prof.", "prof"]);
   const parts = fullName.trim().split(/\s+/);
   const meaningful = parts.filter((p) => !titles.has(p.toLowerCase()));
   return meaningful[0] ?? parts[0] ?? "";
@@ -48,11 +64,17 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl bg-gradient-hero text-white p-6 md:p-8 shadow-elegant relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20"
-             style={{ backgroundImage: "radial-gradient(circle at 80% 10%, white 0%, transparent 35%)" }} />
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: "radial-gradient(circle at 80% 10%, white 0%, transparent 35%)",
+          }}
+        />
         <div className="relative">
           <div className="text-xs uppercase tracking-wider opacity-80">{user.institution}</div>
-          <h1 className="text-2xl md:text-3xl font-bold mt-1">Welcome back, {firstName(user.name)} 👋</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mt-1">
+            Welcome back, {firstName(user.name)} 👋
+          </h1>
           <p className="text-sm opacity-85 mt-1 max-w-xl">
             Here's what's happening across your{" "}
             {user.role === "admin"
@@ -92,8 +114,8 @@ function AutonomyBanner() {
               <Badge tone="success">{age} yrs · 18+</Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              You manage your own enrolment, payments and course selection — no
-              guardian approval needed.
+              You manage your own enrolment, payments and course selection — no guardian approval
+              needed.
             </p>
           </div>
         </div>
@@ -124,8 +146,8 @@ function AutonomyBanner() {
         </div>
         <p className="text-xs text-muted-foreground mt-0.5">
           Enrolment, payments and course-selection requests are approved by{" "}
-          <b>{user.guardianName ?? "your guardian"}</b>. You turn 18 and become
-          self-managed automatically.
+          <b>{user.guardianName ?? "your guardian"}</b>. You turn 18 and become self-managed
+          automatically.
         </p>
       </div>
     </div>
@@ -145,16 +167,40 @@ function StudentDash() {
   const { user } = useAuth();
   const assignments = useCollection("assignments");
   const invoices = useCollection("invoices");
-  const pending = assignments.filter(a => a.status === "Pending").length;
-  const due = invoices.find(i => i.status === "Due");
+  const pending = assignments.filter((a) => a.status === "Pending").length;
+  const due = invoices.find((i) => i.status === "Due");
   return (
     <>
       {user?.dob && <AutonomyBanner />}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Current GPA" value="3.8" hint="Top 12% of cohort" icon={<Award className="h-5 w-5" />} accent="success" />
-        <StatCard label="Attendance" value="94%" hint="This semester" icon={<CalendarCheck className="h-5 w-5" />} accent="primary" />
-        <StatCard label="Pending Tasks" value={pending} hint="3 due this week" icon={<BookOpen className="h-5 w-5" />} accent="warning" />
-        <StatCard label="Outstanding" value={`$${due?.amount ?? 0}`} hint="Due Jun 1" icon={<Wallet className="h-5 w-5" />} accent="info" />
+        <StatCard
+          label="Current GPA"
+          value="3.8"
+          hint="Top 12% of cohort"
+          icon={<Award className="h-5 w-5" />}
+          accent="success"
+        />
+        <StatCard
+          label="Attendance"
+          value="94%"
+          hint="This semester"
+          icon={<CalendarCheck className="h-5 w-5" />}
+          accent="primary"
+        />
+        <StatCard
+          label="Pending Tasks"
+          value={pending}
+          hint="3 due this week"
+          icon={<BookOpen className="h-5 w-5" />}
+          accent="warning"
+        />
+        <StatCard
+          label="Outstanding"
+          value={`$${due?.amount ?? 0}`}
+          hint="Due Jun 1"
+          icon={<Wallet className="h-5 w-5" />}
+          accent="info"
+        />
       </div>
       <div className="grid lg:grid-cols-3 gap-6">
         <Section title="Upcoming Assignments" className="lg:col-span-2">
@@ -163,9 +209,17 @@ function StudentDash() {
               <li key={a.id} className="py-3 flex items-center justify-between">
                 <div>
                   <div className="text-sm font-medium">{a.title}</div>
-                  <div className="text-xs text-muted-foreground">{a.course} · Due {a.due}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {a.course} · Due {a.due}
+                  </div>
                 </div>
-                <Badge tone={a.status === "Pending" ? "warning" : a.status === "Graded" ? "success" : "info"}>{a.status}</Badge>
+                <Badge
+                  tone={
+                    a.status === "Pending" ? "warning" : a.status === "Graded" ? "success" : "info"
+                  }
+                >
+                  {a.status}
+                </Badge>
               </li>
             ))}
           </ul>
@@ -214,7 +268,12 @@ function ParentDash() {
   return (
     <>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Children Linked" value={children.length} icon={<Users className="h-5 w-5" />} accent="primary" />
+        <StatCard
+          label="Children Linked"
+          value={children.length}
+          icon={<Users className="h-5 w-5" />}
+          accent="primary"
+        />
         <StatCard
           label="Institutes Unified"
           value={totalInstitutes}
@@ -222,7 +281,12 @@ function ParentDash() {
           icon={<Building2 className="h-5 w-5" />}
           accent="info"
         />
-        <StatCard label="Avg Attendance" value="95.5%" icon={<CalendarCheck className="h-5 w-5" />} accent="success" />
+        <StatCard
+          label="Avg Attendance"
+          value="95.5%"
+          icon={<CalendarCheck className="h-5 w-5" />}
+          accent="success"
+        />
         <StatCard
           label="Total Dues"
           value={`$${totalDues}`}
@@ -241,11 +305,22 @@ function ParentDash() {
               description={primary ? `${c.grade} · ${primary.institution}` : c.grade}
             >
               <div className="grid grid-cols-3 gap-4 text-center">
-                <div><div className="text-2xl font-bold">{c.attendance}%</div><div className="text-[11px] text-muted-foreground">Attendance</div></div>
-                <div><div className="text-2xl font-bold">{c.gpa}</div><div className="text-[11px] text-muted-foreground">GPA</div></div>
-                <div><div className="text-2xl font-bold">${c.duesUSD}</div><div className="text-[11px] text-muted-foreground">Dues</div></div>
+                <div>
+                  <div className="text-2xl font-bold">{c.attendance}%</div>
+                  <div className="text-[11px] text-muted-foreground">Attendance</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{c.gpa}</div>
+                  <div className="text-[11px] text-muted-foreground">GPA</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">${c.duesUSD}</div>
+                  <div className="text-[11px] text-muted-foreground">Dues</div>
+                </div>
               </div>
-              <div className="mt-4 text-xs text-muted-foreground">Next class: <span className="text-foreground font-medium">{c.nextClass}</span></div>
+              <div className="mt-4 text-xs text-muted-foreground">
+                Next class: <span className="text-foreground font-medium">{c.nextClass}</span>
+              </div>
               {enrolments.length > 0 && (
                 <div className="mt-4 pt-3 border-t">
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
@@ -273,6 +348,10 @@ function ParentDash() {
   );
 }
 
+const TEACHER_TODAY = (["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const)[
+  new Date().getDay()
+];
+
 function TeacherDash() {
   const { user } = useAuth();
   const enabled = useEnabledModules(user?.institution ?? "");
@@ -286,21 +365,89 @@ function TeacherDash() {
         .slice(0, 2)
     : [];
 
+  // Swim coaches get an aquatics-specific dashboard — their classes are pool
+  // sessions, not the generic physics roster.
+  const swimCoach = user ? isSwimCoach(user.name) : false;
+  const mySwimSessions = swimCoach && user ? sessionsForCoach(user.name) : [];
+  const todaySwim = mySwimSessions.filter((s) => s.day === TEACHER_TODAY);
+  const swimSwimmerCount = new Set(mySwimSessions.flatMap((s) => s.swimmerIds)).size;
+
   return (
     <>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Classes" value={teacherClasses.length} icon={<GraduationCap className="h-5 w-5" />} accent="primary" />
-        <StatCard label="Students" value={teacherClasses.reduce((a, c) => a + c.students, 0)} icon={<Users className="h-5 w-5" />} accent="info" />
-        <StatCard label="To Grade" value="23" hint="Quizzes & essays" icon={<BookOpen className="h-5 w-5" />} accent="warning" />
-        <StatCard label="At-Risk Students" value="4" hint="AI flagged" icon={<AlertTriangle className="h-5 w-5" />} accent="destructive" />
+        {swimCoach ? (
+          <>
+            <StatCard
+              label="My Sessions"
+              value={mySwimSessions.length}
+              hint="this week"
+              icon={<Waves className="h-5 w-5" />}
+              accent="primary"
+            />
+            <StatCard
+              label="Swimmers"
+              value={swimSwimmerCount}
+              icon={<Users className="h-5 w-5" />}
+              accent="info"
+            />
+            <StatCard
+              label="Today"
+              value={todaySwim.length}
+              hint={`${TEACHER_TODAY} sessions`}
+              icon={<Clock className="h-5 w-5" />}
+              accent="warning"
+            />
+            <StatCard
+              label="Pools"
+              value={2}
+              hint="Olympic + Training"
+              icon={<MapPin className="h-5 w-5" />}
+              accent="success"
+            />
+          </>
+        ) : (
+          <>
+            <StatCard
+              label="Classes"
+              value={teacherClasses.length}
+              icon={<GraduationCap className="h-5 w-5" />}
+              accent="primary"
+            />
+            <StatCard
+              label="Students"
+              value={teacherClasses.reduce((a, c) => a + c.students, 0)}
+              icon={<Users className="h-5 w-5" />}
+              accent="info"
+            />
+            <StatCard
+              label="To Grade"
+              value="23"
+              hint="Quizzes & essays"
+              icon={<BookOpen className="h-5 w-5" />}
+              accent="warning"
+            />
+            <StatCard
+              label="At-Risk Students"
+              value="4"
+              hint="AI flagged"
+              icon={<AlertTriangle className="h-5 w-5" />}
+              accent="destructive"
+            />
+          </>
+        )}
       </div>
 
       {enabled.has("appraisal") && me && myAppraisal && (
-        <Section title="My Appraisal" description="How families and student outcomes rate your teaching.">
+        <Section
+          title="My Appraisal"
+          description="How families and student outcomes rate your teaching."
+        >
           <div className="flex flex-col sm:flex-row gap-5">
             <div className="flex items-center gap-4 sm:border-r sm:pr-6">
               <div className="text-center">
-                <div className="text-4xl font-bold leading-none">{myAppraisal.blended.toFixed(1)}</div>
+                <div className="text-4xl font-bold leading-none">
+                  {myAppraisal.blended.toFixed(1)}
+                </div>
                 <div className="mt-1.5">
                   <Stars value={myAppraisal.blended} size={15} />
                 </div>
@@ -319,7 +466,9 @@ function TeacherDash() {
                         <span className="text-xs font-medium">{r.authorName}</span>
                       </div>
                       {r.comment && (
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">"{r.comment}"</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                          "{r.comment}"
+                        </p>
                       )}
                     </li>
                   ))}
@@ -340,39 +489,100 @@ function TeacherDash() {
           </div>
         </Section>
       )}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <Section title="Today's Schedule" className="lg:col-span-2">
-          <ul className="space-y-3">
-            {teacherClasses.map((c) => (
-              <li key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
-                <div>
-                  <div className="font-medium text-sm">{c.name}</div>
-                  <div className="text-xs text-muted-foreground">{c.batch} · {c.students} students · {c.room}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs font-medium">{c.nextSession}</div>
-                  <button className="mt-1 text-[11px] px-2 py-1 rounded-md bg-primary text-primary-foreground">Start class</button>
-                </div>
-              </li>
-            ))}
-          </ul>
+      {swimCoach ? (
+        <Section
+          title={`Today · ${TEACHER_TODAY}`}
+          description="Your pool sessions for today. Tap one to mark attendance and post notes."
+          actions={
+            <Link
+              to="/app/courses/$courseId"
+              params={{ courseId: SWIM_COURSE_ID }}
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/15"
+            >
+              <Waves className="h-3.5 w-3.5" />
+              Open Swim Academy
+            </Link>
+          }
+        >
+          {todaySwim.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">
+              No sessions scheduled today. Open the Swim Academy to see the full week.
+            </div>
+          ) : (
+            <ul className="space-y-2.5">
+              {todaySwim
+                .slice()
+                .sort((a, b) => a.start.localeCompare(b.start))
+                .map((s) => {
+                  const pool = poolById[s.poolId];
+                  return (
+                    <li key={s.id}>
+                      <Link
+                        to="/app/sessions/$sessionId"
+                        params={{ sessionId: s.id }}
+                        className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
+                      >
+                        <div className="text-center shrink-0 w-14">
+                          <div className="text-xs font-semibold">{s.start}</div>
+                          <div className="text-[10px] text-muted-foreground">{s.end}</div>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium text-sm truncate">{s.title}</div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {pool?.name} · lanes {s.laneFrom}–{s.laneTo} · {s.swimmerIds.length}{" "}
+                            swimmers
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                      </Link>
+                    </li>
+                  );
+                })}
+            </ul>
+          )}
         </Section>
-        <Section title="AI Suggestions">
-          <ul className="space-y-3 text-sm">
-            {aiInsights.slice(0, 3).map((a, i) => (
-              <li key={i} className="p-3 rounded-lg border bg-card">
-                <div className="flex items-start gap-2">
-                  <Sparkles className="h-4 w-4 text-primary mt-0.5" />
+      ) : (
+        <div className="grid lg:grid-cols-3 gap-6">
+          <Section title="Today's Schedule" className="lg:col-span-2">
+            <ul className="space-y-3">
+              {teacherClasses.map((c) => (
+                <li
+                  key={c.id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/40"
+                >
                   <div>
-                    <div className="font-medium text-xs">{a.title}</div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">{a.desc}</div>
+                    <div className="font-medium text-sm">{c.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {c.batch} · {c.students} students · {c.room}
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      </div>
+                  <div className="text-right">
+                    <div className="text-xs font-medium">{c.nextSession}</div>
+                    <button className="mt-1 text-[11px] px-2 py-1 rounded-md bg-primary text-primary-foreground">
+                      Start class
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Section>
+          <Section title="AI Suggestions">
+            <ul className="space-y-3 text-sm">
+              {aiInsights.slice(0, 3).map((a, i) => (
+                <li key={i} className="p-3 rounded-lg border bg-card">
+                  <div className="flex items-start gap-2">
+                    <Sparkles className="h-4 w-4 text-primary mt-0.5" />
+                    <div>
+                      <div className="font-medium text-xs">{a.title}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{a.desc}</div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        </div>
+      )}
     </>
   );
 }
@@ -402,10 +612,33 @@ function GlobalAdminDash() {
         </span>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard label="Active Tenants" value={tenants.length} hint="+2 this month" icon={<Users className="h-5 w-5" />} accent="primary" />
-        <StatCard label="Total Students" value={totalStudents.toLocaleString()} icon={<GraduationCap className="h-5 w-5" />} accent="info" />
-        <StatCard label="MRR" value={formatMoney(mrr)} hint="+12% vs last month" icon={<DollarSign className="h-5 w-5" />} accent="success" />
-        <StatCard label="Open Leads" value={leads.length} hint="Across all tenants" icon={<TrendingUp className="h-5 w-5" />} accent="warning" />
+        <StatCard
+          label="Active Tenants"
+          value={tenants.length}
+          hint="+2 this month"
+          icon={<Users className="h-5 w-5" />}
+          accent="primary"
+        />
+        <StatCard
+          label="Total Students"
+          value={totalStudents.toLocaleString()}
+          icon={<GraduationCap className="h-5 w-5" />}
+          accent="info"
+        />
+        <StatCard
+          label="MRR"
+          value={formatMoney(mrr)}
+          hint="+12% vs last month"
+          icon={<DollarSign className="h-5 w-5" />}
+          accent="success"
+        />
+        <StatCard
+          label="Open Leads"
+          value={leads.length}
+          hint="Across all tenants"
+          icon={<TrendingUp className="h-5 w-5" />}
+          accent="warning"
+        />
       </div>
       <div className="grid lg:grid-cols-2 gap-4 lg:gap-6">
         <Section title="Revenue (last 6 months)" description="MRR in $K">
@@ -427,15 +660,26 @@ function GlobalAdminDash() {
       </div>
       <Section title="At-Risk Students (AI prediction)" description="Cross-tenant signals">
         <ul className="space-y-2">
-          {students.filter(s => s.risk !== "low").map((s) => (
-            <li key={s.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
-              <div>
-                <div className="font-medium text-sm">{s.name} <span className="text-muted-foreground text-xs">· {s.grade}</span></div>
-                <div className="text-xs text-muted-foreground">Attendance {s.attendance}% · GPA {s.gpa}</div>
-              </div>
-              <Badge tone={s.risk === "high" ? "destructive" : "warning"}>{s.risk.toUpperCase()} RISK</Badge>
-            </li>
-          ))}
+          {students
+            .filter((s) => s.risk !== "low")
+            .map((s) => (
+              <li
+                key={s.id}
+                className="flex items-center justify-between p-3 rounded-lg bg-muted/40"
+              >
+                <div>
+                  <div className="font-medium text-sm">
+                    {s.name} <span className="text-muted-foreground text-xs">· {s.grade}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Attendance {s.attendance}% · GPA {s.gpa}
+                  </div>
+                </div>
+                <Badge tone={s.risk === "high" ? "destructive" : "warning"}>
+                  {s.risk.toUpperCase()} RISK
+                </Badge>
+              </li>
+            ))}
         </ul>
       </Section>
     </>
@@ -477,8 +721,8 @@ function InstituteAdminDash() {
         <Building2 className="h-3.5 w-3.5 text-warning-foreground" />
         <span>
           <span className="font-semibold">Institute admin view</span> · scoped to{" "}
-          <span className="font-semibold">{instName}</span> only. Cross-tenant data, billing
-          and platform-wide configuration are managed by the global admin.
+          <span className="font-semibold">{instName}</span> only. Cross-tenant data, billing and
+          platform-wide configuration are managed by the global admin.
         </span>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -529,9 +773,7 @@ function InstituteAdminDash() {
                         {e.studentName} · {e.authorName}
                       </div>
                     </div>
-                    {e.requiresAck && !e.ackAt && (
-                      <Badge tone="destructive">Needs ack</Badge>
-                    )}
+                    {e.requiresAck && !e.ackAt && <Badge tone="destructive">Needs ack</Badge>}
                   </div>
                 </li>
               ))}
@@ -545,11 +787,13 @@ function InstituteAdminDash() {
             {studentsHere
               .filter((s) => s.risk !== "low")
               .map((s) => (
-                <li key={s.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/40"
+                >
                   <div>
                     <div className="font-medium text-sm">
-                      {s.name}{" "}
-                      <span className="text-muted-foreground text-xs">· {s.grade}</span>
+                      {s.name} <span className="text-muted-foreground text-xs">· {s.grade}</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Attendance {s.attendance}% · GPA {s.gpa}

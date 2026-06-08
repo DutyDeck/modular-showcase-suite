@@ -41,11 +41,14 @@ import { Route as AppAppraisalsRouteImport } from './routes/app.appraisals'
 import { Route as AppAiInsightsRouteImport } from './routes/app.ai-insights'
 import { Route as AppTrainingIndexRouteImport } from './routes/app.training.index'
 import { Route as AppSrbIndexRouteImport } from './routes/app.srb.index'
+import { Route as AppCoursesIndexRouteImport } from './routes/app.courses.index'
 import { Route as AppAttendanceIndexRouteImport } from './routes/app.attendance.index'
 import { Route as AppAppraisalsIndexRouteImport } from './routes/app.appraisals.index'
 import { Route as AppTrainingCourseIdRouteImport } from './routes/app.training.$courseId'
 import { Route as AppSrbStudentIdRouteImport } from './routes/app.srb.$studentId'
+import { Route as AppSessionsSessionIdRouteImport } from './routes/app.sessions.$sessionId'
 import { Route as AppInvoiceIdRouteImport } from './routes/app.invoice.$id'
+import { Route as AppCoursesCourseIdRouteImport } from './routes/app.courses.$courseId'
 import { Route as AppAttendanceTakeRouteImport } from './routes/app.attendance.take'
 import { Route as AppAppraisalsTeacherIdRouteImport } from './routes/app.appraisals.$teacherId'
 
@@ -209,6 +212,11 @@ const AppSrbIndexRoute = AppSrbIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppSrbRoute,
 } as any)
+const AppCoursesIndexRoute = AppCoursesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppCoursesRoute,
+} as any)
 const AppAttendanceIndexRoute = AppAttendanceIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -229,10 +237,20 @@ const AppSrbStudentIdRoute = AppSrbStudentIdRouteImport.update({
   path: '/$studentId',
   getParentRoute: () => AppSrbRoute,
 } as any)
+const AppSessionsSessionIdRoute = AppSessionsSessionIdRouteImport.update({
+  id: '/sessions/$sessionId',
+  path: '/sessions/$sessionId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInvoiceIdRoute = AppInvoiceIdRouteImport.update({
   id: '/invoice/$id',
   path: '/invoice/$id',
   getParentRoute: () => AppRoute,
+} as any)
+const AppCoursesCourseIdRoute = AppCoursesCourseIdRouteImport.update({
+  id: '/$courseId',
+  path: '/$courseId',
+  getParentRoute: () => AppCoursesRoute,
 } as any)
 const AppAttendanceTakeRoute = AppAttendanceTakeRouteImport.update({
   id: '/take',
@@ -256,7 +274,7 @@ export interface FileRoutesByFullPath {
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/compliance': typeof AppComplianceRoute
-  '/app/courses': typeof AppCoursesRoute
+  '/app/courses': typeof AppCoursesRouteWithChildren
   '/app/finance': typeof AppFinanceRoute
   '/app/grades': typeof AppGradesRoute
   '/app/grading': typeof AppGradingRoute
@@ -278,11 +296,14 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
+  '/app/courses/$courseId': typeof AppCoursesCourseIdRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
+  '/app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/app/srb/$studentId': typeof AppSrbStudentIdRoute
   '/app/training/$courseId': typeof AppTrainingCourseIdRoute
   '/app/appraisals/': typeof AppAppraisalsIndexRoute
   '/app/attendance/': typeof AppAttendanceIndexRoute
+  '/app/courses/': typeof AppCoursesIndexRoute
   '/app/srb/': typeof AppSrbIndexRoute
   '/app/training/': typeof AppTrainingIndexRoute
 }
@@ -294,7 +315,6 @@ export interface FileRoutesByTo {
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/compliance': typeof AppComplianceRoute
-  '/app/courses': typeof AppCoursesRoute
   '/app/finance': typeof AppFinanceRoute
   '/app/grades': typeof AppGradesRoute
   '/app/grading': typeof AppGradingRoute
@@ -314,11 +334,14 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
+  '/app/courses/$courseId': typeof AppCoursesCourseIdRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
+  '/app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/app/srb/$studentId': typeof AppSrbStudentIdRoute
   '/app/training/$courseId': typeof AppTrainingCourseIdRoute
   '/app/appraisals': typeof AppAppraisalsIndexRoute
   '/app/attendance': typeof AppAttendanceIndexRoute
+  '/app/courses': typeof AppCoursesIndexRoute
   '/app/srb': typeof AppSrbIndexRoute
   '/app/training': typeof AppTrainingIndexRoute
 }
@@ -334,7 +357,7 @@ export interface FileRoutesById {
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/compliance': typeof AppComplianceRoute
-  '/app/courses': typeof AppCoursesRoute
+  '/app/courses': typeof AppCoursesRouteWithChildren
   '/app/finance': typeof AppFinanceRoute
   '/app/grades': typeof AppGradesRoute
   '/app/grading': typeof AppGradingRoute
@@ -356,11 +379,14 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
+  '/app/courses/$courseId': typeof AppCoursesCourseIdRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
+  '/app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/app/srb/$studentId': typeof AppSrbStudentIdRoute
   '/app/training/$courseId': typeof AppTrainingCourseIdRoute
   '/app/appraisals/': typeof AppAppraisalsIndexRoute
   '/app/attendance/': typeof AppAttendanceIndexRoute
+  '/app/courses/': typeof AppCoursesIndexRoute
   '/app/srb/': typeof AppSrbIndexRoute
   '/app/training/': typeof AppTrainingIndexRoute
 }
@@ -399,11 +425,14 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
+    | '/app/courses/$courseId'
     | '/app/invoice/$id'
+    | '/app/sessions/$sessionId'
     | '/app/srb/$studentId'
     | '/app/training/$courseId'
     | '/app/appraisals/'
     | '/app/attendance/'
+    | '/app/courses/'
     | '/app/srb/'
     | '/app/training/'
   fileRoutesByTo: FileRoutesByTo
@@ -415,7 +444,6 @@ export interface FileRouteTypes {
     | '/app/calendar'
     | '/app/children'
     | '/app/compliance'
-    | '/app/courses'
     | '/app/finance'
     | '/app/grades'
     | '/app/grading'
@@ -435,11 +463,14 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
+    | '/app/courses/$courseId'
     | '/app/invoice/$id'
+    | '/app/sessions/$sessionId'
     | '/app/srb/$studentId'
     | '/app/training/$courseId'
     | '/app/appraisals'
     | '/app/attendance'
+    | '/app/courses'
     | '/app/srb'
     | '/app/training'
   id:
@@ -476,11 +507,14 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
+    | '/app/courses/$courseId'
     | '/app/invoice/$id'
+    | '/app/sessions/$sessionId'
     | '/app/srb/$studentId'
     | '/app/training/$courseId'
     | '/app/appraisals/'
     | '/app/attendance/'
+    | '/app/courses/'
     | '/app/srb/'
     | '/app/training/'
   fileRoutesById: FileRoutesById
@@ -717,6 +751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSrbIndexRouteImport
       parentRoute: typeof AppSrbRoute
     }
+    '/app/courses/': {
+      id: '/app/courses/'
+      path: '/'
+      fullPath: '/app/courses/'
+      preLoaderRoute: typeof AppCoursesIndexRouteImport
+      parentRoute: typeof AppCoursesRoute
+    }
     '/app/attendance/': {
       id: '/app/attendance/'
       path: '/'
@@ -745,12 +786,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSrbStudentIdRouteImport
       parentRoute: typeof AppSrbRoute
     }
+    '/app/sessions/$sessionId': {
+      id: '/app/sessions/$sessionId'
+      path: '/sessions/$sessionId'
+      fullPath: '/app/sessions/$sessionId'
+      preLoaderRoute: typeof AppSessionsSessionIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/invoice/$id': {
       id: '/app/invoice/$id'
       path: '/invoice/$id'
       fullPath: '/app/invoice/$id'
       preLoaderRoute: typeof AppInvoiceIdRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/courses/$courseId': {
+      id: '/app/courses/$courseId'
+      path: '/$courseId'
+      fullPath: '/app/courses/$courseId'
+      preLoaderRoute: typeof AppCoursesCourseIdRouteImport
+      parentRoute: typeof AppCoursesRoute
     }
     '/app/attendance/take': {
       id: '/app/attendance/take'
@@ -797,6 +852,20 @@ const AppAttendanceRouteWithChildren = AppAttendanceRoute._addFileChildren(
   AppAttendanceRouteChildren,
 )
 
+interface AppCoursesRouteChildren {
+  AppCoursesCourseIdRoute: typeof AppCoursesCourseIdRoute
+  AppCoursesIndexRoute: typeof AppCoursesIndexRoute
+}
+
+const AppCoursesRouteChildren: AppCoursesRouteChildren = {
+  AppCoursesCourseIdRoute: AppCoursesCourseIdRoute,
+  AppCoursesIndexRoute: AppCoursesIndexRoute,
+}
+
+const AppCoursesRouteWithChildren = AppCoursesRoute._addFileChildren(
+  AppCoursesRouteChildren,
+)
+
 interface AppSrbRouteChildren {
   AppSrbStudentIdRoute: typeof AppSrbStudentIdRoute
   AppSrbIndexRoute: typeof AppSrbIndexRoute
@@ -832,7 +901,7 @@ interface AppRouteChildren {
   AppCalendarRoute: typeof AppCalendarRoute
   AppChildrenRoute: typeof AppChildrenRoute
   AppComplianceRoute: typeof AppComplianceRoute
-  AppCoursesRoute: typeof AppCoursesRoute
+  AppCoursesRoute: typeof AppCoursesRouteWithChildren
   AppFinanceRoute: typeof AppFinanceRoute
   AppGradesRoute: typeof AppGradesRoute
   AppGradingRoute: typeof AppGradingRoute
@@ -853,6 +922,7 @@ interface AppRouteChildren {
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
   AppInvoiceIdRoute: typeof AppInvoiceIdRoute
+  AppSessionsSessionIdRoute: typeof AppSessionsSessionIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -863,7 +933,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCalendarRoute: AppCalendarRoute,
   AppChildrenRoute: AppChildrenRoute,
   AppComplianceRoute: AppComplianceRoute,
-  AppCoursesRoute: AppCoursesRoute,
+  AppCoursesRoute: AppCoursesRouteWithChildren,
   AppFinanceRoute: AppFinanceRoute,
   AppGradesRoute: AppGradesRoute,
   AppGradingRoute: AppGradingRoute,
@@ -884,6 +954,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
   AppInvoiceIdRoute: AppInvoiceIdRoute,
+  AppSessionsSessionIdRoute: AppSessionsSessionIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
