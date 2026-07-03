@@ -59,7 +59,6 @@ function SwimCourseView({ courseId }: { courseId: string }) {
   const appraisalOn = enabled.has("appraisal");
   const students = useCollection("students");
   const ratings = useCollection("teacherRatings");
-  const attendance = useCollection("sessionAttendance");
   const rosters = useCollection("sessionRosters");
   const coachMoves = useCollection("coachMoves");
   const moves = useCollection("swimmerMoves");
@@ -108,8 +107,11 @@ function SwimCourseView({ courseId }: { courseId: string }) {
     [sessions, myStudentIds],
   );
 
-  const presentCountFor = (sessionId: string) =>
-    attendance.filter((a) => a.sessionId === sessionId && a.status === "Present").length;
+  // Swimmers currently enrolled in a session (its effective roster, applying any
+  // moves) — used for the "enrolled / capacity" occupancy shown on the pool map
+  // and timetable. (An earlier version showed the all-time present count here,
+  // which read as nonsense like "76/7".)
+  const occupancyFor = (s: PoolSession) => rosterSwimmerIds(s).length;
 
   const allSwimmerIds = useMemo(
     () => Array.from(new Set(sessions.flatMap((s) => rosterSwimmerIds(s)))),
@@ -212,7 +214,7 @@ function SwimCourseView({ courseId }: { courseId: string }) {
             <PoolMap
               sessions={sessions}
               initialDay={TODAY_WEEKDAY}
-              presentCountFor={presentCountFor}
+              occupancyFor={occupancyFor}
               onOpenSession={openSession}
             />
           </Section>
@@ -226,8 +228,7 @@ function SwimCourseView({ courseId }: { courseId: string }) {
               <Timetable
                 sessions={sessions}
                 onOpen={openSession}
-                presentCountFor={presentCountFor}
-                totalFor={(s) => rosterSwimmerIds(s).length}
+                occupancyFor={occupancyFor}
                 rosterNames={rosterNames}
               />
             </div>
@@ -359,14 +360,12 @@ function SwimCourseView({ courseId }: { courseId: string }) {
 function Timetable({
   sessions,
   onOpen,
-  presentCountFor,
-  totalFor,
+  occupancyFor,
   rosterNames,
 }: {
   sessions: PoolSession[];
   onOpen: (id: string) => void;
-  presentCountFor: (id: string) => number;
-  totalFor: (s: PoolSession) => number;
+  occupancyFor: (s: PoolSession) => number;
   rosterNames: (s: PoolSession) => string[];
 }) {
   const days: Weekday[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -403,9 +402,12 @@ function Timetable({
                           {pool?.name} · lanes {s.laneFrom}–{s.laneTo} · {rosterNames(s).join(", ")}
                         </div>
                       </div>
-                      <span className="text-[11px] text-muted-foreground inline-flex items-center gap-1 shrink-0">
+                      <span
+                        className="text-[11px] text-muted-foreground inline-flex items-center gap-1 shrink-0"
+                        title={`${occupancyFor(s)} enrolled of ${s.capacity} places`}
+                      >
                         <Users className="h-3 w-3" />
-                        {presentCountFor(s.id)}/{totalFor(s)}
+                        {occupancyFor(s)}/{s.capacity}
                       </span>
                       <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </button>

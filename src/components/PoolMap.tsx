@@ -50,12 +50,14 @@ const DAY_FULL: Record<Weekday, string> = {
 export function PoolMap({
   sessions,
   initialDay,
-  presentCountFor,
+  occupancyFor,
   onOpenSession,
 }: {
   sessions: PoolSession[];
   initialDay?: Weekday;
-  presentCountFor?: (sessionId: string) => number;
+  /** Swimmers currently enrolled in the session (effective roster). Falls back
+   *  to the static roster when not provided. Shown as enrolled / capacity. */
+  occupancyFor?: (s: PoolSession) => number;
   onOpenSession: (sessionId: string) => void;
 }) {
   // Days that actually have sessions, kept in week order.
@@ -155,7 +157,7 @@ export function PoolMap({
             key={poolId}
             poolId={poolId}
             sessions={poolSessions}
-            presentCountFor={presentCountFor}
+            occupancyFor={occupancyFor}
             onOpenSession={onOpenSession}
           />
         ))
@@ -177,12 +179,12 @@ export function PoolMap({
 function PoolLayout({
   poolId,
   sessions,
-  presentCountFor,
+  occupancyFor,
   onOpenSession,
 }: {
   poolId: string;
   sessions: PoolSession[];
-  presentCountFor?: (sessionId: string) => number;
+  occupancyFor?: (s: PoolSession) => number;
   onOpenSession: (sessionId: string) => void;
 }) {
   const pool = poolById[poolId];
@@ -263,7 +265,7 @@ function PoolLayout({
             >
               {sessions.map((s) => {
                 const st = styleFor(s.level);
-                const present = presentCountFor?.(s.id);
+                const enrolled = occupancyFor?.(s) ?? s.swimmerIds.length;
                 return (
                   <button
                     key={s.id}
@@ -288,11 +290,12 @@ function PoolLayout({
                           <Avatar key={c} name={c} size={20} className="ring-1 ring-white/70" />
                         ))}
                       </div>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-black/20 rounded px-1.5 py-0.5">
+                      <span
+                        className="inline-flex items-center gap-1 text-[10px] font-medium bg-black/20 rounded px-1.5 py-0.5"
+                        title={`${enrolled} enrolled of ${s.capacity} places`}
+                      >
                         <Users className="h-3 w-3" />
-                        {present != null ? `${present}/` : ""}
-                        {s.swimmerIds.length}
-                        <span className="opacity-75">· cap {s.capacity}</span>
+                        {enrolled}/{s.capacity}
                       </span>
                     </div>
                   </button>
