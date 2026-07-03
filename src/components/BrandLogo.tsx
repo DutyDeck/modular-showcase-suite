@@ -33,17 +33,29 @@ export function BrandLogo({ size = 36, className }: { size?: number; className?:
 }
 
 /**
- * The full 1StudentID lock-up (badge + wordmark + tagline) — use where there's
- * room to breathe, e.g. the login hero. Sits on its own transparent-fitting box;
- * put it on a light/white surface since the artwork has a white ground.
+ * The full 1StudentID lock-up (badge + wordmark + tagline). The source PNG carries
+ * a lot of empty white margin, which reads as an ugly floating rectangle — so we
+ * render it as a cropped background window that trims the margin and lets the
+ * artwork fill its box. Put it on a light/white surface (the artwork has a white
+ * ground); pair with the rounded "card" wrappers below for a tidy logo tile.
  */
+const LOCKUP_ASPECT = "1.19 / 1";
+const LOCKUP_BG_SIZE = "114% auto";
+const LOCKUP_BG_POS = "50% 46%";
+
 export function BrandLockup({ className, alt }: { className?: string; alt?: string }) {
   return (
-    <img
-      src={logoUrl}
-      alt={alt ?? "1StudentID — One ID. Every journey."}
-      className={cn("block h-auto w-full select-none", className)}
-      draggable={false}
+    <div
+      role="img"
+      aria-label={alt ?? "1StudentID — One ID. Every journey."}
+      className={cn("w-full select-none", className)}
+      style={{
+        aspectRatio: LOCKUP_ASPECT,
+        backgroundImage: `url(${logoUrl})`,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: LOCKUP_BG_POS,
+        backgroundSize: LOCKUP_BG_SIZE,
+      }}
     />
   );
 }

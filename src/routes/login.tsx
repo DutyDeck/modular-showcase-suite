@@ -200,8 +200,10 @@ function LoginPage() {
         <div className="absolute bottom-10 left-10 h-40 w-40 rounded-full bg-fuchsia-400/10 blur-3xl" />
 
         <div className="relative w-full max-w-md">
-          <div className="lg:hidden mb-8">
-            <BrandLockup className="w-40" />
+          <div className="lg:hidden mb-8 flex justify-center">
+            <div className="inline-flex rounded-2xl bg-white p-3 shadow-lg ring-1 ring-black/5">
+              <BrandLockup className="w-44" />
+            </div>
           </div>
 
           <div className="mb-7">
