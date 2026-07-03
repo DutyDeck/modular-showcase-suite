@@ -1,8 +1,8 @@
 import { Link, useNavigate, useRouterState, Outlet } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import * as Icons from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { menusByRole, roleLabel } from "@/lib/menus";
+import { menuForUser, roleLabel } from "@/lib/menus";
 import { useEnabledModules } from "@/lib/modules";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/Avatar";
@@ -18,10 +18,11 @@ import { CommandPalette, useCommandPaletteHotkey } from "@/components/CommandPal
 import { CopilotDrawer, CopilotLauncher } from "@/components/CopilotDrawer";
 import { ModuleGate } from "@/components/ModuleGate";
 import { usePrefs } from "@/lib/prefs";
-import logoUrl from "@/assets/globaledu-logo.png";
+import { BrandLogo } from "@/components/BrandLogo";
 
 function Icon({ name, className }: { name: string; className?: string }) {
-  const Cmp = (Icons as any)[name] ?? Icons.Circle;
+  const icons = Icons as unknown as Record<string, ComponentType<{ className?: string }>>;
+  const Cmp = icons[name] ?? Icons.Circle;
   return <Cmp className={className} />;
 }
 
@@ -59,9 +60,7 @@ export function AppShell() {
 
   if (!user) return null;
 
-  const items = menusByRole[user.role].filter(
-    (item) => !item.moduleId || enabled.has(item.moduleId),
-  );
+  const items = menuForUser(user).filter((item) => !item.moduleId || enabled.has(item.moduleId));
   const groups: Record<string, typeof items> = {};
   for (const item of items) {
     const g = item.group ?? "Main";
@@ -73,19 +72,13 @@ export function AppShell() {
     return (
       <>
         <div className="h-16 flex items-center gap-3 px-4 border-b border-sidebar-border">
-          <img
-            src={logoUrl}
-            alt="One Edu logo"
-            width={36}
-            height={36}
-            className="h-9 w-9 shrink-0 drop-shadow"
-          />
+          <BrandLogo size={36} className="h-9 w-9 drop-shadow" />
           {open && (
             <div className="leading-tight flex-1 min-w-0">
-              <div className="font-semibold text-sm truncate">One Edu</div>
-              <div className="text-[10px] uppercase tracking-wider opacity-60">
-                Super App
+              <div className="font-semibold text-sm truncate">
+                <span className="text-sky-500">1</span>StudentID
               </div>
+              <div className="text-[10px] uppercase tracking-wider opacity-60">Super App</div>
             </div>
           )}
           {mode === "mobile" && (
@@ -109,8 +102,7 @@ export function AppShell() {
               )}
               <ul className="space-y-0.5">
                 {list.map((item) => {
-                  const active =
-                    item.to === "/app" ? path === "/app" : path.startsWith(item.to);
+                  const active = item.to === "/app" ? path === "/app" : path.startsWith(item.to);
                   return (
                     <li key={item.to}>
                       <Link
@@ -248,9 +240,7 @@ export function AppShell() {
                 className="ring-2 ring-primary/20"
               />
               <div className="leading-tight hidden xl:block">
-                <div className="text-sm font-medium truncate max-w-[140px]">
-                  {user.name}
-                </div>
+                <div className="text-sm font-medium truncate max-w-[140px]">{user.name}</div>
                 <div className="text-[11px] text-muted-foreground truncate max-w-[140px]">
                   {user.email}
                 </div>

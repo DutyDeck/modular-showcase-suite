@@ -8,7 +8,7 @@ import { Download, FileBarChart, TrendingUp, Users, DollarSign } from "lucide-re
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/reports")({
-  head: () => ({ meta: [{ title: "Reports & BI — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Reports & BI — 1StudentID" }] }),
   component: ReportsPage,
 });
 

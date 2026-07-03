@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/settings")({
-  head: () => ({ meta: [{ title: "Settings — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Settings — 1StudentID" }] }),
   component: SettingsPage,
 });
 

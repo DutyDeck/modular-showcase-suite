@@ -35,9 +35,14 @@ import {
   ageOn,
   teacherByName,
   isSwimCoach,
+  isSwimAdmin,
   sessionsForCoach,
+  sessionsByCourse,
+  effectiveCoachNames,
+  swimCourses,
   poolById,
   SWIM_COURSE_ID,
+  type PoolSession,
 } from "@/lib/mockData";
 import { useCollection } from "@/lib/store";
 import { useEnabledModules } from "@/lib/modules";
@@ -46,7 +51,7 @@ import { Stars } from "@/components/StarRating";
 import { usePrefs } from "@/lib/prefs";
 
 export const Route = createFileRoute("/app/")({
-  head: () => ({ meta: [{ title: "Dashboard — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — 1StudentID" }] }),
   component: Dashboard,
 });
 
@@ -87,10 +92,241 @@ function Dashboard() {
         </div>
       </div>
 
-      {user.role === "student" && <StudentDash />}
-      {user.role === "parent" && <ParentDash />}
-      {user.role === "teacher" && <TeacherDash />}
-      {user.role === "admin" && <AdminDash />}
+      {isSwimAdmin(user) ? (
+        <SwimAdminDash />
+      ) : (
+        <>
+          {user.role === "student" && <StudentDash />}
+          {user.role === "parent" && <ParentDash />}
+          {user.role === "teacher" && <TeacherDash />}
+          {user.role === "admin" && <AdminDash />}
+        </>
+      )}
+    </div>
+  );
+}
+
+function SwimAdminDash() {
+  const attendance = useCollection("sessionAttendance");
+  const incidents = useCollection("incidents");
+  const rosters = useCollection("sessionRosters");
+  const coachAtt = useCollection("coachAttendance");
+  const club = swimCourses[0];
+  const sessions = sessionsByCourse(SWIM_COURSE_ID);
+  const today = TEACHER_TODAY;
+  const todayKey = new Date().toISOString().slice(0, 10);
+
+  const todaySessions = sessions
+    .filter((s) => s.day === today)
+    .sort((a, b) => a.start.localeCompare(b.start));
+  // Today's sessions, or the next training day if today has none.
+  const nextPool = upcomingSessionDay(sessions);
+  const todayIds = new Set(todaySessions.map((s) => s.id));
+  const swimmerCount = new Set(sessions.flatMap((s) => s.swimmerIds)).size;
+  const openIncidents = incidents.filter((i) => i.status === "Open");
+  const presentToday = attendance.filter(
+    (a) => a.status !== "Absent" && a.at.slice(0, 10) === todayKey && todayIds.has(a.sessionId),
+  ).length;
+  const recentCover = coachAtt
+    .filter((c) => c.replacedByName)
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+    .slice(0, 4);
+
+  return (
+    <>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Weekly sessions"
+          value={sessions.length}
+          hint={`${todaySessions.length} today · ${today}`}
+          icon={<Waves className="h-5 w-5" />}
+          accent="primary"
+        />
+        <StatCard
+          label="Swimmers"
+          value={swimmerCount}
+          icon={<Users className="h-5 w-5" />}
+          accent="info"
+        />
+        <StatCard
+          label="Coaches"
+          value={club.coachNames.length}
+          hint="on the roster"
+          icon={<GraduationCap className="h-5 w-5" />}
+          accent="success"
+        />
+        <StatCard
+          label="Open incidents"
+          value={openIncidents.length}
+          hint="need follow-up"
+          icon={<AlertTriangle className="h-5 w-5" />}
+          accent={openIncidents.length > 0 ? "destructive" : "warning"}
+        />
+      </div>
+
+      {/* Quick actions */}
+      <div className="grid sm:grid-cols-3 gap-3">
+        <Link to="/app/coaching">
+          <QuickCard
+            icon={<Users className="h-5 w-5" />}
+            title="Coaches & Sessions"
+            desc="Cover absences · swap coaches"
+          />
+        </Link>
+        <Link to="/app/swim-reports">
+          <QuickCard
+            icon={<TrendingUp className="h-5 w-5" />}
+            title="Summary Reports"
+            desc="Daily · weekly · monthly · yearly"
+          />
+        </Link>
+        <Link to="/app/srb">
+          <QuickCard
+            icon={<Star className="h-5 w-5" />}
+            title="Record Books"
+            desc="Swimmer notes & ratings"
+          />
+        </Link>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        <Section
+          title={
+            nextPool.isToday ? `Today's pool · ${nextPool.day}` : `Next sessions · ${nextPool.day}`
+          }
+          description={
+            nextPool.isToday
+              ? "Sessions running today across the club. Tap to open a session."
+              : "No sessions today — here is the club's next training day."
+          }
+          className="lg:col-span-2"
+          actions={
+            <Link
+              to="/app/courses/$courseId"
+              params={{ courseId: SWIM_COURSE_ID }}
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/15"
+            >
+              <Waves className="h-3.5 w-3.5" />
+              Open club
+            </Link>
+          }
+        >
+          {nextPool.sessions.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">
+              No sessions in the timetable yet. Open the club to set one up.
+            </div>
+          ) : (
+            <ul className="space-y-2.5">
+              {nextPool.sessions.map((s) => {
+                const pool = poolById[s.poolId];
+                const roster = effectiveCoachNames(s.id, rosters);
+                const present = attendance.filter(
+                  (a) =>
+                    a.sessionId === s.id && a.status !== "Absent" && a.at.slice(0, 10) === todayKey,
+                ).length;
+                return (
+                  <li key={s.id}>
+                    <Link
+                      to="/app/sessions/$sessionId"
+                      params={{ sessionId: s.id }}
+                      className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
+                    >
+                      <div className="text-center shrink-0 w-14">
+                        <div className="text-xs font-semibold">{s.start}</div>
+                        <div className="text-[10px] text-muted-foreground">{s.end}</div>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-sm truncate">{s.title}</div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {pool?.name} · {roster.map((n) => n.replace("Coach ", "")).join(", ")}
+                        </div>
+                      </div>
+                      <span className="text-[11px] text-muted-foreground inline-flex items-center gap-1 shrink-0">
+                        <Users className="h-3 w-3" />
+                        {nextPool.isToday
+                          ? `${present}/${s.swimmerIds.length}`
+                          : s.swimmerIds.length}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Section>
+
+        <div className="space-y-6">
+          <Section title="Open incidents" description="Awaiting follow-up.">
+            {openIncidents.length === 0 ? (
+              <div className="text-sm text-muted-foreground py-4 text-center">
+                No open incidents — a clean record.
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {openIncidents.slice(0, 4).map((i) => (
+                  <li key={i.id} className="p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Badge
+                        tone={
+                          i.severity === "High"
+                            ? "destructive"
+                            : i.severity === "Medium"
+                              ? "warning"
+                              : "muted"
+                        }
+                      >
+                        {i.severity}
+                      </Badge>
+                      <span className="text-xs font-medium">{i.title}</span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{i.coachName}</div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+
+          <Section title="Recent coach cover" description="Substitutions logged.">
+            {recentCover.length === 0 ? (
+              <div className="text-sm text-muted-foreground py-4 text-center">
+                No recent substitutions.
+              </div>
+            ) : (
+              <ul className="space-y-2 text-xs">
+                {recentCover.map((c) => (
+                  <li key={c.id} className="p-2.5 rounded-lg bg-muted/40">
+                    <div className="font-medium">
+                      {c.coachName.replace("Coach ", "")} →{" "}
+                      {c.replacedByName?.replace("Coach ", "")}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">{c.reason}</div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+        </div>
+      </div>
+
+      <div className="text-[11px] text-muted-foreground text-center">
+        {presentToday} swimmers marked present today across {todaySessions.length} sessions.
+      </div>
+    </>
+  );
+}
+
+function QuickCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="rounded-xl border bg-card p-4 h-full hover:border-primary/50 hover:shadow-soft transition-all flex items-center gap-3">
+      <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <div className="text-sm font-semibold truncate">{title}</div>
+        <div className="text-[11px] text-muted-foreground truncate">{desc}</div>
+      </div>
+      <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto shrink-0" />
     </div>
   );
 }
@@ -348,9 +584,29 @@ function ParentDash() {
   );
 }
 
-const TEACHER_TODAY = (["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const)[
-  new Date().getDay()
-];
+const WEEK_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const TEACHER_TODAY = WEEK_ORDER[new Date().getDay()];
+
+/**
+ * Sessions for today — or, if today has none (the club runs Mon/Wed/Fri/Sat), the
+ * next upcoming day that does. Keeps the dashboard useful every day of the week.
+ */
+function upcomingSessionDay(all: PoolSession[]): {
+  day: string;
+  sessions: PoolSession[];
+  isToday: boolean;
+} {
+  const todayIdx = new Date().getDay();
+  for (let i = 0; i < 7; i++) {
+    const day = WEEK_ORDER[(todayIdx + i) % 7];
+    const daySessions = all
+      .filter((s) => s.day === day)
+      .slice()
+      .sort((a, b) => a.start.localeCompare(b.start));
+    if (daySessions.length) return { day, sessions: daySessions, isToday: i === 0 };
+  }
+  return { day: WEEK_ORDER[todayIdx], sessions: [], isToday: true };
+}
 
 function TeacherDash() {
   const { user } = useAuth();
@@ -370,6 +626,8 @@ function TeacherDash() {
   const swimCoach = user ? isSwimCoach(user.name) : false;
   const mySwimSessions = swimCoach && user ? sessionsForCoach(user.name) : [];
   const todaySwim = mySwimSessions.filter((s) => s.day === TEACHER_TODAY);
+  // Today's sessions, or the coach's next training day if today has none.
+  const nextSwimPool = upcomingSessionDay(mySwimSessions);
   const swimSwimmerCount = new Set(mySwimSessions.flatMap((s) => s.swimmerIds)).size;
 
   return (
@@ -491,8 +749,16 @@ function TeacherDash() {
       )}
       {swimCoach ? (
         <Section
-          title={`Today · ${TEACHER_TODAY}`}
-          description="Your pool sessions for today. Tap one to mark attendance and post notes."
+          title={
+            nextSwimPool.isToday
+              ? `Today · ${nextSwimPool.day}`
+              : `Next sessions · ${nextSwimPool.day}`
+          }
+          description={
+            nextSwimPool.isToday
+              ? "Your pool sessions for today. Tap one to mark attendance and post notes."
+              : "No sessions today — here are your next sessions. Tap one to open it."
+          }
           actions={
             <Link
               to="/app/courses/$courseId"
@@ -500,44 +766,41 @@ function TeacherDash() {
               className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/15"
             >
               <Waves className="h-3.5 w-3.5" />
-              Open Swim Academy
+              Open club
             </Link>
           }
         >
-          {todaySwim.length === 0 ? (
+          {nextSwimPool.sessions.length === 0 ? (
             <div className="text-sm text-muted-foreground py-6 text-center">
-              No sessions scheduled today. Open the Swim Academy to see the full week.
+              No sessions in your timetable yet. Open the club to see the full week.
             </div>
           ) : (
             <ul className="space-y-2.5">
-              {todaySwim
-                .slice()
-                .sort((a, b) => a.start.localeCompare(b.start))
-                .map((s) => {
-                  const pool = poolById[s.poolId];
-                  return (
-                    <li key={s.id}>
-                      <Link
-                        to="/app/sessions/$sessionId"
-                        params={{ sessionId: s.id }}
-                        className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
-                      >
-                        <div className="text-center shrink-0 w-14">
-                          <div className="text-xs font-semibold">{s.start}</div>
-                          <div className="text-[10px] text-muted-foreground">{s.end}</div>
+              {nextSwimPool.sessions.map((s) => {
+                const pool = poolById[s.poolId];
+                return (
+                  <li key={s.id}>
+                    <Link
+                      to="/app/sessions/$sessionId"
+                      params={{ sessionId: s.id }}
+                      className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
+                    >
+                      <div className="text-center shrink-0 w-14">
+                        <div className="text-xs font-semibold">{s.start}</div>
+                        <div className="text-[10px] text-muted-foreground">{s.end}</div>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-sm truncate">{s.title}</div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {pool?.name} · lanes {s.laneFrom}–{s.laneTo} · {s.swimmerIds.length}{" "}
+                          swimmers
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-medium text-sm truncate">{s.title}</div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {pool?.name} · lanes {s.laneFrom}–{s.laneTo} · {s.swimmerIds.length}{" "}
-                            swimmers
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                      </Link>
-                    </li>
-                  );
-                })}
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Section>
@@ -608,7 +871,7 @@ function GlobalAdminDash() {
         <Sparkles className="h-3.5 w-3.5 text-primary" />
         <span>
           <span className="font-semibold text-foreground">Global admin view</span> · cross-tenant
-          revenue, growth and risk signals across every institute on One Edu.
+          revenue, growth and risk signals across every institute on 1StudentID.
         </span>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

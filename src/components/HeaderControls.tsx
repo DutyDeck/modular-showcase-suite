@@ -15,14 +15,10 @@ import {
   GraduationCap,
   Building2,
 } from "lucide-react";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { usePrefs, LOCALE_LABEL, CURRENCY_LABEL, type Locale, type Currency } from "@/lib/prefs";
 import { resetStore } from "@/lib/store";
-import { notifications } from "@/lib/mockData";
+import { notifications, swimNotifications, isSwimUser } from "@/lib/mockData";
 import { useAuth } from "@/lib/auth";
 import { setEnabledModules, useEnabledModules, MODULES, type ModuleId } from "@/lib/modules";
 import { toast } from "sonner";
@@ -33,12 +29,17 @@ const ICON_FOR_TYPE: Record<string, any> = {
   attendance: CalendarCheck,
   billing: Wallet,
   class: GraduationCap,
+  incident: Bell,
 };
 
 export function NotificationBell() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  // Swim accounts get a club-relevant feed (sessions, attendance, incidents,
+  // cover) instead of the generic school notifications (exam grades, …).
+  const feed = isSwimUser(user) ? swimNotifications : notifications;
   const [dismissed, setDismissed] = useState<Set<number>>(new Set());
-  const visible = notifications.filter((_, i) => !dismissed.has(i));
+  const visible = feed.filter((_, i) => !dismissed.has(i));
   const unread = visible.length;
 
   return (
@@ -65,7 +66,7 @@ export function NotificationBell() {
             </div>
           </div>
           <button
-            onClick={() => setDismissed(new Set(notifications.map((_, i) => i)))}
+            onClick={() => setDismissed(new Set(feed.map((_, i) => i)))}
             className="text-xs text-primary font-medium hover:underline"
           >
             Mark all read
@@ -83,11 +84,21 @@ export function NotificationBell() {
               <li key={`${n.type}-${i}`}>
                 <button
                   onClick={() => {
-                    setDismissed((s) => new Set([...s, notifications.indexOf(n)]));
+                    setDismissed((s) => new Set([...s, feed.indexOf(n)]));
+                    const swim = isSwimUser(user);
                     if (n.type === "billing") navigate({ to: "/app/finance" });
-                    else if (n.type === "attendance") navigate({ to: "/app/attendance" });
+                    else if (n.type === "incident") navigate({ to: "/app/swim-reports" });
+                    else if (n.type === "attendance")
+                      navigate({ to: swim ? "/app/swim-reports" : "/app/attendance" });
                     else if (n.type === "grade") navigate({ to: "/app/grades" });
-                    else if (n.type === "class") navigate({ to: "/app/lms" });
+                    else if (n.type === "class") {
+                      if (swim)
+                        navigate({
+                          to: "/app/courses/$courseId",
+                          params: { courseId: "C-SWIM" },
+                        });
+                      else navigate({ to: "/app/lms" });
+                    }
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-muted/60 flex gap-3 items-start"
                 >
@@ -96,9 +107,7 @@ export function NotificationBell() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm">{n.text}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">
-                      {n.time}
-                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">{n.time}</div>
                   </div>
                 </button>
               </li>
@@ -119,11 +128,7 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
       title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     >
-      {theme === "dark" ? (
-        <Sun className="h-4 w-4" />
-      ) : (
-        <Moon className="h-4 w-4" />
-      )}
+      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </button>
   );
 }
@@ -205,8 +210,15 @@ const ENTITLEMENT_PROFILES: Array<{
     plan: "Starter",
     hint: "Roster, attendance, comms only",
     modules: [
-      "core", "students", "courses", "attendance", "calendar",
-      "teaching", "family", "messages", "users",
+      "core",
+      "students",
+      "courses",
+      "attendance",
+      "calendar",
+      "teaching",
+      "family",
+      "messages",
+      "users",
     ],
   },
   {
@@ -215,9 +227,23 @@ const ENTITLEMENT_PROFILES: Array<{
     plan: "Growth",
     hint: "Adds LMS, grades, finance",
     modules: [
-      "core", "students", "courses", "attendance", "calendar", "lms",
-      "assignments", "grades", "srb", "teaching", "training", "family", "finance",
-      "marketplace", "messages", "reports", "users",
+      "core",
+      "students",
+      "courses",
+      "attendance",
+      "calendar",
+      "lms",
+      "assignments",
+      "grades",
+      "srb",
+      "teaching",
+      "training",
+      "family",
+      "finance",
+      "marketplace",
+      "messages",
+      "reports",
+      "users",
     ],
   },
   {
@@ -242,9 +268,7 @@ export function TenantProfileSwitcher() {
 
   // Match profile by exact module set, fall back to "Custom".
   const currentIds = Array.from(enabled).sort().join(",");
-  const active = ENTITLEMENT_PROFILES.find(
-    (p) => [...p.modules].sort().join(",") === currentIds,
-  );
+  const active = ENTITLEMENT_PROFILES.find((p) => [...p.modules].sort().join(",") === currentIds);
 
   return (
     <Popover>
@@ -269,8 +293,8 @@ export function TenantProfileSwitcher() {
           <div className="text-xs font-semibold">Demo: tenant profile</div>
           <div className="text-[10px] text-muted-foreground mt-0.5">
             Applies an entitlement preset to{" "}
-            <span className="font-medium text-foreground">{user.institution}</span>.
-            Sidebar updates instantly.
+            <span className="font-medium text-foreground">{user.institution}</span>. Sidebar updates
+            instantly.
           </div>
         </div>
         {ENTITLEMENT_PROFILES.map((p) => {
@@ -287,12 +311,7 @@ export function TenantProfileSwitcher() {
                 isActive && "bg-muted/60",
               )}
             >
-              <span
-                className={cn(
-                  "mt-1.5 h-1.5 w-1.5 rounded-full shrink-0",
-                  PLAN_DOT[p.plan],
-                )}
-              />
+              <span className={cn("mt-1.5 h-1.5 w-1.5 rounded-full shrink-0", PLAN_DOT[p.plan])} />
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium flex items-center justify-between gap-2">
                   {p.label}

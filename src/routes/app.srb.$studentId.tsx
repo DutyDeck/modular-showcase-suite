@@ -1,16 +1,18 @@
-import {
-  createFileRoute,
-  Link,
-  useNavigate,
-  useParams,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useAuth } from "@/lib/auth";
 import { useCollection } from "@/lib/store";
-import { children as parentChildren, getEnrollments } from "@/lib/mockData";
+import {
+  children as parentChildren,
+  getEnrollments,
+  isSwimUser,
+  sessionsForSwimmer,
+  SWIM_COURSE_ID,
+} from "@/lib/mockData";
 import { Avatar } from "@/components/Avatar";
 import { Badge, Button, PageHeader, Section, useDisclosure } from "@/components/ui-kit";
 import { SrbTimeline, SrbComposer } from "@/components/Srb";
+import { LevelProgression } from "@/components/LevelProgression";
 import {
   ArrowLeft,
   Bell,
@@ -22,6 +24,7 @@ import {
   MessageSquare,
   Building2,
   KeyRound,
+  Waves,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -38,6 +41,7 @@ function SrbStudentPage() {
   const navigate = useNavigate();
   const students = useCollection("students");
   const srb = useCollection("srb");
+  const sessionAtt = useCollection("sessionAttendance");
   const composer = useDisclosure();
 
   const student = useMemo(() => {
@@ -71,18 +75,31 @@ function SrbStudentPage() {
   }, [students, studentId]);
 
   // An institute admin only sees record-book entries from their own institute.
-  const scopeInst =
-    user?.adminScope === "institute" ? user.institutionId : undefined;
+  const scopeInst = user?.adminScope === "institute" ? user.institutionId : undefined;
+  // Swim accounts only see swim-club records for the swimmer, never other subjects.
+  const swim = isSwimUser(user);
+  const scopeCourse = swim ? SWIM_COURSE_ID : undefined;
   const studentSrb = useMemo(
     () =>
       srb.filter(
         (e) =>
           e.studentId === studentId &&
-          (!scopeInst || e.institutionId === scopeInst),
+          (!scopeInst || e.institutionId === scopeInst) &&
+          (!scopeCourse || e.courseId === scopeCourse),
       ),
-    [srb, studentId, scopeInst],
+    [srb, studentId, scopeInst, scopeCourse],
   );
   const needsAck = studentSrb.filter((e) => e.requiresAck && !e.ackAt).length;
+
+  // Swim-relevant stats for the hero (replaces school GPA/attendance/fees).
+  const swimStats = useMemo(() => {
+    const mySess = sessionsForSwimmer(studentId);
+    const rows = sessionAtt.filter((a) => a.studentId === studentId);
+    const present = rows.filter((a) => a.status !== "Absent").length;
+    const rate = rows.length ? Math.round((present / rows.length) * 100) : 0;
+    const levels = Array.from(new Set(mySess.map((s) => s.level)));
+    return { sessions: mySess.length, rate, level: levels[0] ?? "Swimmer" };
+  }, [sessionAtt, studentId]);
 
   const enrolments = useMemo(() => {
     if (!student) return [];
@@ -123,7 +140,11 @@ function SrbStudentPage() {
     <div className="space-y-5">
       <PageHeader
         title="Record Book"
-        subtitle={`Two-way log between teachers and parents for ${student.name}.`}
+        subtitle={
+          swim
+            ? `Coach ⇄ family log for ${student.name} — swim sessions, achievements and ratings.`
+            : `Two-way log between teachers and parents for ${student.name}.`
+        }
         actions={
           <>
             <Button variant="outline" onClick={() => window.print()}>
@@ -144,15 +165,21 @@ function SrbStudentPage() {
       <Section className="!p-0 overflow-hidden">
         <div className="bg-gradient-hero text-white p-5 sm:p-6">
           <div className="flex items-start gap-4">
-            <Avatar name={student.name} seed={student.id} size={64} className="ring-2 ring-white/40" />
+            <Avatar
+              name={student.name}
+              seed={student.id}
+              size={64}
+              className="ring-2 ring-white/40"
+            />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xl sm:text-2xl font-bold truncate">{student.name}</h2>
                 <Badge tone="muted">{student.id}</Badge>
               </div>
               <div className="text-sm opacity-90 mt-0.5">
-                {student.grade}
-                {student.batch ? ` · ${student.batch}` : ""}
+                {swim
+                  ? swimStats.level
+                  : `${student.grade}${student.batch ? ` · ${student.batch}` : ""}`}
               </div>
               {student.nextClass && (
                 <div className="text-xs opacity-85 mt-1">
@@ -171,33 +198,65 @@ function SrbStudentPage() {
             )}
           </div>
           <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <HeroStat
-              icon={<CalendarCheck className="h-4 w-4" />}
-              label="Attendance"
-              value={`${student.attendance}%`}
-            />
-            <HeroStat icon={<Award className="h-4 w-4" />} label="GPA" value={String(student.gpa)} />
-            <HeroStat
-              icon={<Bell className="h-4 w-4" />}
-              label="Needs ack"
-              value={String(needsAck)}
-              tone={needsAck > 0 ? "alert" : "ok"}
-            />
-            <HeroStat
-              icon={<Wallet className="h-4 w-4" />}
-              label="Outstanding"
-              value={student.duesUSD ? `$${student.duesUSD}` : "—"}
-            />
+            {swim ? (
+              <>
+                <HeroStat
+                  icon={<Waves className="h-4 w-4" />}
+                  label="Weekly sessions"
+                  value={String(swimStats.sessions)}
+                />
+                <HeroStat
+                  icon={<CalendarCheck className="h-4 w-4" />}
+                  label="Attendance"
+                  value={`${swimStats.rate}%`}
+                />
+                <HeroStat
+                  icon={<Bell className="h-4 w-4" />}
+                  label="Needs ack"
+                  value={String(needsAck)}
+                  tone={needsAck > 0 ? "alert" : "ok"}
+                />
+                <HeroStat
+                  icon={<Award className="h-4 w-4" />}
+                  label="Programme"
+                  value={swimStats.level}
+                />
+              </>
+            ) : (
+              <>
+                <HeroStat
+                  icon={<CalendarCheck className="h-4 w-4" />}
+                  label="Attendance"
+                  value={`${student.attendance}%`}
+                />
+                <HeroStat
+                  icon={<Award className="h-4 w-4" />}
+                  label="GPA"
+                  value={String(student.gpa)}
+                />
+                <HeroStat
+                  icon={<Bell className="h-4 w-4" />}
+                  label="Needs ack"
+                  value={String(needsAck)}
+                  tone={needsAck > 0 ? "alert" : "ok"}
+                />
+                <HeroStat
+                  icon={<Wallet className="h-4 w-4" />}
+                  label="Outstanding"
+                  value={student.duesUSD ? `$${student.duesUSD}` : "—"}
+                />
+              </>
+            )}
           </div>
         </div>
       </Section>
 
-      {enrolments.length > 0 && (
+      {!swim && enrolments.length > 0 && (
         <Section
           title="Enrolled at"
           description={
             enrolments.length > 1
-              ? `${enrolments.length} institutes — all managed from this single One Edu account.`
+              ? `${enrolments.length} institutes — all managed from this single 1StudentID account.`
               : "Single-institute enrolment."
           }
         >
@@ -263,14 +322,23 @@ function SrbStudentPage() {
         </div>
       )}
 
+      {/* Level progression / qualify for next level (swim only) */}
+      {swim && (
+        <LevelProgression studentId={student.id} studentName={student.name} canAssess={isStaff} />
+      )}
+
       {/* Timeline */}
-      <SrbTimeline studentId={student.id} institutionId={scopeInst} />
+      <SrbTimeline studentId={student.id} institutionId={scopeInst} courseId={scopeCourse} />
 
       <SrbComposer
         open={composer.open}
         onOpenChange={composer.setOpen}
         defaultStudentId={student.id}
         defaultStudentName={student.name}
+        courseId={scopeCourse}
+        institutionId={swim ? user?.institutionId : undefined}
+        institutionName={swim ? user?.institutionName : undefined}
+        allowRating={swim && isStaff}
       />
 
       {/* Floating composer button on mobile */}
@@ -310,9 +378,7 @@ function HeroStat({
         {label}
       </div>
       <div
-        className={`text-lg font-bold mt-0.5 ${
-          tone === "alert" ? "text-rose-200" : "text-white"
-        }`}
+        className={`text-lg font-bold mt-0.5 ${tone === "alert" ? "text-rose-200" : "text-white"}`}
       >
         {value}
       </div>

@@ -7,7 +7,7 @@ import { ArrowLeft, Printer, Download } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/invoice/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Invoice ${params.id} — One Edu` }] }),
+  head: ({ params }) => ({ meta: [{ title: `Invoice ${params.id} — 1StudentID` }] }),
   component: InvoicePage,
 });
 
@@ -62,7 +62,7 @@ function InvoicePage() {
         {/* Header */}
         <header className="flex items-start justify-between flex-wrap gap-4 pb-6 border-b">
           <div>
-            <div className="text-2xl font-bold tracking-tight">One Edu</div>
+            <div className="text-2xl font-bold tracking-tight">1StudentID</div>
             <div className="text-xs text-muted-foreground mt-1">
               {user?.institution ?? "Global Coaching Hub"}
               <br />
@@ -151,7 +151,7 @@ function InvoicePage() {
 
         {/* Footer */}
         <footer className="mt-10 pt-6 border-t text-xs text-muted-foreground">
-          Thank you for studying with One Edu. Questions? Email{" "}
+          Thank you for studying with 1StudentID. Questions? Email{" "}
           <span className="text-foreground">finance@oneedu.app</span> or call
           +94 11 2 345 678.
           <div className="mt-2">

@@ -17,11 +17,28 @@ import {
 import { useCollection, addItem, updateItem, nextId, type Invoice } from "@/lib/store";
 import { usePrefs } from "@/lib/prefs";
 import { useAuth } from "@/lib/auth";
-import { children as parentChildren } from "@/lib/mockData";
-import { Wallet, TrendingUp, CreditCard, Receipt, Plus, Check, Building2 } from "lucide-react";
+import {
+  children as parentChildren,
+  isSwimAdmin,
+  isOffboarded,
+  SWIM_COURSE_ID,
+  SWIM_PAYMENT_METHODS,
+} from "@/lib/mockData";
+import {
+  Wallet,
+  TrendingUp,
+  CreditCard,
+  Receipt,
+  Plus,
+  Check,
+  Building2,
+  Landmark,
+  Banknote,
+  Repeat,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/finance")({
-  head: () => ({ meta: [{ title: "Finance — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Finance — 1StudentID" }] }),
   component: FinancePage,
 });
 
@@ -30,16 +47,29 @@ const METHODS = ["Visa •••• 4242", "PayPal", "Stripe", "Razorpay", "PayH
 function FinancePage() {
   const { user } = useAuth();
   const allInvoices = useCollection("invoices");
+  const mandates = useCollection("paymentMandates");
+  const offboardings = useCollection("offboardings");
   const { formatMoney } = usePrefs();
   const add = useDisclosure();
   const pay = useDisclosure();
   const [payTarget, setPayTarget] = useState<Invoice | null>(null);
+  const swimAdmin = isSwimAdmin(user);
+  // Swim families pay by Direct Debit / Card / Cash; the generic gateway list is
+  // used for the multi-institute college demo.
+  const methodOptions = swimAdmin ? [...SWIM_PAYMENT_METHODS] : METHODS;
 
-  // Scope: institute admins see only their institute's invoices; parents see
-  // only invoices for their own children; everyone else sees everything.
+  // Scope: the swim-club admin sees only swim-club fees; institute admins see
+  // only their institute's invoices; parents see only invoices for their own
+  // children; everyone else sees everything.
   const isInstituteScoped = user?.adminScope === "institute";
   const isParent = user?.role === "parent";
+  // An admin runs *collections* (records payments received, chases dues) — they
+  // are not the one paying. Parents/students see a "pay my fees" view instead.
+  const isAdmin = user?.role === "admin";
   const invoices = (() => {
+    if (isSwimAdmin(user)) {
+      return allInvoices.filter((i) => i.courseId === SWIM_COURSE_ID);
+    }
     if (isInstituteScoped) {
       return allInvoices.filter((i) => i.institutionId === user?.institutionId);
     }
@@ -50,12 +80,8 @@ function FinancePage() {
     return allInvoices;
   })();
 
-  const paid = invoices
-    .filter((i) => i.status === "Paid")
-    .reduce((a, i) => a + i.amount, 0);
-  const due = invoices
-    .filter((i) => i.status === "Due")
-    .reduce((a, i) => a + i.amount, 0);
+  const paid = invoices.filter((i) => i.status === "Paid").reduce((a, i) => a + i.amount, 0);
+  const due = invoices.filter((i) => i.status === "Due").reduce((a, i) => a + i.amount, 0);
   const upcoming = invoices
     .filter((i) => i.status === "Upcoming")
     .reduce((a, i) => a + i.amount, 0);
@@ -91,7 +117,7 @@ function FinancePage() {
     add.onClose();
   };
 
-  const [payMethod, setPayMethod] = useState(METHODS[0]);
+  const [payMethod, setPayMethod] = useState(methodOptions[0]);
 
   const submitPayment = () => {
     if (!payTarget) return;
@@ -106,7 +132,7 @@ function FinancePage() {
 
   const openPay = (inv: Invoice) => {
     setPayTarget(inv);
-    setPayMethod(METHODS[0]);
+    setPayMethod(methodOptions[0]);
     pay.onOpen();
   };
 
@@ -122,13 +148,15 @@ function FinancePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Financial Management"
+        title={isAdmin ? "Fees & Collections" : "Financial Management"}
         subtitle={
-          isInstituteScoped
-            ? `Invoices for ${user?.institutionName ?? "your institute"} only.`
-            : isParent
-              ? "Fees and invoices across every institute your children attend."
-              : "Invoices, installments, scholarships and payment gateways."
+          isSwimAdmin(user)
+            ? "Swim-club fees — collections, outstanding dues and payment records."
+            : isInstituteScoped
+              ? `Fee collection for ${user?.institutionName ?? "your institute"} only.`
+              : isParent
+                ? "Fees and invoices across every institute your children attend."
+                : "Invoices, installments, scholarships and payment gateways."
         }
         actions={
           <>
@@ -138,22 +166,22 @@ function FinancePage() {
             </Button>
             <Button onClick={payNext}>
               <CreditCard className="h-4 w-4" />
-              Pay Now
+              {isAdmin ? "Record payment" : "Pay Now"}
             </Button>
           </>
         }
       />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
-          label="Paid (YTD)"
+          label={isAdmin ? "Collected (YTD)" : "Paid (YTD)"}
           value={formatMoney(paid)}
           icon={<Receipt className="h-5 w-5" />}
           accent="success"
         />
         <StatCard
-          label="Due Now"
+          label={isAdmin ? "Outstanding" : "Due Now"}
           value={formatMoney(due)}
-          hint="Pay by Jun 1"
+          hint={isAdmin ? "awaiting collection" : "Pay by Jun 1"}
           icon={<Wallet className="h-5 w-5" />}
           accent="warning"
         />
@@ -163,7 +191,21 @@ function FinancePage() {
           icon={<TrendingUp className="h-5 w-5" />}
           accent="info"
         />
-        <StatCard label="Scholarship" value={formatMoney(120)} hint="Merit award" accent="primary" />
+        {isAdmin ? (
+          <StatCard
+            label="Collection rate"
+            value={`${paid + due > 0 ? Math.round((paid / (paid + due)) * 100) : 100}%`}
+            hint="paid vs. billed"
+            accent="primary"
+          />
+        ) : (
+          <StatCard
+            label="Scholarship"
+            value={formatMoney(120)}
+            hint="Merit award"
+            accent="primary"
+          />
+        )}
       </div>
       <Section title="Invoices">
         <DataTable
@@ -193,11 +235,7 @@ function FinancePage() {
               return <span className="font-semibold">{formatMoney(row.amount)}</span>;
             if (key === "status") {
               const tone =
-                row.status === "Paid"
-                  ? "success"
-                  : row.status === "Due"
-                    ? "destructive"
-                    : "info";
+                row.status === "Paid" ? "success" : row.status === "Due" ? "destructive" : "info";
               return <Badge tone={tone}>{row.status}</Badge>;
             }
             if (key === "_actions") {
@@ -220,7 +258,7 @@ function FinancePage() {
                       onClick={() => openPay(row)}
                       className="text-xs px-2.5 py-1 rounded-md bg-primary/10 text-primary font-medium hover:bg-primary/15"
                     >
-                      Pay
+                      {isAdmin ? "Record payment" : "Pay"}
                     </button>
                   )}
                 </div>
@@ -230,13 +268,92 @@ function FinancePage() {
           }}
         />
       </Section>
-      <Section title="Connected Gateways">
+      {swimAdmin && (
+        <Section
+          title="Payment methods & mandates"
+          description="Each family's preferred way to pay — Direct Debit, Card or Cash — with mandate status."
+        >
+          <div className="flex flex-wrap gap-2 mb-3 text-xs">
+            {(["Direct Debit", "Card", "Cash", "Bank Transfer"] as const).map((m) => {
+              const count = mandates.filter(
+                (x) => x.method === m && !isOffboarded(x.studentId, offboardings),
+              ).length;
+              if (!count) return null;
+              return (
+                <span
+                  key={m}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1 font-medium"
+                >
+                  {m === "Direct Debit" ? (
+                    <Repeat className="h-3.5 w-3.5" />
+                  ) : m === "Card" ? (
+                    <CreditCard className="h-3.5 w-3.5" />
+                  ) : m === "Cash" ? (
+                    <Banknote className="h-3.5 w-3.5" />
+                  ) : (
+                    <Landmark className="h-3.5 w-3.5" />
+                  )}
+                  {m}
+                  <span className="font-bold">{count}</span>
+                </span>
+              );
+            })}
+            {mandates.some(
+              (m) => m.status !== "Active" && !isOffboarded(m.studentId, offboardings),
+            ) && (
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-destructive/10 text-destructive px-2.5 py-1 font-medium">
+                Needs attention{" "}
+                {
+                  mandates.filter(
+                    (m) => m.status !== "Active" && !isOffboarded(m.studentId, offboardings),
+                  ).length
+                }
+              </span>
+            )}
+            {mandates.some((m) => isOffboarded(m.studentId, offboardings)) && (
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1 font-medium text-muted-foreground">
+                Stopped (off-boarded){" "}
+                {mandates.filter((m) => isOffboarded(m.studentId, offboardings)).length}
+              </span>
+            )}
+          </div>
+          <DataTable
+            columns={[
+              { key: "studentName", label: "Swimmer" },
+              { key: "payerName", label: "Payer" },
+              { key: "method", label: "Method" },
+              { key: "reference", label: "Reference" },
+              { key: "status", label: "Status" },
+            ]}
+            rows={mandates}
+            emptyText="No payment mandates"
+            renderCell={(row, key) => {
+              const stopped = isOffboarded(row.studentId, offboardings);
+              if (key === "method")
+                return <Badge tone={stopped ? "muted" : "info"}>{row.method}</Badge>;
+              if (key === "status") {
+                if (stopped) return <Badge tone="muted">Stopped · off-boarded</Badge>;
+                const tone =
+                  row.status === "Active"
+                    ? "success"
+                    : row.status === "Pending"
+                      ? "warning"
+                      : "destructive";
+                return <Badge tone={tone}>{row.status}</Badge>;
+              }
+              return String(row[key as keyof typeof row] ?? "");
+            }}
+          />
+        </Section>
+      )}
+
+      <Section title={swimAdmin ? "Payment options" : "Connected Gateways"}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {["Stripe", "PayPal", "Razorpay", "PayHere"].map((p) => (
-            <div
-              key={p}
-              className="p-4 rounded-lg border text-center text-sm font-medium"
-            >
+          {(swimAdmin
+            ? ["Direct Debit (GoCardless)", "Card (Stripe)", "Cash — front desk", "Bank transfer"]
+            : ["Stripe", "PayPal", "Razorpay", "PayHere"]
+          ).map((p) => (
+            <div key={p} className="p-4 rounded-lg border text-center text-sm font-medium">
               {p}
               <div className="text-[10px] text-success mt-1">● Connected</div>
             </div>
@@ -294,16 +411,16 @@ function FinancePage() {
           pay.setOpen(v);
           if (!v) setPayTarget(null);
         }}
-        title={`Pay ${payTarget?.id ?? ""}`}
+        title={`${isAdmin ? "Record payment" : "Pay"} ${payTarget?.id ?? ""}`}
         description={payTarget ? `${payTarget.desc} · ${formatMoney(payTarget.amount)}` : ""}
         onSubmit={submitPayment}
-        submitLabel={`Pay ${formatMoney(payTarget?.amount ?? 0)}`}
+        submitLabel={`${isAdmin ? "Record" : "Pay"} ${formatMoney(payTarget?.amount ?? 0)}`}
       >
         <Field label="Payment method" className="sm:col-span-2">
           <Select
             value={payMethod}
             onChange={(e) => setPayMethod(e.target.value)}
-            options={METHODS.map((m) => ({ value: m, label: m }))}
+            options={methodOptions.map((m) => ({ value: m, label: m }))}
           />
         </Field>
       </FormDialog>

@@ -16,10 +16,10 @@ import {
 import { useAuth } from "@/lib/auth";
 import { demoUsers, SWIM_COURSE_ID } from "@/lib/mockData";
 import { Avatar } from "@/components/Avatar";
-import logoUrl from "@/assets/globaledu-logo.png";
+import { BrandLockup } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign in — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Sign in — 1StudentID" }] }),
   component: LoginPage,
 });
 
@@ -50,9 +50,10 @@ function LoginPage() {
       return;
     }
     // Swim coaches land straight on their swim club — their world is the pool,
-    // not the generic dashboard.
+    // not the generic dashboard. The swim-club admin lands on the swim dashboard
+    // (whole-club overview + quick links to coaching & reports).
     const found = demoUsers.find((u) => u.email.toLowerCase() === em.toLowerCase());
-    if (found?.meta?.discipline === "Swimming") {
+    if (found?.meta?.discipline === "Swimming" && found.role === "teacher") {
       navigate({ to: "/app/courses/$courseId", params: { courseId: SWIM_COURSE_ID } });
     } else {
       navigate({ to: "/app" });
@@ -95,22 +96,8 @@ function LoginPage() {
         />
 
         <div className="relative">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-2xl bg-white p-1.5 ring-1 ring-white/40 shadow-2xl flex items-center justify-center">
-              <img
-                src={logoUrl}
-                alt="One Edu logo"
-                width={40}
-                height={40}
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <div>
-              <div className="font-bold text-lg tracking-tight">One Edu</div>
-              <div className="text-[11px] uppercase tracking-[0.2em] opacity-70">
-                Education Super App
-              </div>
-            </div>
+          <div className="inline-flex rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-white/40">
+            <BrandLockup className="w-56" />
           </div>
         </div>
 
@@ -189,7 +176,7 @@ function LoginPage() {
                   <Star key={i} className="h-3 w-3 fill-amber-300 text-amber-300" />
                 ))}
               </div>
-              "One Edu replaced 6 disconnected tools and gave us insight we'd never had."
+              "1StudentID replaced 6 disconnected tools and gave us insight we'd never had."
               <div className="opacity-70 mt-1 text-[11px]">
                 — Dr. Anjali R., Principal · Horizon Academy
               </div>
@@ -198,7 +185,7 @@ function LoginPage() {
         </div>
 
         <div className="relative text-[11px] opacity-60 flex items-center gap-4">
-          <span>© 2026 One Edu</span>
+          <span>© 2026 1StudentID</span>
           <span className="flex items-center gap-1">
             <CheckCircle2 className="h-3 w-3" /> SOC 2 Type II
           </span>
@@ -213,9 +200,8 @@ function LoginPage() {
         <div className="absolute bottom-10 left-10 h-40 w-40 rounded-full bg-fuchsia-400/10 blur-3xl" />
 
         <div className="relative w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
-            <img src={logoUrl} alt="One Edu logo" width={40} height={40} className="h-10 w-10" />
-            <div className="font-bold">One Edu</div>
+          <div className="lg:hidden mb-8">
+            <BrandLockup className="w-40" />
           </div>
 
           <div className="mb-7">
@@ -372,9 +358,11 @@ function LoginPage() {
                 // them out so the difference isn't hidden behind the same word.
                 const roleLabel =
                   u.role === "admin"
-                    ? u.adminScope === "institute"
-                      ? "Institute admin"
-                      : "Global admin"
+                    ? u.meta?.discipline === "Swimming"
+                      ? "Swim admin"
+                      : u.adminScope === "institute"
+                        ? "Institute admin"
+                        : "Global admin"
                     : u.role === "student"
                       ? u.selfManaged
                         ? "Adult student"

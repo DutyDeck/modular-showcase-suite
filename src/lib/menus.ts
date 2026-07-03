@@ -1,4 +1,4 @@
-import type { Role } from "./mockData";
+import { isSwimUser, isSwimAdmin, type DemoUser, type Role } from "./mockData";
 import type { ModuleId } from "./modules";
 
 export interface MenuItem {
@@ -313,3 +313,185 @@ export const roleLabel: Record<Role, string> = {
   teacher: "Teacher",
   admin: "Administrator",
 };
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Swim-club menus
+ *
+ * The swim coach and swim-club admin get a curated, single-purpose menu — the
+ * whole app is their swim club, so the generic LMS destinations (LMS, generic
+ * attendance/grades, marketing, AI, tenants…) are hidden entirely. Items use
+ * moduleId "core" so they are always visible regardless of tenant entitlements.
+ * See `menuForUser`. `SWIM_CLUB` links straight to the club course page. */
+const swimClubItem: MenuItem = {
+  label: "Swim Club",
+  to: "/app/courses/C-SWIM",
+  icon: "Waves",
+  group: "Club",
+  moduleId: "core",
+};
+
+export const swimCoachMenu: MenuItem[] = [
+  { label: "Dashboard", to: "/app", icon: "LayoutDashboard", group: "Club", moduleId: "core" },
+  swimClubItem,
+  {
+    label: "Record Books",
+    to: "/app/srb",
+    icon: "NotebookPen",
+    group: "Coaching",
+    moduleId: "core",
+  },
+  {
+    label: "Competitive Squad",
+    to: "/app/squad",
+    icon: "Trophy",
+    group: "Coaching",
+    moduleId: "core",
+  },
+  {
+    label: "Summary Reports",
+    to: "/app/swim-reports",
+    icon: "BarChart3",
+    group: "Coaching",
+    moduleId: "core",
+  },
+  {
+    label: "Coach Education",
+    to: "/app/training",
+    icon: "GraduationCap",
+    group: "Professional Development",
+    moduleId: "core",
+  },
+  {
+    label: "My Appraisal",
+    to: "/app/appraisals",
+    icon: "Star",
+    group: "Professional Development",
+    moduleId: "core",
+  },
+  {
+    label: "Messages",
+    to: "/app/messages",
+    icon: "MessageSquare",
+    group: "Communication",
+    moduleId: "core",
+  },
+  { label: "My Profile", to: "/app/profile", icon: "User", group: "Account", moduleId: "core" },
+];
+
+export const swimAdminMenu: MenuItem[] = [
+  { label: "Dashboard", to: "/app", icon: "LayoutDashboard", group: "Club", moduleId: "core" },
+  swimClubItem,
+  {
+    label: "Coaches & Sessions",
+    to: "/app/coaching",
+    icon: "CalendarCog",
+    group: "Club",
+    moduleId: "core",
+  },
+  {
+    label: "Swimmers",
+    to: "/app/students",
+    icon: "Users",
+    group: "Club",
+    moduleId: "core",
+  },
+  {
+    label: "Competitive Squad",
+    to: "/app/squad",
+    icon: "Trophy",
+    group: "Club",
+    moduleId: "core",
+  },
+  {
+    label: "Record Books",
+    to: "/app/srb",
+    icon: "NotebookPen",
+    group: "Club",
+    moduleId: "core",
+  },
+  {
+    label: "Summary Reports",
+    to: "/app/swim-reports",
+    icon: "BarChart3",
+    group: "Club",
+    moduleId: "core",
+  },
+  {
+    label: "Learning (LMS)",
+    to: "/app/lms",
+    icon: "GraduationCap",
+    group: "Academics",
+    moduleId: "core",
+  },
+  {
+    label: "Coach Training",
+    to: "/app/training",
+    icon: "GraduationCap",
+    group: "Academics",
+    moduleId: "core",
+  },
+  {
+    label: "Coach Appraisals",
+    to: "/app/appraisals",
+    icon: "Star",
+    group: "Management",
+    moduleId: "core",
+  },
+  {
+    label: "Fees & Finance",
+    to: "/app/finance",
+    icon: "Wallet",
+    group: "Management",
+    moduleId: "core",
+  },
+  {
+    label: "Marketing & CRM",
+    to: "/app/marketing",
+    icon: "Megaphone",
+    group: "Management",
+    moduleId: "core",
+  },
+  {
+    label: "Users & Roles",
+    to: "/app/users",
+    icon: "ShieldCheck",
+    group: "Platform",
+    moduleId: "core",
+  },
+  {
+    label: "Migration & Imports",
+    to: "/app/migration",
+    icon: "DatabaseZap",
+    group: "Platform",
+    moduleId: "core",
+  },
+  {
+    label: "Compliance & Audit",
+    to: "/app/compliance",
+    icon: "FileLock2",
+    group: "Platform",
+    moduleId: "core",
+  },
+  {
+    label: "Settings",
+    to: "/app/settings",
+    icon: "Settings",
+    group: "Platform",
+    moduleId: "core",
+  },
+  {
+    label: "Messages",
+    to: "/app/messages",
+    icon: "MessageSquare",
+    group: "Communication",
+    moduleId: "core",
+  },
+  { label: "My Profile", to: "/app/profile", icon: "User", group: "Account", moduleId: "core" },
+];
+
+/** Sidebar menu for a user — swim accounts get the curated club menu. */
+export function menuForUser(user: DemoUser | null): MenuItem[] {
+  if (isSwimAdmin(user)) return swimAdminMenu;
+  if (isSwimUser(user)) return swimCoachMenu;
+  return menusByRole[user?.role ?? "student"];
+}

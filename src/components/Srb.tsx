@@ -4,6 +4,7 @@ import * as Icons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/Avatar";
 import { Badge, Button, Field, Select, TextArea, TextInput } from "@/components/ui-kit";
+import { StarInput } from "@/components/StarRating";
 import {
   Dialog,
   DialogContent,
@@ -142,10 +143,7 @@ export function SrbEntryCard({ entry }: { entry: SrbEntry }) {
     const reply: SrbReply = {
       id: `r-${Date.now()}`,
       authorName: user.name,
-      authorRole:
-        user.role === "admin"
-          ? "admin"
-          : (user.role as "teacher" | "parent" | "student"),
+      authorRole: user.role === "admin" ? "admin" : (user.role as "teacher" | "parent" | "student"),
       text: draft.trim(),
       at: new Date().toISOString(),
     };
@@ -191,16 +189,12 @@ export function SrbEntryCard({ entry }: { entry: SrbEntry }) {
             <span className="text-[11px] text-muted-foreground capitalize">
               · {entry.authorRole}
             </span>
-            <span className="text-[11px] text-muted-foreground">
-              · {timeAgo(entry.date)}
-            </span>
+            <span className="text-[11px] text-muted-foreground">· {timeAgo(entry.date)}</span>
             <Badge tone={meta.tone}>
               <Icon className="h-3 w-3 mr-1 inline" />
               {meta.label}
             </Badge>
-            {entry.requiresAck && !entry.ackAt && (
-              <Badge tone="destructive">Action required</Badge>
-            )}
+            {entry.requiresAck && !entry.ackAt && <Badge tone="destructive">Action required</Badge>}
           </div>
         </div>
         {isStaff && entry.authorRole !== "parent" && (
@@ -225,9 +219,7 @@ export function SrbEntryCard({ entry }: { entry: SrbEntry }) {
 
       <div className="px-4 sm:px-5 pb-4">
         <h3 className="text-sm font-semibold leading-tight">{entry.title}</h3>
-        <p className="text-sm text-muted-foreground mt-1.5 whitespace-pre-wrap">
-          {entry.body}
-        </p>
+        <p className="text-sm text-muted-foreground mt-1.5 whitespace-pre-wrap">{entry.body}</p>
       </div>
 
       {/* Ack row */}
@@ -361,19 +353,33 @@ export function SrbComposer({
   defaultStudentId,
   defaultStudentName,
   studentOptions,
+  courseId,
+  sessionId,
+  institutionId,
+  institutionName,
+  allowRating,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   defaultStudentId?: string;
   defaultStudentName?: string;
   studentOptions?: Array<{ id: string; name: string }>;
+  /* Swim-club tagging: entries posted from a pool session carry the club course
+   * and session so swim views can show swim-only records, and a coach can
+   * attach a 1–5 performance rating (surfaced in the club summary reports). */
+  courseId?: string;
+  sessionId?: string;
+  institutionId?: string;
+  institutionName?: string;
+  allowRating?: boolean;
 }) {
   const { user } = useAuth();
-  const [type, setType] = useState<SrbType>("homework");
+  const [type, setType] = useState<SrbType>(allowRating ? "achievement" : "homework");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [requiresAck, setRequiresAck] = useState(false);
   const [studentId, setStudentId] = useState(defaultStudentId ?? "");
+  const [rating, setRating] = useState(0);
 
   const submit = () => {
     if (!user) return;
@@ -403,13 +409,19 @@ export function SrbComposer({
       date: new Date().toISOString(),
       requiresAck,
       replies: [],
+      ...(courseId ? { courseId } : {}),
+      ...(sessionId ? { sessionId } : {}),
+      ...(institutionId ? { institutionId } : {}),
+      ...(institutionName ? { institutionName } : {}),
+      ...(allowRating && rating ? { rating } : {}),
     };
     addItem("srb", entry);
     toast.success("Entry posted");
     setTitle("");
     setBody("");
     setRequiresAck(false);
-    setType("homework");
+    setRating(0);
+    setType(allowRating ? "achievement" : "homework");
     onOpenChange(false);
   };
 
@@ -419,8 +431,8 @@ export function SrbComposer({
         <DialogHeader>
           <DialogTitle>New record book entry</DialogTitle>
           <DialogDescription>
-            Posts to {defaultStudentName ? defaultStudentName : "the selected student"}'s
-            record book and notifies the student and any linked guardian.
+            Posts to {defaultStudentName ? defaultStudentName : "the selected student"}'s record
+            book and notifies the student and any linked guardian.
           </DialogDescription>
         </DialogHeader>
 
@@ -499,6 +511,29 @@ export function SrbComposer({
             </div>
           </div>
 
+          {allowRating && (
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <div className="text-xs font-medium mb-1.5">
+                Swimmer performance rating (optional)
+              </div>
+              <div className="flex items-center gap-3">
+                <StarInput value={rating} onChange={setRating} size={24} />
+                {rating > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setRating(0)}
+                    className="text-[11px] text-muted-foreground hover:text-foreground"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1.5">
+                Ratings feed the club's summary reports (swimmers rated · average score).
+              </div>
+            </div>
+          )}
+
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -529,11 +564,15 @@ export function SrbComposer({
 export function SrbTimeline({
   studentId,
   institutionId,
+  courseId,
 }: {
   studentId: string;
   /** When set, only show entries from this institute (tenant isolation for an
    *  institute admin). Parents/students/teachers omit it to see every institute. */
   institutionId?: string;
+  /** When set, only show entries tagged to this course (swim-club scoping — a
+   *  coach only sees swim records, not the swimmer's other-subject notes). */
+  courseId?: string;
 }) {
   const all = useCollection("srb");
   const [filter, setFilter] = useState<SrbType | "all" | "needs-ack">("all");
@@ -543,21 +582,19 @@ export function SrbTimeline({
         .filter(
           (e) =>
             e.studentId === studentId &&
-            (!institutionId || e.institutionId === institutionId),
+            (!institutionId || e.institutionId === institutionId) &&
+            (!courseId || e.courseId === courseId),
         )
         .sort((a, b) => {
-          if ((a.pinned ?? false) !== (b.pinned ?? false))
-            return a.pinned ? -1 : 1;
+          if ((a.pinned ?? false) !== (b.pinned ?? false)) return a.pinned ? -1 : 1;
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         }),
-    [all, studentId, institutionId],
+    [all, studentId, institutionId, courseId],
   );
 
   const counts = useMemo(() => {
     const out: Record<string, number> = { all: studentEntries.length };
-    out["needs-ack"] = studentEntries.filter(
-      (e) => e.requiresAck && !e.ackAt,
-    ).length;
+    out["needs-ack"] = studentEntries.filter((e) => e.requiresAck && !e.ackAt).length;
     SRB_TYPES.forEach((t) => {
       out[t.id] = studentEntries.filter((e) => e.type === t.id).length;
     });
@@ -566,8 +603,7 @@ export function SrbTimeline({
 
   const filtered = useMemo(() => {
     if (filter === "all") return studentEntries;
-    if (filter === "needs-ack")
-      return studentEntries.filter((e) => e.requiresAck && !e.ackAt);
+    if (filter === "needs-ack") return studentEntries.filter((e) => e.requiresAck && !e.ackAt);
     return studentEntries.filter((e) => e.type === filter);
   }, [filter, studentEntries]);
 

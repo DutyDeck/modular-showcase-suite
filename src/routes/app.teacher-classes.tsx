@@ -13,7 +13,7 @@ import { Video, Users, Clock, Waves, MapPin, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/teacher-classes")({
-  head: () => ({ meta: [{ title: "My Classes — One Edu" }] }),
+  head: () => ({ meta: [{ title: "My Classes — 1StudentID" }] }),
   component: TeacherClassesPage,
 });
 
@@ -47,7 +47,7 @@ function SwimCoachClasses({ name }: { name: string }) {
             }
           >
             <Waves className="h-4 w-4" />
-            Swim Academy
+            Open club
           </Button>
         }
       />

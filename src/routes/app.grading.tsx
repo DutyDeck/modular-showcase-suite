@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Send } from "lucide-react";
 
 export const Route = createFileRoute("/app/grading")({
-  head: () => ({ meta: [{ title: "Grading — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Grading — 1StudentID" }] }),
   component: GradingPage,
 });
 

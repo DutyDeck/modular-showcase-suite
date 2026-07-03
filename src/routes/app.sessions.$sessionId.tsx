@@ -1,12 +1,52 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { PageHeader, Section, Badge, Button } from "@/components/ui-kit";
+import {
+  PageHeader,
+  Section,
+  Badge,
+  Button,
+  Field,
+  Select,
+  TextInput,
+  TextArea,
+} from "@/components/ui-kit";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Avatar } from "@/components/Avatar";
 import { SrbComposer } from "@/components/Srb";
+import { ManageCoachesDialog } from "./app.coaching";
 import { useAuth } from "@/lib/auth";
-import { useCollection, addItem, updateItem, nextId, type SessionAttendance } from "@/lib/store";
-import { sessionById, poolById, children as parentChildren } from "@/lib/mockData";
+import {
+  useCollection,
+  addItem,
+  updateItem,
+  nextId,
+  type SessionAttendance,
+  type Incident,
+  type SwimmerMove,
+  type WellbeingCheck,
+  type WellbeingFlag,
+} from "@/lib/store";
+import {
+  sessionById,
+  poolById,
+  sessionsByCourse,
+  swimCourses,
+  effectiveCoachNames,
+  effectiveSwimmerIds,
+  isMoveActive,
+  TEMP_MOVE_HOURS,
+  SWIM_COURSE_ID,
+  children as parentChildren,
+  type PoolSession,
+} from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -20,9 +60,13 @@ import {
   NotebookPen,
   CalendarCheck,
   ListChecks,
-  PlayCircle,
   ShieldCheck,
   BookOpen,
+  AlertTriangle,
+  ArrowLeftRight,
+  Timer,
+  Undo2,
+  HeartPulse,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/sessions/$sessionId")({
@@ -46,23 +90,42 @@ function SessionDetailPage() {
   const navigate = useNavigate();
   const students = useCollection("students");
   const attendance = useCollection("sessionAttendance");
+  const rosters = useCollection("sessionRosters");
+  const moves = useCollection("swimmerMoves");
 
   const session = sessionById[sessionId] ?? null;
   const pool = session ? poolById[session.poolId] : null;
   const zone = useMemo(() => pool?.zones.find((z) => z.id === session?.zoneId), [pool, session]);
+  const roster = useMemo(() => effectiveCoachNames(sessionId, rosters), [sessionId, rosters]);
 
+  // The effective swimmer roster applies any enrol / temporary / permanent moves
+  // on top of the seed timetable, so a swimmer moved here for the day shows up.
+  const swimmerIds = useMemo(
+    () => (session ? effectiveSwimmerIds(session, moves) : []),
+    [session, moves],
+  );
   const swimmers = useMemo(
     () =>
-      (session?.swimmerIds ?? []).map((id) => ({
+      swimmerIds.map((id) => ({
         id,
         name: students.find((s) => s.id === id)?.name ?? id,
       })),
-    [session, students],
+    [swimmerIds, students],
   );
 
-  // Role scoping.
-  const isInstructor =
-    user?.role === "teacher" && !!session && session.coachNames.includes(user.name);
+  // Swimmers who are in THIS session only temporarily (moved in for the day).
+  const tempInById = useMemo(() => {
+    const m: Record<string, SwimmerMove> = {};
+    moves.forEach((mv) => {
+      if (mv.kind === "temp" && mv.sessionId === sessionId && isMoveActive(mv))
+        m[mv.studentId] = mv;
+    });
+    return m;
+  }, [moves, sessionId]);
+
+  // Role scoping. A coach is an instructor on this session if she is on the
+  // *effective* roster (so an admin swap-in gains access, a swap-out loses it).
+  const isInstructor = user?.role === "teacher" && !!session && roster.includes(user.name);
   const isAdmin =
     user?.role === "admin" &&
     (user.adminScope !== "institute" || user.institutionId === pool?.institutionId);
@@ -84,6 +147,10 @@ function SessionDetailPage() {
   // Local working copy for the marker (staff only).
   const [draft, setDraft] = useState<Record<string, Status>>({});
   const [composer, setComposer] = useState(false);
+  const [incidentOpen, setIncidentOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
+  const [wellbeingOpen, setWellbeingOpen] = useState(false);
+  const [manageCoachesOpen, setManageCoachesOpen] = useState(false);
   const [checks, setChecks] = useState<Set<string>>(new Set());
 
   if (!session || !pool) {
@@ -206,9 +273,19 @@ function SessionDetailPage() {
       </Section>
 
       {/* Coaches */}
-      <Section title="Coaches on deck">
+      <Section
+        title="Coaches on deck"
+        actions={
+          isAdmin && session.courseId === SWIM_COURSE_ID ? (
+            <Button size="sm" variant="outline" onClick={() => setManageCoachesOpen(true)}>
+              <Users className="h-3.5 w-3.5" />
+              Manage coaches
+            </Button>
+          ) : undefined
+        }
+      >
         <div className="flex flex-wrap gap-2">
-          {session.coachNames.map((name) => (
+          {roster.map((name) => (
             <span
               key={name}
               className="inline-flex items-center gap-2 rounded-full border bg-card pl-1 pr-3 py-1"
@@ -217,8 +294,21 @@ function SessionDetailPage() {
               <span className="text-xs font-medium">{name}</span>
             </span>
           ))}
+          {roster.length === 0 && (
+            <Badge tone="destructive">No coach assigned — use Manage coaches</Badge>
+          )}
         </div>
       </Section>
+
+      {isAdmin && session.courseId === SWIM_COURSE_ID && manageCoachesOpen && (
+        <ManageCoachesDialog
+          session={session}
+          clubCoaches={swimCourses[0].coachNames}
+          roster={roster}
+          adminName={user!.name}
+          onClose={() => setManageCoachesOpen(false)}
+        />
+      )}
 
       {isStaff ? (
         <>
@@ -228,6 +318,10 @@ function SessionDetailPage() {
             description="Tap a status for each swimmer, then save. Defaults to existing marks."
             actions={
               <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => setMoveOpen(true)}>
+                  <ArrowLeftRight className="h-3.5 w-3.5" />
+                  Move swimmer
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => setAll("Present")}>
                   <Check className="h-3.5 w-3.5" />
                   All present
@@ -252,8 +346,31 @@ function SessionDetailPage() {
                   <li key={s.id} className="px-4 sm:px-5 py-2.5 flex items-center gap-3">
                     <Avatar name={s.name} seed={s.id} size={34} />
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium truncate">{s.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{s.id}</div>
+                      <div className="text-sm font-medium truncate flex items-center gap-1.5">
+                        {s.name}
+                        {tempInById[s.id] && (
+                          <Badge tone="info">
+                            <Timer className="h-3 w-3" />
+                            Temp · {hoursLeft(tempInById[s.id].expiresAt)}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                        {s.id}
+                        {tempInById[s.id] && (
+                          <button
+                            onClick={() =>
+                              updateItem("swimmerMoves", (mv) => mv.id === tempInById[s.id].id, {
+                                reverted: true,
+                              })
+                            }
+                            className="inline-flex items-center gap-1 text-primary font-medium hover:underline"
+                          >
+                            <Undo2 className="h-3 w-3" />
+                            Move back
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="inline-flex rounded-md border overflow-hidden shrink-0">
                       {(["Present", "Late", "Absent"] as const).map((opt) => {
@@ -296,13 +413,23 @@ function SessionDetailPage() {
           {/* Record book + tasks */}
           <div className="grid lg:grid-cols-2 gap-5">
             <Section
-              title="Record book"
-              description="Log an achievement, note or message to a swimmer's family. Posts to their record book and persists across logins."
+              title="Record book, safety & wellbeing"
+              description="Post a note or rating to a swimmer's family, log a poolside incident, or record a wellbeing check for pastoral follow-up."
             >
-              <Button onClick={() => setComposer(true)}>
-                <NotebookPen className="h-4 w-4" />
-                New record-book note
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => setComposer(true)}>
+                  <NotebookPen className="h-4 w-4" />
+                  New record-book note
+                </Button>
+                <Button variant="outline" onClick={() => setIncidentOpen(true)}>
+                  <AlertTriangle className="h-4 w-4" />
+                  Log incident
+                </Button>
+                <Button variant="outline" onClick={() => setWellbeingOpen(true)}>
+                  <HeartPulse className="h-4 w-4" />
+                  Wellbeing check
+                </Button>
+              </div>
             </Section>
 
             <Section title="Session checklist" description="Pool safety & readiness.">
@@ -345,7 +472,36 @@ function SessionDetailPage() {
             </Section>
           </div>
 
-          <SrbComposer open={composer} onOpenChange={setComposer} studentOptions={swimmers} />
+          <SrbComposer
+            open={composer}
+            onOpenChange={setComposer}
+            studentOptions={swimmers}
+            courseId={session.courseId}
+            sessionId={session.id}
+            institutionId={pool.institutionId}
+            institutionName={pool.institutionName}
+            allowRating={isInstructor}
+          />
+
+          <IncidentComposer
+            open={incidentOpen}
+            onOpenChange={setIncidentOpen}
+            session={session}
+            swimmers={swimmers}
+          />
+
+          <MoveSwimmerDialog
+            open={moveOpen}
+            onOpenChange={setMoveOpen}
+            session={session}
+            swimmers={swimmers}
+          />
+
+          <WellbeingComposer
+            open={wellbeingOpen}
+            onOpenChange={setWellbeingOpen}
+            swimmers={swimmers}
+          />
 
           {/* Sticky save bar */}
           <div className="fixed bottom-0 left-0 right-0 z-30 md:left-64 bg-card border-t shadow-elegant">
@@ -427,6 +583,384 @@ function SessionDetailPage() {
         </Section>
       )}
     </div>
+  );
+}
+
+const INCIDENT_TYPES: Incident["type"][] = ["Safety", "Behaviour", "Health", "Equipment"];
+const INCIDENT_SEVERITIES: Incident["severity"][] = ["Low", "Medium", "High"];
+
+function IncidentComposer({
+  open,
+  onOpenChange,
+  session,
+  swimmers,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  session: PoolSession;
+  swimmers: Array<{ id: string; name: string }>;
+}) {
+  const { user } = useAuth();
+  const [type, setType] = useState<Incident["type"]>("Safety");
+  const [severity, setSeverity] = useState<Incident["severity"]>("Low");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [studentId, setStudentId] = useState("");
+
+  const submit = () => {
+    if (!user) return;
+    if (!title.trim() || !body.trim()) {
+      toast.error("Title and description are required");
+      return;
+    }
+    const student = swimmers.find((s) => s.id === studentId);
+    const row: Incident = {
+      id: nextId("INC-", "incidents"),
+      courseId: session.courseId,
+      sessionId: session.id,
+      studentId: student?.id,
+      studentName: student?.name,
+      coachName: user.name,
+      type,
+      severity,
+      title: title.trim(),
+      body: body.trim(),
+      status: "Open",
+      at: new Date().toISOString(),
+    };
+    addItem("incidents", row);
+    toast.success("Incident logged");
+    setTitle("");
+    setBody("");
+    setStudentId("");
+    setType("Safety");
+    setSeverity("Low");
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Log an incident</DialogTitle>
+          <DialogDescription>
+            {session.title} · appears in the club summary reports for follow-up.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Type">
+              <Select
+                value={type}
+                onChange={(e) => setType(e.target.value as Incident["type"])}
+                options={INCIDENT_TYPES.map((t) => ({ value: t, label: t }))}
+              />
+            </Field>
+            <Field label="Severity">
+              <Select
+                value={severity}
+                onChange={(e) => setSeverity(e.target.value as Incident["severity"])}
+                options={INCIDENT_SEVERITIES.map((s) => ({ value: s, label: s }))}
+              />
+            </Field>
+          </div>
+          <Field label="Swimmer (optional)">
+            <Select
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              options={[
+                { value: "", label: "— Not swimmer-specific —" },
+                ...swimmers.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            />
+          </Field>
+          <Field label="Title" required>
+            <TextInput
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Swallowed water — coughing fit"
+            />
+          </Field>
+          <Field label="What happened & action taken" required>
+            <TextArea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Describe the incident and the action you took…"
+              className="min-h-[100px]"
+            />
+          </Field>
+        </div>
+        <DialogFooter className="gap-2 pt-2">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button type="button" onClick={submit}>
+            <AlertTriangle className="h-4 w-4" />
+            Log incident
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const WELLBEING_FLAGS: WellbeingFlag[] = ["Green", "Amber", "Red"];
+
+function WellbeingComposer({
+  open,
+  onOpenChange,
+  swimmers,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  swimmers: Array<{ id: string; name: string }>;
+}) {
+  const { user } = useAuth();
+  const [studentId, setStudentId] = useState("");
+  const [flag, setFlag] = useState<WellbeingFlag>("Green");
+  const [note, setNote] = useState("");
+
+  const submit = () => {
+    if (!user) return;
+    const student = swimmers.find((s) => s.id === studentId);
+    if (!student) {
+      toast.error("Select a swimmer");
+      return;
+    }
+    if (!note.trim()) {
+      toast.error("Add a short note");
+      return;
+    }
+    const row: WellbeingCheck = {
+      id: nextId("WB-", "wellbeingChecks"),
+      studentId: student.id,
+      studentName: student.name,
+      coachName: user.name,
+      flag,
+      note: note.trim(),
+      at: new Date().toISOString(),
+    };
+    addItem("wellbeingChecks", row);
+    toast.success(`Wellbeing check logged for ${student.name}`);
+    setStudentId("");
+    setFlag("Green");
+    setNote("");
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Wellbeing check</DialogTitle>
+          <DialogDescription>
+            A quick pastoral note. Amber and red flags surface in the club report for follow-up.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <Field label="Swimmer" required>
+            <Select
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              options={[
+                { value: "", label: "— Select swimmer —" },
+                ...swimmers.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            />
+          </Field>
+          <Field label="How are they doing?">
+            <div className="grid grid-cols-3 gap-2">
+              {WELLBEING_FLAGS.map((f) => {
+                const active = flag === f;
+                const tone =
+                  f === "Green"
+                    ? "bg-success text-white border-success"
+                    : f === "Amber"
+                      ? "bg-warning text-warning-foreground border-warning"
+                      : "bg-destructive text-white border-destructive";
+                return (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => setFlag(f)}
+                    className={cn(
+                      "rounded-lg border p-2.5 text-sm font-medium transition-colors",
+                      active ? tone : "bg-card hover:bg-muted",
+                    )}
+                  >
+                    {f}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+          <Field label="Note" required>
+            <TextArea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="e.g. Tired after school; kept the set light and will check in with parents."
+              className="min-h-[90px]"
+            />
+          </Field>
+        </div>
+        <DialogFooter className="gap-2 pt-2">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button type="button" onClick={submit}>
+            <HeartPulse className="h-4 w-4" />
+            Log wellbeing check
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function hoursLeft(expiresAt?: string): string {
+  if (!expiresAt) return "";
+  const ms = Date.parse(expiresAt) - Date.now();
+  if (ms <= 0) return "expired";
+  const mins = Math.round(ms / 60000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m left` : `${m}m left`;
+}
+
+function MoveSwimmerDialog({
+  open,
+  onOpenChange,
+  session,
+  swimmers,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  session: PoolSession;
+  swimmers: Array<{ id: string; name: string }>;
+}) {
+  const { user } = useAuth();
+  const targets = useMemo(
+    () => sessionsByCourse(session.courseId).filter((s) => s.id !== session.id),
+    [session],
+  );
+  const [studentId, setStudentId] = useState("");
+  const [targetSessionId, setTargetSessionId] = useState("");
+  const [kind, setKind] = useState<"temp" | "permanent">("temp");
+  const [reason, setReason] = useState("");
+
+  const submit = () => {
+    if (!user) return;
+    if (!studentId || !targetSessionId) {
+      toast.error("Pick a swimmer and a destination session");
+      return;
+    }
+    const student = swimmers.find((s) => s.id === studentId);
+    const target = targets.find((s) => s.id === targetSessionId);
+    const now = new Date();
+    const move: SwimmerMove = {
+      id: nextId("MOV-", "swimmerMoves"),
+      studentId,
+      studentName: student?.name ?? studentId,
+      sessionId: targetSessionId,
+      fromSessionId: session.id,
+      kind,
+      reason: reason.trim() || undefined,
+      by: user.name,
+      at: now.toISOString(),
+      ...(kind === "temp"
+        ? { expiresAt: new Date(now.getTime() + TEMP_MOVE_HOURS * 3600 * 1000).toISOString() }
+        : {}),
+    };
+    addItem("swimmerMoves", move);
+    toast.success(
+      kind === "temp"
+        ? `${student?.name} moved to ${target?.title} for today — auto-reverts in ${TEMP_MOVE_HOURS}h`
+        : `${student?.name} permanently moved to ${target?.title}`,
+    );
+    setStudentId("");
+    setTargetSessionId("");
+    setKind("temp");
+    setReason("");
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Move a swimmer</DialogTitle>
+          <DialogDescription>
+            Move a swimmer from {session.title} to another session. A temporary move automatically
+            reverts after {TEMP_MOVE_HOURS} hours.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <Field label="Swimmer" required>
+            <Select
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              options={[
+                { value: "", label: "— Select swimmer —" },
+                ...swimmers.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            />
+          </Field>
+          <Field label="Move to session" required>
+            <Select
+              value={targetSessionId}
+              onChange={(e) => setTargetSessionId(e.target.value)}
+              options={[
+                { value: "", label: "— Select destination —" },
+                ...targets.map((s) => ({
+                  value: s.id,
+                  label: `${s.title} · ${s.day} ${s.start}`,
+                })),
+              ]}
+            />
+          </Field>
+          <Field label="Type">
+            <div className="grid grid-cols-2 gap-2">
+              {(["temp", "permanent"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setKind(k)}
+                  className={cn(
+                    "rounded-lg border p-2.5 text-left text-sm transition-colors",
+                    kind === k ? "border-primary bg-primary/5" : "hover:bg-muted",
+                  )}
+                >
+                  <div className="font-medium">
+                    {k === "temp" ? "Temporary (today)" : "Permanent"}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {k === "temp"
+                      ? `Auto-reverts in ${TEMP_MOVE_HOURS}h`
+                      : "Updates the swimmer's home session"}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Reason (optional)">
+            <TextInput
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="e.g. Coach cover · trialling a faster lane"
+            />
+          </Field>
+        </div>
+        <DialogFooter className="gap-2 pt-2">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button type="button" onClick={submit}>
+            <ArrowLeftRight className="h-4 w-4" />
+            Move swimmer
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -17,8 +17,10 @@ import { Route as AppUsersRouteImport } from './routes/app.users'
 import { Route as AppTrainingRouteImport } from './routes/app.training'
 import { Route as AppTenantsRouteImport } from './routes/app.tenants'
 import { Route as AppTeacherClassesRouteImport } from './routes/app.teacher-classes'
+import { Route as AppSwimReportsRouteImport } from './routes/app.swim-reports'
 import { Route as AppStudentsRouteImport } from './routes/app.students'
 import { Route as AppSrbRouteImport } from './routes/app.srb'
+import { Route as AppSquadRouteImport } from './routes/app.squad'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
@@ -33,6 +35,7 @@ import { Route as AppGradesRouteImport } from './routes/app.grades'
 import { Route as AppFinanceRouteImport } from './routes/app.finance'
 import { Route as AppCoursesRouteImport } from './routes/app.courses'
 import { Route as AppComplianceRouteImport } from './routes/app.compliance'
+import { Route as AppCoachingRouteImport } from './routes/app.coaching'
 import { Route as AppChildrenRouteImport } from './routes/app.children'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
@@ -92,6 +95,11 @@ const AppTeacherClassesRoute = AppTeacherClassesRouteImport.update({
   path: '/teacher-classes',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSwimReportsRoute = AppSwimReportsRouteImport.update({
+  id: '/swim-reports',
+  path: '/swim-reports',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppStudentsRoute = AppStudentsRouteImport.update({
   id: '/students',
   path: '/students',
@@ -100,6 +108,11 @@ const AppStudentsRoute = AppStudentsRouteImport.update({
 const AppSrbRoute = AppSrbRouteImport.update({
   id: '/srb',
   path: '/srb',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSquadRoute = AppSquadRouteImport.update({
+  id: '/squad',
+  path: '/squad',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -170,6 +183,11 @@ const AppCoursesRoute = AppCoursesRouteImport.update({
 const AppComplianceRoute = AppComplianceRouteImport.update({
   id: '/compliance',
   path: '/compliance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCoachingRoute = AppCoachingRouteImport.update({
+  id: '/coaching',
+  path: '/coaching',
   getParentRoute: () => AppRoute,
 } as any)
 const AppChildrenRoute = AppChildrenRouteImport.update({
@@ -273,6 +291,7 @@ export interface FileRoutesByFullPath {
   '/app/attendance': typeof AppAttendanceRouteWithChildren
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
+  '/app/coaching': typeof AppCoachingRoute
   '/app/compliance': typeof AppComplianceRoute
   '/app/courses': typeof AppCoursesRouteWithChildren
   '/app/finance': typeof AppFinanceRoute
@@ -287,8 +306,10 @@ export interface FileRoutesByFullPath {
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/squad': typeof AppSquadRoute
   '/app/srb': typeof AppSrbRouteWithChildren
   '/app/students': typeof AppStudentsRoute
+  '/app/swim-reports': typeof AppSwimReportsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
   '/app/training': typeof AppTrainingRouteWithChildren
@@ -314,6 +335,7 @@ export interface FileRoutesByTo {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
+  '/app/coaching': typeof AppCoachingRoute
   '/app/compliance': typeof AppComplianceRoute
   '/app/finance': typeof AppFinanceRoute
   '/app/grades': typeof AppGradesRoute
@@ -327,7 +349,9 @@ export interface FileRoutesByTo {
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/squad': typeof AppSquadRoute
   '/app/students': typeof AppStudentsRoute
+  '/app/swim-reports': typeof AppSwimReportsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
   '/app/users': typeof AppUsersRoute
@@ -356,6 +380,7 @@ export interface FileRoutesById {
   '/app/attendance': typeof AppAttendanceRouteWithChildren
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
+  '/app/coaching': typeof AppCoachingRoute
   '/app/compliance': typeof AppComplianceRoute
   '/app/courses': typeof AppCoursesRouteWithChildren
   '/app/finance': typeof AppFinanceRoute
@@ -370,8 +395,10 @@ export interface FileRoutesById {
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/squad': typeof AppSquadRoute
   '/app/srb': typeof AppSrbRouteWithChildren
   '/app/students': typeof AppStudentsRoute
+  '/app/swim-reports': typeof AppSwimReportsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
   '/app/training': typeof AppTrainingRouteWithChildren
@@ -402,6 +429,7 @@ export interface FileRouteTypes {
     | '/app/attendance'
     | '/app/calendar'
     | '/app/children'
+    | '/app/coaching'
     | '/app/compliance'
     | '/app/courses'
     | '/app/finance'
@@ -416,8 +444,10 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/reports'
     | '/app/settings'
+    | '/app/squad'
     | '/app/srb'
     | '/app/students'
+    | '/app/swim-reports'
     | '/app/teacher-classes'
     | '/app/tenants'
     | '/app/training'
@@ -443,6 +473,7 @@ export interface FileRouteTypes {
     | '/app/assignments'
     | '/app/calendar'
     | '/app/children'
+    | '/app/coaching'
     | '/app/compliance'
     | '/app/finance'
     | '/app/grades'
@@ -456,7 +487,9 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/reports'
     | '/app/settings'
+    | '/app/squad'
     | '/app/students'
+    | '/app/swim-reports'
     | '/app/teacher-classes'
     | '/app/tenants'
     | '/app/users'
@@ -484,6 +517,7 @@ export interface FileRouteTypes {
     | '/app/attendance'
     | '/app/calendar'
     | '/app/children'
+    | '/app/coaching'
     | '/app/compliance'
     | '/app/courses'
     | '/app/finance'
@@ -498,8 +532,10 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/reports'
     | '/app/settings'
+    | '/app/squad'
     | '/app/srb'
     | '/app/students'
+    | '/app/swim-reports'
     | '/app/teacher-classes'
     | '/app/tenants'
     | '/app/training'
@@ -583,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTeacherClassesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/swim-reports': {
+      id: '/app/swim-reports'
+      path: '/swim-reports'
+      fullPath: '/app/swim-reports'
+      preLoaderRoute: typeof AppSwimReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/students': {
       id: '/app/students'
       path: '/students'
@@ -595,6 +638,13 @@ declare module '@tanstack/react-router' {
       path: '/srb'
       fullPath: '/app/srb'
       preLoaderRoute: typeof AppSrbRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/squad': {
+      id: '/app/squad'
+      path: '/squad'
+      fullPath: '/app/squad'
+      preLoaderRoute: typeof AppSquadRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/settings': {
@@ -693,6 +743,13 @@ declare module '@tanstack/react-router' {
       path: '/compliance'
       fullPath: '/app/compliance'
       preLoaderRoute: typeof AppComplianceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/coaching': {
+      id: '/app/coaching'
+      path: '/coaching'
+      fullPath: '/app/coaching'
+      preLoaderRoute: typeof AppCoachingRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/children': {
@@ -900,6 +957,7 @@ interface AppRouteChildren {
   AppAttendanceRoute: typeof AppAttendanceRouteWithChildren
   AppCalendarRoute: typeof AppCalendarRoute
   AppChildrenRoute: typeof AppChildrenRoute
+  AppCoachingRoute: typeof AppCoachingRoute
   AppComplianceRoute: typeof AppComplianceRoute
   AppCoursesRoute: typeof AppCoursesRouteWithChildren
   AppFinanceRoute: typeof AppFinanceRoute
@@ -914,8 +972,10 @@ interface AppRouteChildren {
   AppProfileRoute: typeof AppProfileRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppSquadRoute: typeof AppSquadRoute
   AppSrbRoute: typeof AppSrbRouteWithChildren
   AppStudentsRoute: typeof AppStudentsRoute
+  AppSwimReportsRoute: typeof AppSwimReportsRoute
   AppTeacherClassesRoute: typeof AppTeacherClassesRoute
   AppTenantsRoute: typeof AppTenantsRoute
   AppTrainingRoute: typeof AppTrainingRouteWithChildren
@@ -932,6 +992,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAttendanceRoute: AppAttendanceRouteWithChildren,
   AppCalendarRoute: AppCalendarRoute,
   AppChildrenRoute: AppChildrenRoute,
+  AppCoachingRoute: AppCoachingRoute,
   AppComplianceRoute: AppComplianceRoute,
   AppCoursesRoute: AppCoursesRouteWithChildren,
   AppFinanceRoute: AppFinanceRoute,
@@ -946,8 +1007,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppProfileRoute: AppProfileRoute,
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppSquadRoute: AppSquadRoute,
   AppSrbRoute: AppSrbRouteWithChildren,
   AppStudentsRoute: AppStudentsRoute,
+  AppSwimReportsRoute: AppSwimReportsRoute,
   AppTeacherClassesRoute: AppTeacherClassesRoute,
   AppTenantsRoute: AppTenantsRoute,
   AppTrainingRoute: AppTrainingRouteWithChildren,

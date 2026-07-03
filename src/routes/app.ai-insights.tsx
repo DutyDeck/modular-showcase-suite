@@ -5,7 +5,7 @@ import { Sparkles, Bot, BrainCircuit, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/ai-insights")({
-  head: () => ({ meta: [{ title: "AI Insights — One Edu" }] }),
+  head: () => ({ meta: [{ title: "AI Insights — 1StudentID" }] }),
   component: AiPage,
 });
 

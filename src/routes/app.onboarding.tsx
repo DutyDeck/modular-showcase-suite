@@ -24,7 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/onboarding")({
-  head: () => ({ meta: [{ title: "Onboard a new tenant — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Onboard a new tenant — 1StudentID" }] }),
   component: OnboardingPage,
 });
 
@@ -227,7 +227,7 @@ function OnboardingPage() {
               Welcome to {data.name || "your institution"}
             </div>
             <div className="text-sm opacity-90 mt-1">
-              Powered by One Edu · {data.domain ? `${data.domain}.oneedu.app` : "subdomain pending"}
+              Powered by 1StudentID · {data.domain ? `${data.domain}.oneedu.app` : "subdomain pending"}
             </div>
           </div>
         </Section>

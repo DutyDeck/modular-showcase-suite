@@ -239,7 +239,7 @@ function Certificate({
         <div className="text-xs text-muted-foreground mt-1">has successfully completed</div>
         <div className="text-base font-semibold mt-1">{courseTitle}</div>
         {date && (
-          <div className="text-xs text-muted-foreground mt-3">Issued {date} · One Edu Academy</div>
+          <div className="text-xs text-muted-foreground mt-3">Issued {date} · 1StudentID Academy</div>
         )}
         <div className="mt-4">
           <Button variant="outline" size="sm" onClick={() => window.print()}>

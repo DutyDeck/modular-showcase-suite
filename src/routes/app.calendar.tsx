@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/calendar")({
-  head: () => ({ meta: [{ title: "Calendar — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Calendar — 1StudentID" }] }),
   component: CalendarPage,
 });
 

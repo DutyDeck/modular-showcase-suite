@@ -4,16 +4,32 @@ import {
   courses as initialCourses,
   assignments as initialAssignments,
   invoices as initialInvoices,
+  swimInvoices as initialSwimInvoices,
   leads as initialLeads,
+  swimLeads as initialSwimLeads,
   tenants as initialTenants,
   platformUsers as initialPlatformUsers,
+  swimStaff as initialSwimStaff,
   attendanceToday as initialAttendance,
   marketplaceCourses as initialMarketplace,
   messages as initialMessages,
   srbEntries as initialSrb,
+  swimSrbEntries as initialSwimSrb,
   teacherRatings as initialTeacherRatings,
   trainingEnrollments as initialTrainingEnrollments,
-  sessionAttendance as initialSessionAttendance,
+  sessionAttendanceHistory as initialSessionAttendance,
+  incidents as initialIncidents,
+  coachAttendance as initialCoachAttendance,
+  sessionRosters as initialSessionRosters,
+  chatSeed as initialChat,
+  swimmerMoves as initialSwimmerMoves,
+  levelAssessments as initialLevelAssessments,
+  raceTimes as initialRaceTimes,
+  paymentMandates as initialPaymentMandates,
+  cpdAssignments as initialCpdAssignments,
+  leadContacts as initialLeadContacts,
+  wellbeingChecks as initialWellbeingChecks,
+  offboardings as initialOffboardings,
 } from "./mockData";
 
 export type {
@@ -23,6 +39,27 @@ export type {
   TeacherRating,
   TrainingEnrollment,
   SessionAttendance,
+  Incident,
+  IncidentType,
+  IncidentSeverity,
+  CoachAttendance,
+  SessionRoster,
+  ChatMessage,
+  SwimmerMove,
+  SwimmerMoveKind,
+  LevelAssessment,
+  LevelOutcome,
+  RaceTime,
+  SwimEvent,
+  PaymentMandate,
+  SwimPaymentMethod,
+  CpdAssignment,
+  LeadContact,
+  OutreachChannel,
+  WellbeingCheck,
+  WellbeingFlag,
+  Offboarding,
+  OffboardPersonType,
 } from "./mockData";
 
 export type Student = (typeof initialStudents)[number];
@@ -36,10 +73,27 @@ export type AttendanceRow = (typeof initialAttendance)[number];
 export type MarketplaceCourse = (typeof initialMarketplace)[number];
 export type Message = (typeof initialMessages)[number];
 
-import type { SrbEntry, TeacherRating, TrainingEnrollment, SessionAttendance } from "./mockData";
+import type {
+  SrbEntry,
+  TeacherRating,
+  TrainingEnrollment,
+  SessionAttendance,
+  Incident,
+  CoachAttendance,
+  SessionRoster,
+  ChatMessage,
+  SwimmerMove,
+  LevelAssessment,
+  RaceTime,
+  PaymentMandate,
+  CpdAssignment,
+  LeadContact,
+  WellbeingCheck,
+  Offboarding,
+} from "./mockData";
 
 /* A cross-tenant enrolment created at runtime — i.e. a tenant admin enrolled an
- * existing One Edu student (from another tenant) after the student/guardian
+ * existing 1StudentID student (from another tenant) after the student/guardian
  * approved the request. These augment the static enrolment map in mockData so
  * the newly enrolled student shows up on the enrolling tenant's roster. */
 export interface CrossEnrollment {
@@ -72,6 +126,18 @@ interface State {
   teacherRatings: TeacherRating[];
   trainingEnrollments: TrainingEnrollment[];
   sessionAttendance: SessionAttendance[];
+  incidents: Incident[];
+  coachAttendance: CoachAttendance[];
+  sessionRosters: SessionRoster[];
+  chat: ChatMessage[];
+  swimmerMoves: SwimmerMove[];
+  levelAssessments: LevelAssessment[];
+  raceTimes: RaceTime[];
+  paymentMandates: PaymentMandate[];
+  cpdAssignments: CpdAssignment[];
+  leadContacts: LeadContact[];
+  wellbeingChecks: WellbeingCheck[];
+  offboardings: Offboarding[];
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
@@ -81,18 +147,30 @@ function makeInitialState(): State {
     students: [...initialStudents],
     courses: [...initialCourses],
     assignments: [...initialAssignments],
-    invoices: [...initialInvoices],
-    leads: [...initialLeads],
+    invoices: [...initialInvoices, ...initialSwimInvoices],
+    leads: [...initialLeads, ...initialSwimLeads],
     tenants: [...initialTenants],
-    platformUsers: [...initialPlatformUsers],
+    platformUsers: [...initialPlatformUsers, ...initialSwimStaff],
     attendance: [...initialAttendance],
     marketplace: [...initialMarketplace],
     messages: [...initialMessages],
-    srb: [...initialSrb],
+    srb: [...initialSrb, ...initialSwimSrb],
     enrollments: [],
     teacherRatings: [...initialTeacherRatings],
     trainingEnrollments: [...initialTrainingEnrollments],
     sessionAttendance: [...initialSessionAttendance],
+    incidents: [...initialIncidents],
+    coachAttendance: [...initialCoachAttendance],
+    sessionRosters: [...initialSessionRosters],
+    chat: [...initialChat],
+    swimmerMoves: [...initialSwimmerMoves],
+    levelAssessments: [...initialLevelAssessments],
+    raceTimes: [...initialRaceTimes],
+    paymentMandates: [...initialPaymentMandates],
+    cpdAssignments: [...initialCpdAssignments],
+    leadContacts: [...initialLeadContacts],
+    wellbeingChecks: [...initialWellbeingChecks],
+    offboardings: [...initialOffboardings],
   };
 }
 
@@ -186,7 +264,7 @@ export function resetStore() {
 }
 
 export function nextId(prefix: string, key: keyof State, field = "id"): string {
-  const list = state[key] as Array<Record<string, any>>;
+  const list = state[key] as Array<Record<string, unknown>>;
   const nums = list
     .map((r) => String(r[field] ?? ""))
     .filter((s) => s.startsWith(prefix))

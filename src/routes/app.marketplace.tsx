@@ -6,7 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/marketplace")({
-  head: () => ({ meta: [{ title: "Marketplace — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Marketplace — 1StudentID" }] }),
   component: MarketplacePage,
 });
 

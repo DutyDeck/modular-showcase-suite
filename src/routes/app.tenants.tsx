@@ -19,7 +19,7 @@ import { useAuth } from "@/lib/auth";
 import { Plus, Upload, Rocket, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/app/tenants")({
-  head: () => ({ meta: [{ title: "Tenants — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Tenants — 1StudentID" }] }),
   component: TenantsPage,
 });
 

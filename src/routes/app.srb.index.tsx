@@ -4,11 +4,20 @@ import { PageHeader, Section, Button, Badge } from "@/components/ui-kit";
 import { Avatar } from "@/components/Avatar";
 import { useAuth } from "@/lib/auth";
 import { useCollection } from "@/lib/store";
-import { children as parentChildren, getEnrollments } from "@/lib/mockData";
+import {
+  children as parentChildren,
+  getEnrollments,
+  isSwimUser,
+  isSwimAdmin,
+  sessionsForCoach,
+  sessionsForSwimmer,
+  sessionsByCourse,
+  SWIM_COURSE_ID,
+} from "@/lib/mockData";
 import { Search, Bell, ChevronRight, NotebookPen, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/srb/")({
-  head: () => ({ meta: [{ title: "Record Books — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Record Books — 1StudentID" }] }),
   component: SrbIndexPage,
 });
 
@@ -20,11 +29,21 @@ function SrbIndexPage() {
   const crossEnrollments = useCollection("enrollments");
   const [query, setQuery] = useState("");
 
+  // Swim accounts only ever see swimmers on their own sessions (coach) or the
+  // whole club (swim admin) — never the wider school roster or other subjects.
+  const swim = isSwimUser(user);
+  const swimSwimmerIds = useMemo(() => {
+    if (!swim || !user) return null;
+    const sess = isSwimAdmin(user) ? sessionsByCourse(SWIM_COURSE_ID) : sessionsForCoach(user.name);
+    return new Set(sess.flatMap((s) => s.swimmerIds));
+  }, [swim, user]);
+
   // Institute admins only see record books for students on their own roster —
   // never students who belong solely to other institutes (tenant isolation).
   // (All hooks must run before the role-based early returns below.)
   const isInstituteScoped = user?.adminScope === "institute";
   const scoped = useMemo(() => {
+    if (swimSwimmerIds) return students.filter((s) => swimSwimmerIds.has(s.id));
     if (!isInstituteScoped) return students;
     return students.filter(
       (s) =>
@@ -33,7 +52,7 @@ function SrbIndexPage() {
           (e) => e.studentId === s.id && e.institutionId === user?.institutionId,
         ),
     );
-  }, [students, crossEnrollments, isInstituteScoped, user?.institutionId]);
+  }, [students, crossEnrollments, isInstituteScoped, user?.institutionId, swimSwimmerIds]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
@@ -72,8 +91,12 @@ function SrbIndexPage() {
   return (
     <div>
       <PageHeader
-        title="Student Record Books"
-        subtitle="Per-student timeline of homework, behaviour, achievements and parent communication."
+        title={swim ? "Swimmer Record Books" : "Student Record Books"}
+        subtitle={
+          swim
+            ? "Per-swimmer timeline of coach notes, achievements, ratings and family communication."
+            : "Per-student timeline of homework, behaviour, achievements and parent communication."
+        }
       />
 
       <div className="mb-4 relative max-w-md">
@@ -88,7 +111,9 @@ function SrbIndexPage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {filtered.map((s) => {
-          const studentEntries = srb.filter((e) => e.studentId === s.id);
+          const studentEntries = srb.filter(
+            (e) => e.studentId === s.id && (!swim || e.courseId === SWIM_COURSE_ID),
+          );
           const last = studentEntries.sort(
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
           )[0];
@@ -104,8 +129,8 @@ function SrbIndexPage() {
                 <Avatar name={s.name} seed={s.id} size={40} />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold truncate">{s.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {s.grade} · {s.batch}
+                  <div className="text-xs text-muted-foreground truncate">
+                    {swim ? swimmerLevel(s.id) : `${s.grade} · ${s.batch}`}
                   </div>
                 </div>
                 {needsAck > 0 && (
@@ -122,9 +147,7 @@ function SrbIndexPage() {
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       Last entry · {timeAgo(last.date)}
                     </div>
-                    <div className="text-xs font-medium mt-0.5 line-clamp-2">
-                      {last.title}
-                    </div>
+                    <div className="text-xs font-medium mt-0.5 line-clamp-2">{last.title}</div>
                   </>
                 ) : (
                   <div className="text-xs text-muted-foreground italic">No entries yet</div>
@@ -153,6 +176,12 @@ function SrbIndexPage() {
       )}
     </div>
   );
+}
+
+/** A swimmer's programme level(s) for the record-book card (swim view). */
+function swimmerLevel(studentId: string): string {
+  const levels = Array.from(new Set(sessionsForSwimmer(studentId).map((s) => s.level)));
+  return levels.length ? levels.join(" · ") : "Swimmer · Royal Vista Aquatics";
 }
 
 function ParentChildPicker() {

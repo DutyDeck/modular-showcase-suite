@@ -28,7 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/attendance/take")({
-  head: () => ({ meta: [{ title: "Take attendance — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Take attendance — 1StudentID" }] }),
   component: TakeAttendancePage,
 });
 

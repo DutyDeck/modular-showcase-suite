@@ -8,14 +8,14 @@
  * The Avatar component consults these helpers whenever it has to derive a
  * portrait (i.e. when no explicit `src` is passed). Because Avatar always
  * knows the person's display name, a name-keyed override is enough to keep a
- * person's face stable regardless of whether the call site seeds by One Edu ID
+ * person's face stable regardless of whether the call site seeds by 1StudentID
  * or by name.
  */
 
 const p = (path: string) => `https://randomuser.me/api/portraits/${path}`;
 
 /** Honorifics / role words that precede a real first name. */
-const PREFIXES: Record<string, "male" | "female" | "" > = {
+const PREFIXES: Record<string, "male" | "female" | ""> = {
   mr: "male",
   "mr.": "male",
   sir: "male",
@@ -39,22 +39,92 @@ const PREFIXES: Record<string, "male" | "female" | "" > = {
 
 /** First names in the demo dataset known to be female. */
 const FEMALE_NAMES = new Set([
-  "sara", "nethmi", "hiruni", "tashi", "imesha", "tushari", "niluka", "sachini",
-  "kavya", "meera", "hashini", "anjali", "dilini", "pooja", "yashodhara",
-  "sanduni", "madushika", "ishini", "nimesha", "sithara", "tharushi", "devni",
-  "anushka", "diluni", "maleesha", "saritha", "mihina", "tashmi", "rikitha",
-  "senuli", "nadia", "riya", "lalani", "chathuri", "chandrika", "priyanka",
-  "priya", "dilani", "anoma", "kumari", "vihanga",
+  "sara",
+  "nethmi",
+  "hiruni",
+  "tashi",
+  "imesha",
+  "tushari",
+  "niluka",
+  "sachini",
+  "kavya",
+  "meera",
+  "hashini",
+  "anjali",
+  "dilini",
+  "pooja",
+  "yashodhara",
+  "sanduni",
+  "madushika",
+  "ishini",
+  "nimesha",
+  "sithara",
+  "tharushi",
+  "devni",
+  "anushka",
+  "diluni",
+  "maleesha",
+  "saritha",
+  "mihina",
+  "tashmi",
+  "rikitha",
+  "senuli",
+  "nadia",
+  "riya",
+  "lalani",
+  "chathuri",
+  "chandrika",
+  "priyanka",
+  "priya",
+  "dilani",
+  "anoma",
+  "kumari",
+  "vihanga",
 ]);
 
 /** First names in the demo dataset known to be male. */
 const MALE_NAMES = new Set([
-  "aarav", "mihir", "tharindu", "kavindu", "lasitha", "pasindu", "sandeepa",
-  "bhanuka", "nuwan", "roshan", "arjun", "dhanuka", "prabath", "chamath",
-  "yasiru", "raveen", "asela", "charith", "janith", "rohan", "tharaka",
-  "dilshan", "kasun", "praveen", "ashan", "sahan", "kithmin", "heshan",
-  "lakshan", "rehan", "saman", "asanka", "nimal", "ananda", "kumara", "ravi",
-  "sunil", "mahesh", "suresh", "rajiv", "dineth",
+  "aarav",
+  "mihir",
+  "tharindu",
+  "kavindu",
+  "lasitha",
+  "pasindu",
+  "sandeepa",
+  "bhanuka",
+  "nuwan",
+  "roshan",
+  "arjun",
+  "dhanuka",
+  "prabath",
+  "chamath",
+  "yasiru",
+  "raveen",
+  "asela",
+  "charith",
+  "janith",
+  "rohan",
+  "tharaka",
+  "dilshan",
+  "kasun",
+  "praveen",
+  "ashan",
+  "sahan",
+  "kithmin",
+  "heshan",
+  "lakshan",
+  "rehan",
+  "saman",
+  "asanka",
+  "nimal",
+  "ananda",
+  "kumara",
+  "ravi",
+  "sunil",
+  "mahesh",
+  "suresh",
+  "rajiv",
+  "dineth",
 ]);
 
 function tokens(name: string): string[] {
@@ -107,6 +177,13 @@ export const PHOTO_OVERRIDES: Record<string, string> = {
   "Tashi Perera": p("women/33.jpg"),
   "Rehan Gupta": p("men/36.jpg"),
   "Sara Wijesinghe": p("women/55.jpg"),
+  // Swim Academy staff — keep faces identical in messaging, rosters, sessions,
+  // the coaching page and appraisals (must match their mockData `photo`).
+  "Coach Mariana Cruz": p("women/63.jpg"),
+  "Nadeesha Fonseka": p("women/68.jpg"),
+  "Coach Dilan Perera": p("men/26.jpg"),
+  "Coach Aisha Rahman": p("women/48.jpg"),
+  "Coach Tomas Berg": p("men/64.jpg"),
 };
 
 export function photoOverride(name: string): string | undefined {

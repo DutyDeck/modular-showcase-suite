@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/migration")({
-  head: () => ({ meta: [{ title: "Migration & Imports — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Migration & Imports — 1StudentID" }] }),
   component: MigrationPage,
 });
 
@@ -50,7 +50,7 @@ const SOURCES: SourceSystem[] = [
   { name: "Google Classroom", exportNote: "Gradebook → Download grades as CSV", status: "API", color: "from-emerald-500 to-teal-500" },
   { name: "Schoology", exportNote: "Tools → Roster Export", status: "CSV", color: "from-indigo-500 to-violet-500" },
   { name: "Edmodo / Microsoft Teams Edu", exportNote: "Class CSV roster export", status: "CSV", color: "from-fuchsia-500 to-purple-500" },
-  { name: "Custom / In-house SIS", exportNote: "Map any CSV columns to One Edu schema", status: "CSV", color: "from-slate-500 to-zinc-500" },
+  { name: "Custom / In-house SIS", exportNote: "Map any CSV columns to 1StudentID schema", status: "CSV", color: "from-slate-500 to-zinc-500" },
   { name: "Excel / Google Sheets", exportNote: "Save as .csv (UTF-8)", status: "CSV", color: "from-lime-500 to-green-500" },
 ];
 
@@ -130,7 +130,7 @@ function MigrationPage() {
     <div className="space-y-6">
       <PageHeader
         title="Migration & Bulk Imports"
-        subtitle="Bring your existing LMS, SIS or spreadsheet data into One Edu in minutes."
+        subtitle="Bring your existing LMS, SIS or spreadsheet data into 1StudentID in minutes."
       />
 
       {/* Hero */}
@@ -161,7 +161,7 @@ function MigrationPage() {
           <ol className="space-y-2 text-sm">
             {[
               "Export CSV from your current system",
-              "Match columns to One Edu's schema",
+              "Match columns to 1StudentID's schema",
               "Preview, fix errors, then commit",
             ].map((s, i) => (
               <li

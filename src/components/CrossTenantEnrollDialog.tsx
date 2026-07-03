@@ -10,8 +10,8 @@ import {
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Avatar } from "@/components/Avatar";
 import { Badge, Button, Field, Select } from "@/components/ui-kit";
-import { ageOn, platformDirectory, type DirectoryStudent } from "@/lib/mockData";
-import { addItem, useCollection } from "@/lib/store";
+import { platformDirectory, type DirectoryStudent } from "@/lib/mockData";
+import { addItem, nextId, useCollection, type Student, type SwimmerMove } from "@/lib/store";
 import {
   Search,
   ShieldCheck,
@@ -48,13 +48,21 @@ export function CrossTenantEnrollDialog({
   onOpenChange,
   tenantId,
   tenantName,
+  swim = false,
+  programmes,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   tenantId: string;
   tenantName: string;
+  /** Swim-club tenant — enrol into a swim session/programme, not a college class. */
+  swim?: boolean;
+  /** Swim programme/session options (id = session id) when `swim`. */
+  programmes?: { id: string; label: string }[];
 }) {
   const existing = useCollection("enrollments");
+  const roster = useCollection("students");
+  const targetWord = swim ? "session" : "class";
   const [step, setStep] = useState<Step>("search");
   const [query, setQuery] = useState("");
   const [searched, setSearched] = useState(false);
@@ -105,9 +113,22 @@ export function CrossTenantEnrollDialog({
 
   const pick = (d: DirectoryStudent) => {
     setSelected(d);
-    setClassId(d.availableClasses[0]?.id ?? "");
+    setClassId(swim && programmes ? (programmes[0]?.id ?? "") : (d.availableClasses[0]?.id ?? ""));
     setStep("request");
   };
+
+  // Enrolment target options + label — swim sessions for the club, else classes.
+  const targetOptions =
+    swim && programmes
+      ? programmes.map((p) => ({ value: p.id, label: p.label }))
+      : (selected?.availableClasses.map((c) => ({
+          value: c.id,
+          label: `${c.label} — $${c.fee}`,
+        })) ?? []);
+  const targetLabel =
+    swim && programmes
+      ? programmes.find((p) => p.id === classId)?.label
+      : selected?.availableClasses.find((c) => c.id === classId)?.label;
 
   // Who must approve, and on which channels.
   const consent = selected
@@ -130,18 +151,50 @@ export function CrossTenantEnrollDialog({
 
   const sendRequest = () => {
     if (!classId) {
-      toast.error("Select a class to enrol into");
+      toast.error(`Select a ${targetWord} to enrol into`);
       return;
     }
     setCode(randomOtp());
     setOtp("");
     setStep("consent");
-    toast.success(`Consent request sent to ${consent?.who} via email + SMS`);
+    toast.success("Consent request sent to the account holder / guardian via email + SMS");
   };
 
   const finalize = (via: string) => {
     if (!selected || !consent) return;
-    const cls = selected.availableClasses.find((c) => c.id === classId);
+    const label = targetLabel ?? `New ${targetWord}`;
+    // Bring the newly enrolled student onto this tenant's roster so they actually
+    // appear under "view on roster" (they came from the platform directory, which
+    // is separate from the local roster). For swim, batch = programme level.
+    if (!roster.some((s) => s.id === selected.oneEduId)) {
+      const newStudent: Student = {
+        id: selected.oneEduId,
+        name: selected.name,
+        grade: swim ? "Aquatics" : selected.grade,
+        batch: label,
+        attendance: 100,
+        gpa: 0,
+        status: "Active",
+        parent: selected.guardianName ?? "—",
+        risk: "low",
+      };
+      addItem("students", newStudent);
+    }
+    // Swim tenant: also place the swimmer into the chosen session so they show in
+    // the right programme (classId is a session id here).
+    if (swim && classId) {
+      const move: SwimmerMove = {
+        id: nextId("MOV-", "swimmerMoves"),
+        studentId: selected.oneEduId,
+        studentName: selected.name,
+        sessionId: classId,
+        kind: "enroll",
+        reason: `Cross-institute enrolment — ${label}`,
+        by: "Club Manager",
+        at: new Date().toISOString(),
+      };
+      addItem("swimmerMoves", move);
+    }
     addItem("enrollments", {
       id: `XENR-${Date.now()}`,
       studentId: selected.oneEduId,
@@ -149,7 +202,7 @@ export function CrossTenantEnrollDialog({
       institutionId: tenantId,
       institutionName: tenantName,
       role: "Cross-tenant enrolment",
-      classLabel: cls?.label ?? "New class",
+      classLabel: label,
       since: String(new Date().getFullYear()),
       at: new Date().toISOString(),
       consentBy: `${consent.who} (${consent.role})`,
@@ -173,10 +226,10 @@ export function CrossTenantEnrollDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserCheck className="h-5 w-5 text-primary" />
-            Enrol an existing One Edu student
+            Enrol an existing 1StudentID student
           </DialogTitle>
           <DialogDescription>
-            Find a student who is already on One Edu at another institute and request their
+            Find a student who is already on 1StudentID at another institute and request their
             enrolment at <span className="font-medium text-foreground">{tenantName}</span>.
           </DialogDescription>
         </DialogHeader>
@@ -190,7 +243,7 @@ export function CrossTenantEnrollDialog({
               <Lock className="h-3.5 w-3.5 mt-0.5 shrink-0" />
               <span>
                 You can only search by the student's <b>registered email</b> or{" "}
-                <b>One Edu reference number</b>. Results show availability only — contact details
+                <b>1StudentID reference number</b>. Results show availability only — contact details
                 and records stay hidden until the student or guardian approves.
               </span>
             </div>
@@ -229,7 +282,7 @@ export function CrossTenantEnrollDialog({
               <div className="space-y-2">
                 {results.length === 0 ? (
                   <div className="rounded-lg border bg-card p-6 text-center text-sm text-muted-foreground">
-                    No One Edu student matches that email or reference.
+                    No 1StudentID student matches that email or reference.
                   </div>
                 ) : (
                   results.map((d) => (
@@ -246,9 +299,8 @@ export function CrossTenantEnrollDialog({
                         </div>
                         <div className="text-[11px] text-muted-foreground mt-0.5 flex flex-wrap gap-x-2">
                           <span className="font-mono">{d.oneEduId}</span>
-                          <span>· {d.grade}</span>
                           <span className="inline-flex items-center gap-1">
-                            <Lock className="h-2.5 w-2.5" /> details hidden
+                            <Lock className="h-2.5 w-2.5" /> details hidden until approved
                           </span>
                         </div>
                       </div>
@@ -268,39 +320,35 @@ export function CrossTenantEnrollDialog({
               <div className="min-w-0">
                 <div className="font-medium text-sm">{selected.name}</div>
                 <div className="text-[11px] text-muted-foreground font-mono">
-                  {selected.oneEduId} · {selected.grade}
+                  {selected.oneEduId}
                 </div>
               </div>
               <Badge tone="success">Available</Badge>
             </div>
 
-            <Field label="Class to enrol into">
+            <Field label={swim ? "Session to enrol into" : "Class to enrol into"}>
               <Select
                 value={classId}
                 onChange={(e) => setClassId(e.target.value)}
-                options={selected.availableClasses.map((c) => ({
-                  value: c.id,
-                  label: `${c.label} — $${c.fee}`,
-                }))}
+                options={targetOptions}
               />
             </Field>
 
             <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs space-y-2">
               <div className="flex items-center gap-2 font-medium text-warning-foreground">
                 <ShieldCheck className="h-4 w-4" />
-                Approval required before details unlock
+                Approval required before any personal details are shared
               </div>
               <p className="text-muted-foreground">
-                {selected.name} is{" "}
-                <b>
-                  {selected.selfManaged
-                    ? `${ageOn(selected.dob)} years old (self-managed)`
-                    : `a minor (age ${ageOn(selected.dob)})`}
-                </b>
-                . The request goes to <b className="text-foreground">{consent.who}</b> (
-                {consent.role}) for one-click / OTP approval.
+                Age, contact details and records stay hidden. A secure one-time approval request
+                will be sent to the{" "}
+                <b className="text-foreground">account holder or their guardian</b> — only after
+                they approve do the details unlock for {tenantName}.
               </p>
               <div className="flex flex-col gap-1 pt-1">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                  Request will be sent to (masked)
+                </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Mail className="h-3 w-3 text-muted-foreground" />
                   {maskEmail(consent.email)}
@@ -342,8 +390,7 @@ export function CrossTenantEnrollDialog({
               </div>
               <div className="rounded-md bg-muted/50 px-2.5 py-2 text-[11px] text-muted-foreground italic">
                 “{consent.who}, {tenantName} wants to enrol{" "}
-                {selected.selfManaged ? "you" : selected.name} in{" "}
-                {selected.availableClasses.find((c) => c.id === classId)?.label}. Approve this
+                {selected.selfManaged ? "you" : selected.name} in {targetLabel}. Approve this
                 enrolment?”
               </div>
             </div>
@@ -429,8 +476,8 @@ export function CrossTenantEnrollDialog({
                 />
                 <Detail
                   icon={<UserCheck className="h-3 w-3" />}
-                  label="Enrolled class"
-                  value={selected.availableClasses.find((c) => c.id === classId)?.label ?? "—"}
+                  label={swim ? "Enrolled session" : "Enrolled class"}
+                  value={targetLabel ?? "—"}
                 />
               </dl>
             </div>

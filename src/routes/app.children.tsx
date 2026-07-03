@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/children")({
-  head: () => ({ meta: [{ title: "My Children — One Edu" }] }),
+  head: () => ({ meta: [{ title: "My Children — 1StudentID" }] }),
   component: ChildrenPage,
 });
 
@@ -119,7 +119,7 @@ function ChildBlock({
               </Badge>
             </div>
             <div className="text-xs text-muted-foreground">
-              {child.grade} · One Edu ID {child.id}
+              {child.grade} · 1StudentID {child.id}
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-3">
               <MiniStat label="Attendance" value={`${child.attendance}%`} />
@@ -159,7 +159,7 @@ function ChildBlock({
             <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b bg-sky-500/10">
               <div className="flex items-center gap-2">
                 <Waves className="h-4 w-4 text-sky-600" />
-                <span className="text-sm font-semibold">Swim Academy</span>
+                <span className="text-sm font-semibold">Royal Vista Aquatics</span>
                 <Badge tone="info">
                   {swimSessions.length} session{swimSessions.length === 1 ? "" : "s"}
                 </Badge>

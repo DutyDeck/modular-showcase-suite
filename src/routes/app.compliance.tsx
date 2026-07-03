@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/compliance")({
-  head: () => ({ meta: [{ title: "Compliance — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Compliance — 1StudentID" }] }),
   component: CompliancePage,
 });
 
@@ -270,7 +270,7 @@ function CompliancePage() {
       {/* Children-specific safeguards */}
       <Section
         title="Children's data safeguards"
-        description="Most data subjects on One Edu are under 18. The ICO's Age Appropriate Design Code drives the defaults below."
+        description="Most data subjects on 1StudentID are under 18. The ICO's Age Appropriate Design Code drives the defaults below."
       >
         <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
           {[

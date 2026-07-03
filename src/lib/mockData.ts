@@ -101,7 +101,7 @@ export const demoUsers: DemoUser[] = [
     name: "Priya Kumar",
     role: "admin",
     photo: portrait("women/44.jpg"),
-    institution: "One Edu — Platform HQ",
+    institution: "1StudentID — Platform HQ",
     tagline: "Global admin · 8 tenants",
     meta: { tenants: "8" },
     adminScope: "global",
@@ -133,23 +133,43 @@ export const demoUsers: DemoUser[] = [
     name: "Coach Mariana Cruz",
     role: "teacher",
     photo: portrait("women/63.jpg"),
-    institution: "Royal Vista Aquatics Centre",
+    institution: "Royal Vista Aquatics",
     tagline: "Head Swim Coach · Learn-to-Swim & Squad",
     meta: { discipline: "Swimming" },
     institutionId: "T-006",
-    institutionName: "Royal Vista College",
+    institutionName: "Royal Vista Aquatics",
+  },
+  /* Swim-club admin — runs the Royal Vista Swim Academy day-to-day. Unlike the
+   * coach (who only sees her own sessions), the club admin sees the whole club:
+   * manages coach cover on sessions (add/remove a coach when one is absent) and
+   * reads daily/weekly/monthly/yearly summary reports. Scoped to T-006. The
+   * shared meta.discipline "Swimming" flag switches the whole app into the
+   * single-purpose swim-club experience for this account. */
+  {
+    id: "u8",
+    email: "clubadmin@demo.com",
+    password: "demo",
+    name: "Nadeesha Fonseka",
+    role: "admin",
+    photo: portrait("women/68.jpg"),
+    institution: "Royal Vista Aquatics",
+    tagline: "Club Manager · Royal Vista Aquatics",
+    meta: { discipline: "Swimming", scope: "Club admin" },
+    adminScope: "institute",
+    institutionId: "T-006",
+    institutionName: "Royal Vista Aquatics",
   },
 ];
 
 /* ────────────────────────────────────────────────────────────────────────────
  * Multi-institution model
  *
- * One Edu's headline promise: one app, one identity for the student/parent —
+ * 1StudentID's headline promise: one app, one identity for the student/parent —
  * but a student/child may be enrolled at *several* institutes simultaneously
  * (main school + tuition classes + online cohorts). Each institute keeps its
- * own enrolment record. The One Edu ID (S-XXXX) is unique platform-wide and
+ * own enrolment record. The 1StudentID (S-XXXX) is unique platform-wide and
  * acts as the primary key. The legacy ID is whatever the institute used in
- * its previous LMS/SIS before migrating to One Edu — preserved so that
+ * its previous LMS/SIS before migrating to 1StudentID — preserved so that
  * institute admins (and migrated reports/grade sheets) keep working.
  * ──────────────────────────────────────────────────────────────────────── */
 export interface StudentEnrollment {
@@ -841,7 +861,7 @@ export const students = [
 
   /* ── Cross-tenant directory students ──────────────────────────────────────
    * These two are enrolled at EduStar International (T-002), NOT at Royal Vista
-   * College (T-006). They power the "enrol an existing One Edu student from
+   * College (T-006). They power the "enrol an existing 1StudentID student from
    * another tenant" demo: a Royal Vista admin can find them by email/reference
    * but cannot see their details until the student (adult) or guardian (minor)
    * approves. Senuli (S-2001) is also the adult self-managed demo login. */
@@ -972,7 +992,7 @@ export const studentEnrollments: Record<string, StudentEnrollment[]> = {
     },
   ],
   "S-1005": [
-    /* Tharindu — tuition-only, no main-school enrolment in One Edu. */
+    /* Tharindu — tuition-only, no main-school enrolment in 1StudentID. */
     {
       institutionId: "T-007",
       institution: "Apex Tuition Hub",
@@ -1080,11 +1100,11 @@ export const studentEnrollments: Record<string, StudentEnrollment[]> = {
 /* ────────────────────────────────────────────────────────────────────────────
  * Platform directory — the consent-gated lookup used for cross-tenant enrolment.
  *
- * Scenario: a student already on One Edu (at tenant A) wants to enrol at a new
+ * Scenario: a student already on 1StudentID (at tenant A) wants to enrol at a new
  * tenant B. Because tenant B's admin cannot see students outside their own
  * tenant, they search this directory by the student's registered email or One
  * Edu reference number. The search returns only *availability* — never contact
- * details or academic history. When the admin requests enrolment, One Edu
+ * details or academic history. When the admin requests enrolment, 1StudentID
  * notifies the student (if self-managed/adult) or their guardian (if a minor)
  * by email + SMS to approve (one-click magic link or OTP). Only after that
  * approval is the full profile unlocked for tenant B.
@@ -1292,7 +1312,7 @@ export const courses = [
    * of coaches rather than a single teacher. */
   {
     id: "C-SWIM",
-    title: "Royal Vista Swim Academy",
+    title: "Royal Vista Aquatics",
     code: "SWIM",
     teacher: "Coach Mariana Cruz +3",
     students: 64,
@@ -1399,6 +1419,9 @@ export interface InvoiceRow {
   studentId?: string;
   institutionId?: string;
   institutionName?: string;
+  /** Tags a charge to a specific programme (e.g. the swim club) so a
+   *  programme admin can filter the finance page to just their receivables. */
+  courseId?: string;
 }
 
 export const invoices: InvoiceRow[] = [
@@ -1520,7 +1543,18 @@ export const invoices: InvoiceRow[] = [
   },
 ];
 
-export const messages = [
+export interface DemoMessage {
+  from: string;
+  role: string;
+  preview: string;
+  time: string;
+  unread: boolean;
+  /* Swim-club threads carry this so swim accounts see only club conversations
+   * (coach ⇄ parent about a swimmer, coach ⇄ club admin, club announcements). */
+  context?: "swim";
+}
+
+export const messages: DemoMessage[] = [
   {
     from: "Dr. Saman Silva",
     role: "Teacher",
@@ -1549,6 +1583,49 @@ export const messages = [
     time: "3 days ago",
     unread: false,
   },
+  /* ── Swim-club threads (context: "swim") ── */
+  {
+    from: "Coach Mariana Cruz",
+    role: "Head Swim Coach",
+    preview: "Aarav's freestyle turns are looking sharp — moved him to lane 2 for sprint sets.",
+    time: "1h ago",
+    unread: true,
+    context: "swim",
+  },
+  {
+    from: "Nimal Perera",
+    role: "Parent",
+    preview:
+      "Tashi has a slight ear infection — she'll skip Saturday's Learn-to-Swim. Back next week.",
+    time: "Yesterday",
+    unread: true,
+    context: "swim",
+  },
+  {
+    from: "Nadeesha Fonseka",
+    role: "Club Admin",
+    preview: "Coach Aisha is out Saturday — can you cover Family Learn-to-Swim at 9 AM?",
+    time: "Yesterday",
+    unread: false,
+    context: "swim",
+  },
+  {
+    from: "Royal Vista Aquatics",
+    role: "Announcement",
+    preview:
+      "Club gala time-trials next Friday 5 PM. Competitive Squad swimmers please confirm attendance.",
+    time: "2 days ago",
+    unread: false,
+    context: "swim",
+  },
+  {
+    from: "Coach Dilan Perera",
+    role: "Swim Coach",
+    preview: "Butterfly clinic notes posted to the record book for Wednesday's group.",
+    time: "3 days ago",
+    unread: false,
+    context: "swim",
+  },
 ];
 
 export const notifications = [
@@ -1558,7 +1635,23 @@ export const notifications = [
   { type: "class", text: "Physics live class starts in 15 minutes", time: "10 min ago" },
 ];
 
-export const leads = [
+export interface LeadRow {
+  name: string;
+  source: string;
+  interest: string;
+  stage: string;
+  owner: string;
+  value: number;
+  /** Prospect contact details — needed to actually follow the lead up (call /
+   *  email / WhatsApp). Optional for back-compat with older seeds. */
+  phone?: string;
+  email?: string;
+  /** Tags a lead to a programme (e.g. the swim club) so a programme admin can
+   *  filter the CRM to just their enquiries. */
+  program?: "Swim";
+}
+
+export const leads: LeadRow[] = [
   {
     name: "Ishara Madushani",
     source: "Facebook Ad",
@@ -1751,6 +1844,9 @@ export interface PlatformUserRow {
   mfa: boolean;
   institutionId?: string;
   institutionName?: string;
+  /** Tags a user to a programme/team (e.g. the swim club) so a programme admin
+   *  can filter Users & Roles to just their staff. */
+  program?: "Swim";
 }
 
 export const platformUsers: PlatformUserRow[] = [
@@ -2056,6 +2152,13 @@ export interface SrbEntry {
    * notes don't bleed into tuition-class threads and vice versa). */
   institutionId?: string;
   institutionName?: string;
+  /* Swim-club tagging. When an entry is posted from a swim session it carries
+   * the club course id (so swim views can show swim-only records) and the
+   * originating session. A coach may also attach a 1–5 performance rating for
+   * the swimmer — surfaced in the club summary reports as "swimmers rated". */
+  courseId?: string;
+  sessionId?: string;
+  rating?: number;
 }
 
 const today = new Date();
@@ -2384,7 +2487,7 @@ export const srbEntries: SrbEntry[] = [
     authorRole: "counselor",
     type: "remark",
     title: "Pathway check-in — adding an external A/L class",
-    body: "Discussed Senuli's plan to add an A/L Chemistry class at another institute. She'll approve any cross-institute enrolment herself via One Edu (OTP / one-click). No concerns.",
+    body: "Discussed Senuli's plan to add an A/L Chemistry class at another institute. She'll approve any cross-institute enrolment herself via 1StudentID (OTP / one-click). No concerns.",
     date: d(6, 13, 0),
     institutionId: "T-002",
     institutionName: "EduStar International",
@@ -2736,6 +2839,75 @@ export const teacherRatings: TeacherRating[] = [
     at: d(9, 11, 0),
     childName: "Nethmi Fernando",
   },
+  /* ── Swim Academy coach ratings (parents rating coaches) ── */
+  {
+    id: "TR-101",
+    teacherId: "TCH-09",
+    teacherName: "Coach Mariana Cruz",
+    authorName: "Nimal Perera",
+    authorRole: "parent",
+    stars: 5,
+    comment:
+      "Aarav's freestyle has come on hugely under Coach Mariana. She pushes the squad hard but the kids adore her, and her record-book notes after every session are brilliant.",
+    at: d(4, 19, 0),
+    childName: "Aarav Perera",
+  },
+  {
+    id: "TR-102",
+    teacherId: "TCH-09",
+    teacherName: "Coach Mariana Cruz",
+    authorName: "Ruwan Liyanage",
+    authorRole: "parent",
+    stars: 5,
+    comment: "Sandeepa dropped two seconds off her 100m this term. Fantastic squad coaching.",
+    at: d(12, 18, 30),
+    childName: "Sandeepa Liyanage",
+  },
+  {
+    id: "TR-103",
+    teacherId: "TCH-11",
+    teacherName: "Coach Aisha Rahman",
+    authorName: "Nimal Perera",
+    authorRole: "parent",
+    stars: 5,
+    comment:
+      "Tashi was terrified of water and now swims 10m on her own. Coach Aisha is so patient and gentle with the little ones.",
+    at: d(1, 19, 30),
+    childName: "Tashi Perera",
+  },
+  {
+    id: "TR-104",
+    teacherId: "TCH-11",
+    teacherName: "Coach Aisha Rahman",
+    authorName: "Anjali Fernando",
+    authorRole: "parent",
+    stars: 4,
+    comment: "Lovely with beginners. Nethmi looks forward to Learn-to-Swim every week.",
+    at: d(10, 10, 0),
+    childName: "Nethmi Fernando",
+  },
+  {
+    id: "TR-105",
+    teacherId: "TCH-10",
+    teacherName: "Coach Dilan Perera",
+    authorName: "Chamara Wickramasinghe",
+    authorRole: "parent",
+    stars: 4,
+    comment: "Great technical eye — Pasindu's butterfly timing has really improved.",
+    at: d(7, 17, 0),
+    childName: "Pasindu Wickramasinghe",
+  },
+  {
+    id: "TR-106",
+    teacherId: "TCH-12",
+    teacherName: "Coach Tomas Berg",
+    authorName: "Pradeep Karunaratne",
+    authorRole: "parent",
+    stars: 4,
+    comment: "Diving basics taught safely and confidently. Imesha feels secure on the board.",
+    at: d(15, 16, 0),
+    childName: "Imesha Karunaratne",
+  },
 ];
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -2765,6 +2937,9 @@ export interface TrainingCourse {
   certificate: boolean;
   blurb: string;
   lessons: TrainingLesson[];
+  /* Discipline-specific CPD. Swim coaches see aquatics education instead of the
+   * generic classroom-teaching catalogue. */
+  discipline?: "Swimming";
 }
 
 const lessons = (titles: Array<[string, number]>): TrainingLesson[] =>
@@ -2774,7 +2949,7 @@ export const trainingCourses: TrainingCourse[] = [
   {
     id: "TRN-CM01",
     title: "Classroom Management Essentials",
-    provider: "One Edu Academy",
+    provider: "1StudentID Academy",
     category: "Pedagogy",
     level: "Foundation",
     hours: 4,
@@ -2813,7 +2988,7 @@ export const trainingCourses: TrainingCourse[] = [
   {
     id: "TRN-EDT",
     title: "EdTech Tools for Modern Teaching",
-    provider: "One Edu Academy",
+    provider: "1StudentID Academy",
     category: "Technology",
     level: "Foundation",
     hours: 3,
@@ -2850,7 +3025,7 @@ export const trainingCourses: TrainingCourse[] = [
   {
     id: "TRN-SAFE",
     title: "Child Safeguarding & Wellbeing",
-    provider: "One Edu Academy",
+    provider: "1StudentID Academy",
     category: "Compliance",
     level: "Foundation",
     hours: 2,
@@ -2882,6 +3057,131 @@ export const trainingCourses: TrainingCourse[] = [
       ["Running a PLC", 22],
       ["Mentoring early-career teachers", 20],
       ["Leading change in your department", 26],
+    ]),
+  },
+  /* ── Aquatics CPD — the swim coach's "Coach Education" catalogue ── */
+  {
+    id: "TRN-LIFE",
+    title: "Water Safety & Lifeguarding",
+    provider: "Royal Life Saving",
+    category: "Aquatics",
+    level: "Foundation",
+    hours: 8,
+    rating: 4.9,
+    enrolledCount: 512,
+    certificate: true,
+    discipline: "Swimming",
+    blurb:
+      "Poolside rescue, CPR and emergency response for swim coaches — the mandatory safety foundation for on-deck staff.",
+    lessons: lessons([
+      ["Duty of care & pool supervision", 18],
+      ["Recognising a distressed swimmer", 20],
+      ["Reach, throw & rescue techniques", 24],
+      ["CPR & first aid for aquatic incidents", 26],
+      ["Emergency action plans", 16],
+    ]),
+  },
+  {
+    id: "TRN-LTS",
+    title: "Teaching Learn-to-Swim",
+    provider: "Swim Coaching Academy",
+    category: "Aquatics",
+    level: "Foundation",
+    hours: 6,
+    rating: 4.8,
+    enrolledCount: 734,
+    certificate: true,
+    discipline: "Swimming",
+    blurb:
+      "Structure beginner lessons that build water confidence, floating and kicking for young and nervous swimmers.",
+    lessons: lessons([
+      ["Water familiarisation & confidence", 18],
+      ["Buoyancy, floating & gliding", 20],
+      ["Introducing the kick & arm action", 22],
+      ["Class management in shallow water", 16],
+      ["Assessing beginner progression", 14],
+    ]),
+  },
+  {
+    id: "TRN-STRK",
+    title: "Stroke Correction & Technique",
+    provider: "Swim Coaching Academy",
+    category: "Aquatics",
+    level: "Intermediate",
+    hours: 7,
+    rating: 4.9,
+    enrolledCount: 421,
+    certificate: true,
+    discipline: "Swimming",
+    blurb:
+      "Diagnose and fix faults across all four strokes using drills, video feedback and progressive corrections.",
+    lessons: lessons([
+      ["Freestyle & backstroke mechanics", 24],
+      ["Breaststroke timing & pullouts", 22],
+      ["Butterfly undulation & timing", 22],
+      ["Using drills to correct faults", 20],
+      ["Video analysis & feedback", 18],
+    ]),
+  },
+  {
+    id: "TRN-SQUAD",
+    title: "Competitive Squad Coaching & Periodisation",
+    provider: "World Aquatics Development",
+    category: "Aquatics",
+    level: "Advanced",
+    hours: 10,
+    rating: 4.7,
+    enrolledCount: 268,
+    certificate: true,
+    discipline: "Swimming",
+    blurb:
+      "Plan training seasons, energy systems and race preparation for competitive squads targeting meets and galas.",
+    lessons: lessons([
+      ["Season planning & periodisation", 26],
+      ["Energy systems & training zones", 24],
+      ["Building aerobic & sprint sets", 22],
+      ["Taper & race preparation", 20],
+      ["Pace, splits & performance tracking", 24],
+    ]),
+  },
+  {
+    id: "TRN-AQSAFE",
+    title: "Safeguarding in Aquatics",
+    provider: "Royal Life Saving",
+    category: "Aquatics",
+    level: "Foundation",
+    hours: 3,
+    rating: 4.9,
+    enrolledCount: 903,
+    certificate: true,
+    discipline: "Swimming",
+    blurb:
+      "Child protection for the pool environment: change-room protocols, appropriate contact and incident reporting.",
+    lessons: lessons([
+      ["Safe recruitment & codes of conduct", 14],
+      ["Change-room & poolside protocols", 16],
+      ["Appropriate physical support in water", 14],
+      ["Recognising & reporting concerns", 16],
+    ]),
+  },
+  {
+    id: "TRN-MEET",
+    title: "Swim Meet Officiating",
+    provider: "World Aquatics Development",
+    category: "Aquatics",
+    level: "Intermediate",
+    hours: 4,
+    rating: 4.6,
+    enrolledCount: 187,
+    certificate: true,
+    discipline: "Swimming",
+    blurb:
+      "Rules, timing and stroke judging to run fair club galas and time-trials with confidence.",
+    lessons: lessons([
+      ["Roles on the officiating team", 14],
+      ["Stroke & turn judging", 20],
+      ["Timing systems & recording", 16],
+      ["Managing a club gala", 18],
     ]),
   },
 ];
@@ -2919,6 +3219,24 @@ export const trainingEnrollments: TrainingEnrollment[] = [
     completedLessonIds: ["L1", "L2", "L3", "L4"],
     status: "completed",
     certificateIssuedAt: d(15, 14, 0),
+  },
+  /* Coach Mariana — certified lifeguard, mid-way through stroke technique CPD. */
+  {
+    id: "TRE-003",
+    courseId: "TRN-LIFE",
+    teacherName: "Coach Mariana Cruz",
+    enrolledAt: d(40, 9, 0),
+    completedLessonIds: ["L1", "L2", "L3", "L4", "L5"],
+    status: "completed",
+    certificateIssuedAt: d(28, 15, 0),
+  },
+  {
+    id: "TRE-004",
+    courseId: "TRN-STRK",
+    teacherName: "Coach Mariana Cruz",
+    enrolledAt: d(12, 9, 0),
+    completedLessonIds: ["L1", "L2"],
+    status: "in-progress",
   },
 ];
 
@@ -3000,9 +3318,9 @@ export interface SwimCourse {
 export const swimCourses: SwimCourse[] = [
   {
     id: "C-SWIM",
-    name: "Royal Vista Swim Academy",
+    name: "Royal Vista Aquatics",
     institutionId: "T-006",
-    institutionName: "Royal Vista College",
+    institutionName: "Royal Vista Aquatics",
     poolIds: ["POOL-OLY", "POOL-TRN"],
     coachNames: [
       "Coach Mariana Cruz",
@@ -3233,6 +3551,19 @@ export function sessionsByCourse(courseId: string): PoolSession[] {
 /** The primary swim course (used for coach redirect + children surfacing). */
 export const SWIM_COURSE_ID = "C-SWIM";
 
+/* Any account whose whole experience is the swim club — the coach (teacher) OR
+ * the club admin. Both carry meta.discipline === "Swimming"; this single flag
+ * switches menus, dashboard and page scoping into the single-purpose swim-club
+ * product. Typed loosely so callers can pass a DemoUser | null. */
+export function isSwimUser(user: { role?: Role; meta?: Record<string, string> } | null): boolean {
+  return user?.meta?.discipline === "Swimming";
+}
+
+/** The swim-club admin (whole-club view + coach/session management). */
+export function isSwimAdmin(user: { role?: Role; meta?: Record<string, string> } | null): boolean {
+  return isSwimUser(user) && user?.role === "admin";
+}
+
 const swimCoachNameSet = new Set(swimCourses.flatMap((c) => c.coachNames));
 
 /** True if a person (by display name) coaches any swim session. */
@@ -3245,7 +3576,7 @@ export function sessionsForCoach(name: string): PoolSession[] {
   return poolSessions.filter((s) => s.coachNames.includes(name));
 }
 
-/** Sessions a swimmer is enrolled in (by One Edu ID). */
+/** Sessions a swimmer is enrolled in (by 1StudentID). */
 export function sessionsForSwimmer(studentId: string): PoolSession[] {
   return poolSessions.filter((s) => s.swimmerIds.includes(studentId));
 }
@@ -3294,3 +3625,1546 @@ export const sessionAttendance: SessionAttendance[] = [
     by: "Coach Dilan Perera",
   },
 ];
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Swim-club history & operations data
+ *
+ * The club summary reports (daily / weekly / monthly / yearly) need a realistic
+ * body of history to aggregate. Rather than hand-author thousands of rows, we
+ * expand the recurring weekly timetable (`poolSessions`) into per-date
+ * attendance for the last ~13 weeks with a deterministic (seeded) status mix,
+ * then layer on hand-authored coach absences, incidents and record-book notes.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+const studentNameById: Record<string, string> = Object.fromEntries(
+  students.map((s) => [s.id, s.name]),
+);
+const swimmerName = (id: string) => studentNameById[id] ?? id;
+
+const WEEKDAY_INDEX: Record<Weekday, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+};
+
+/** Stable 0–1 hash so generated history is identical on every load. */
+function seeded(key: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 100000) / 100000;
+}
+
+/** Date (midnight) of the most recent occurrence of `day` on or before today. */
+function lastOccurrenceOf(day: Weekday): Date {
+  const base = new Date(today);
+  base.setHours(0, 0, 0, 0);
+  const diff = (base.getDay() - WEEKDAY_INDEX[day] + 7) % 7;
+  base.setDate(base.getDate() - diff);
+  return base;
+}
+
+const HISTORY_WEEKS = 13;
+
+/** Build attendance history for every recurring session across the last N weeks. */
+function buildSessionAttendanceHistory(): SessionAttendance[] {
+  const rows: SessionAttendance[] = [];
+  const now = today.getTime();
+  for (const s of poolSessions) {
+    const [sh, sm] = s.start.split(":").map(Number);
+    const lastOcc = lastOccurrenceOf(s.day);
+    const coach = s.coachNames[0] ?? "Coach";
+    for (let wk = 0; wk < HISTORY_WEEKS; wk++) {
+      const date = new Date(lastOcc);
+      date.setDate(lastOcc.getDate() - wk * 7);
+      date.setHours(sh, sm + 4, 0, 0);
+      if (date.getTime() > now) continue; // never generate future sessions
+      const dayKey = date.toISOString().slice(0, 10);
+      s.swimmerIds.forEach((id, idx) => {
+        const r = seeded(`${s.id}|${id}|${dayKey}`);
+        const status: SessionAttendance["status"] =
+          r < 0.82 ? "Present" : r < 0.91 ? "Late" : "Absent";
+        rows.push({
+          id: `SAH-${s.id}-${wk}-${idx}`,
+          sessionId: s.id,
+          studentId: id,
+          studentName: swimmerName(id),
+          status,
+          at: date.toISOString(),
+          by: coach,
+        });
+      });
+    }
+  }
+  return rows;
+}
+
+/* Merge hand-authored "today" rows with generated history, de-duped by
+ * session + swimmer + calendar day (hand-authored wins so the live marking
+ * demo on PS-01 stays intact). */
+const _handAuthoredKeys = new Set(
+  sessionAttendance.map((a) => `${a.sessionId}|${a.studentId}|${a.at.slice(0, 10)}`),
+);
+
+export const sessionAttendanceHistory: SessionAttendance[] = [
+  ...sessionAttendance,
+  ...buildSessionAttendanceHistory().filter(
+    (a) => !_handAuthoredKeys.has(`${a.sessionId}|${a.studentId}|${a.at.slice(0, 10)}`),
+  ),
+];
+
+/* ── Coach attendance / cover ───────────────────────────────────────────────
+ * We record only ABSENCES (with the substitute who covered). "Coaches present"
+ * is derived by the report: scheduled coach-slots minus absences. The admin's
+ * "manage coaches" tool appends new rows of the same shape at runtime. */
+export interface CoachAttendance {
+  id: string;
+  sessionId: string;
+  date: string; // ISO
+  coachName: string;
+  status: "Present" | "Absent";
+  reason?: string;
+  replacedByName?: string;
+  by: string; // who recorded it (admin)
+  at: string; // ISO recorded time
+}
+
+export const coachAttendance: CoachAttendance[] = [
+  {
+    id: "CA-001",
+    sessionId: "PS-09",
+    date: d(2, 9, 0),
+    coachName: "Coach Aisha Rahman",
+    status: "Absent",
+    reason: "Sick leave",
+    replacedByName: "Coach Mariana Cruz",
+    by: "Nadeesha Fonseka",
+    at: d(3, 18, 0),
+  },
+  {
+    id: "CA-002",
+    sessionId: "PS-06",
+    date: d(9, 16, 0),
+    coachName: "Coach Dilan Perera",
+    status: "Absent",
+    reason: "Coaching clinic (external)",
+    replacedByName: "Coach Mariana Cruz",
+    by: "Nadeesha Fonseka",
+    at: d(10, 12, 0),
+  },
+  {
+    id: "CA-003",
+    sessionId: "PS-02",
+    date: d(16, 16, 0),
+    coachName: "Coach Aisha Rahman",
+    status: "Absent",
+    reason: "Family emergency",
+    replacedByName: "Coach Dilan Perera",
+    by: "Nadeesha Fonseka",
+    at: d(16, 8, 30),
+  },
+  {
+    id: "CA-004",
+    sessionId: "PS-08",
+    date: d(23, 17, 0),
+    coachName: "Coach Tomas Berg",
+    status: "Absent",
+    reason: "Injury (recovered)",
+    replacedByName: "Coach Dilan Perera",
+    by: "Nadeesha Fonseka",
+    at: d(24, 9, 0),
+  },
+  {
+    id: "CA-005",
+    sessionId: "PS-10",
+    date: d(37, 9, 0),
+    coachName: "Coach Tomas Berg",
+    status: "Absent",
+    reason: "Annual leave",
+    replacedByName: "Coach Mariana Cruz",
+    by: "Nadeesha Fonseka",
+    at: d(40, 14, 0),
+  },
+  {
+    id: "CA-006",
+    sessionId: "PS-07",
+    date: d(51, 16, 0),
+    coachName: "Coach Aisha Rahman",
+    status: "Absent",
+    reason: "Sick leave",
+    replacedByName: "Coach Dilan Perera",
+    by: "Nadeesha Fonseka",
+    at: d(52, 10, 0),
+  },
+  {
+    id: "CA-007",
+    sessionId: "PS-04",
+    date: d(65, 17, 0),
+    coachName: "Coach Mariana Cruz",
+    status: "Absent",
+    reason: "Officiating regional gala",
+    replacedByName: "Coach Dilan Perera",
+    by: "Nadeesha Fonseka",
+    at: d(67, 11, 0),
+  },
+];
+
+/* ── Live coach-roster overrides ────────────────────────────────────────────
+ * When the admin covers an absent coach on an upcoming session, the new roster
+ * is stored here (keyed by session). Empty by default → the club falls back to
+ * the static `session.coachNames`. */
+export interface SessionRoster {
+  sessionId: string;
+  coachNames: string[];
+  updatedBy: string;
+  updatedAt: string; // ISO
+}
+
+export const sessionRosters: SessionRoster[] = [];
+
+/** Effective coach roster for a session, honouring any admin override. */
+export function effectiveCoachNames(sessionId: string, rosters: SessionRoster[]): string[] {
+  const override = rosters.find((r) => r.sessionId === sessionId);
+  if (override) return override.coachNames;
+  return sessionById[sessionId]?.coachNames ?? [];
+}
+
+/* ── Incidents ──────────────────────────────────────────────────────────────
+ * Poolside incidents logged by coaches during sessions — surfaced in the club
+ * summary reports and (for coaches) their own session reports. */
+export type IncidentType = "Safety" | "Behaviour" | "Health" | "Equipment";
+export type IncidentSeverity = "Low" | "Medium" | "High";
+
+export interface Incident {
+  id: string;
+  courseId: string;
+  sessionId?: string;
+  studentId?: string;
+  studentName?: string;
+  coachName: string;
+  type: IncidentType;
+  severity: IncidentSeverity;
+  title: string;
+  body: string;
+  status: "Open" | "Resolved";
+  at: string; // ISO
+}
+
+export const incidents: Incident[] = [
+  {
+    id: "INC-001",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-02",
+    studentId: "S-1006",
+    studentName: swimmerName("S-1006"),
+    coachName: "Coach Aisha Rahman",
+    type: "Health",
+    severity: "Low",
+    title: "Swallowed water — coughing fit",
+    body: "Hiruni swallowed water during kicking drills, brief coughing fit. Rested poolside 5 min, recovered fully and rejoined. Parent notified at pickup.",
+    status: "Resolved",
+    at: d(1, 16, 25),
+  },
+  {
+    id: "INC-002",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-01",
+    studentId: "S-1005",
+    studentName: swimmerName("S-1005"),
+    coachName: "Coach Mariana Cruz",
+    type: "Behaviour",
+    severity: "Low",
+    title: "Running on pool deck",
+    body: "Tharindu was running on the deck between sets. Reminded of the no-running rule and moved to the front of the lane line. No further issues.",
+    status: "Resolved",
+    at: d(2, 16, 40),
+  },
+  {
+    id: "INC-003",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-03",
+    coachName: "Coach Tomas Berg",
+    type: "Equipment",
+    severity: "Medium",
+    title: "Loose starting-block grip",
+    body: "Lane 8 starting block grip pad was loose. Block taken out of use for the session, maintenance ticket raised. Diving group used lane 7 only.",
+    status: "Open",
+    at: d(0, 16, 10),
+  },
+  {
+    id: "INC-004",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-08",
+    studentId: "S-1018",
+    studentName: swimmerName("S-1018"),
+    coachName: "Coach Mariana Cruz",
+    type: "Safety",
+    severity: "Medium",
+    title: "Near lane collision",
+    body: "Two swimmers converged at the wall during a fast set. No contact. Reinforced keep-right lane etiquette and staggered the send-offs.",
+    status: "Resolved",
+    at: d(4, 17, 50),
+  },
+  {
+    id: "INC-005",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-05",
+    studentId: "S-1020",
+    studentName: swimmerName("S-1020"),
+    coachName: "Coach Aisha Rahman",
+    type: "Health",
+    severity: "Low",
+    title: "Mild ear discomfort",
+    body: "Kavya reported mild ear discomfort after submersion drills. Sat out remainder, advised parent to monitor. Cleared to return next session.",
+    status: "Resolved",
+    at: d(11, 17, 30),
+  },
+  {
+    id: "INC-006",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-06",
+    coachName: "Coach Dilan Perera",
+    type: "Equipment",
+    severity: "Low",
+    title: "Lane rope tension",
+    body: "Lane 3 rope had slackened. Re-tensioned before the set. No impact to the session.",
+    status: "Resolved",
+    at: d(9, 16, 20),
+  },
+  {
+    id: "INC-007",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-04",
+    studentId: "S-1012",
+    studentName: swimmerName("S-1012"),
+    coachName: "Coach Mariana Cruz",
+    type: "Safety",
+    severity: "High",
+    title: "Swimmer fatigue in deep water",
+    body: "Sandeepa showed fatigue mid-lane in the distance set. Lifeguard assisted to the wall with a reach pole. Fully recovered, no water inhaled. Reviewed set intensity and rest intervals with the group.",
+    status: "Resolved",
+    at: d(18, 17, 20),
+  },
+  {
+    id: "INC-008",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-09",
+    studentId: "S-1004",
+    studentName: swimmerName("S-1004"),
+    coachName: "Coach Aisha Rahman",
+    type: "Behaviour",
+    severity: "Low",
+    title: "Reluctant to submerge",
+    body: "Nethmi was anxious about face-in-water. Used step-by-step bubbles progression and a kickboard. Ended the session smiling — logged for continuity.",
+    status: "Resolved",
+    at: d(25, 9, 30),
+  },
+  {
+    id: "INC-009",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-01",
+    coachName: "Coach Mariana Cruz",
+    type: "Equipment",
+    severity: "Medium",
+    title: "Pace clock fault",
+    body: "Poolside pace clock froze during sprint sets. Switched to stopwatch timing. Clock reset at the break. Facilities notified.",
+    status: "Open",
+    at: d(0, 16, 35),
+  },
+  {
+    id: "INC-010",
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-08",
+    studentId: "S-1011",
+    studentName: swimmerName("S-1011"),
+    coachName: "Coach Mariana Cruz",
+    type: "Health",
+    severity: "Low",
+    title: "Minor cramp",
+    body: "Pasindu had a calf cramp during the mock meet. Stretched out poolside, hydrated, returned for the cool-down. Advised pre-session hydration.",
+    status: "Resolved",
+    at: d(46, 17, 40),
+  },
+];
+
+/* ── Swim record-book notes ─────────────────────────────────────────────────
+ * Coach-authored notes tagged to the club course (courseId C-SWIM) and, where
+ * relevant, a 1–5 swimmer performance rating. Includes Aarav (S-1001) and
+ * Tashi (S-1009) so the parent/student demos see a swim record book. These are
+ * concatenated onto `srbEntries` by the store seed. */
+export const swimSrbEntries: SrbEntry[] = [
+  {
+    id: "SRB-SW01",
+    studentId: "S-1001",
+    studentName: swimmerName("S-1001"),
+    authorName: "Coach Mariana Cruz",
+    authorRole: "teacher",
+    type: "achievement",
+    title: "Freestyle sprint — new PB",
+    body: "Aarav took 0.8s off his 50m freestyle in today's time-trial. Excellent underwater streamline off the wall. Moving him up a lane for sprint sets.",
+    date: d(0, 17, 10),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-01",
+    rating: 5,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [],
+  },
+  {
+    id: "SRB-SW02",
+    studentId: "S-1001",
+    studentName: swimmerName("S-1001"),
+    authorName: "Coach Dilan Perera",
+    authorRole: "teacher",
+    type: "remark",
+    title: "Butterfly timing",
+    body: "Undulation is improving but arm recovery is still dropping late. Assigned single-arm fly drills for next week.",
+    date: d(5, 17, 5),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-06",
+    rating: 4,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [],
+  },
+  {
+    id: "SRB-SW03",
+    studentId: "S-1009",
+    studentName: swimmerName("S-1009"),
+    authorName: "Coach Aisha Rahman",
+    authorRole: "teacher",
+    type: "achievement",
+    title: "First unaided 10m!",
+    body: "Tashi swam 10m front crawl unaided today — a big milestone. Confidence has grown so much. Well done!",
+    date: d(1, 10, 15),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-07",
+    rating: 5,
+    requiresAck: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [
+      {
+        id: "rsw1",
+        authorName: "Nimal Perera",
+        authorRole: "parent",
+        text: "Wonderful news — she was so proud telling us at dinner. Thank you Coach Aisha!",
+        at: d(1, 19, 0),
+      },
+    ],
+  },
+  {
+    id: "SRB-SW04",
+    studentId: "S-1009",
+    studentName: swimmerName("S-1009"),
+    authorName: "Coach Aisha Rahman",
+    authorRole: "teacher",
+    type: "communication",
+    title: "Bring a swim cap next week",
+    body: "Tashi's hair is getting in her eyes during drills. A silicone swim cap will help a lot — the club shop has them.",
+    date: d(6, 10, 30),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-07",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [],
+  },
+  {
+    id: "SRB-SW05",
+    studentId: "S-1002",
+    studentName: swimmerName("S-1002"),
+    authorName: "Coach Mariana Cruz",
+    authorRole: "teacher",
+    type: "achievement",
+    title: "Strong tumble turns",
+    body: "Sara's tumble turns are the cleanest in the squad this week — great push-off depth. Keep it up.",
+    date: d(2, 17, 0),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-01",
+    rating: 5,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [],
+  },
+  {
+    id: "SRB-SW06",
+    studentId: "S-1010",
+    studentName: swimmerName("S-1010"),
+    authorName: "Coach Mariana Cruz",
+    authorRole: "teacher",
+    type: "remark",
+    title: "Pacing on distance sets",
+    body: "Imesha went out too fast on the 400 and faded. We worked on negative-split pacing — much better on the second attempt.",
+    date: d(7, 17, 15),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-04",
+    rating: 3,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [],
+  },
+  {
+    id: "SRB-SW07",
+    studentId: "S-1023",
+    studentName: swimmerName("S-1023"),
+    authorName: "Coach Tomas Berg",
+    authorRole: "teacher",
+    type: "achievement",
+    title: "Clean standing dive",
+    body: "Consistent, controlled standing dives today with good entry line. Ready to progress to the 1m springboard approach.",
+    date: d(3, 16, 40),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-03",
+    rating: 4,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [],
+  },
+  {
+    id: "SRB-SW08",
+    studentId: "S-1006",
+    studentName: swimmerName("S-1006"),
+    authorName: "Coach Aisha Rahman",
+    authorRole: "teacher",
+    type: "behavior",
+    title: "Great listening today",
+    body: "Hiruni followed every instruction carefully and helped a nervous classmate. A real team player.",
+    date: d(4, 16, 50),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-02",
+    rating: 4,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [],
+  },
+  {
+    id: "SRB-SW09",
+    studentId: "S-1011",
+    studentName: swimmerName("S-1011"),
+    authorName: "Coach Mariana Cruz",
+    authorRole: "teacher",
+    type: "achievement",
+    title: "Race-prep mock meet",
+    body: "Pasindu executed his race plan well in the mock meet — controlled start, strong finish. Small work needed on the final turn.",
+    date: d(4, 18, 0),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-08",
+    rating: 4,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [],
+  },
+  {
+    id: "SRB-SW10",
+    studentId: "S-1015",
+    studentName: swimmerName("S-1015"),
+    authorName: "Coach Dilan Perera",
+    authorRole: "teacher",
+    type: "remark",
+    title: "Butterfly endurance",
+    body: "Tushari can now hold fly technique for 50m without breakdown — big improvement from last month.",
+    date: d(8, 17, 10),
+    courseId: SWIM_COURSE_ID,
+    sessionId: "PS-06",
+    rating: 4,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    replies: [],
+  },
+];
+
+/* Swim-club notification feed — shown to swim accounts instead of the generic
+ * school notifications (exam grades, facial-recognition attendance, …). */
+export const swimNotifications = [
+  {
+    type: "class",
+    text: "Competitive Squad — Sprint starts in 15 minutes (Olympic pool)",
+    time: "10 min ago",
+  },
+  {
+    type: "attendance",
+    text: "Attendance saved for Monday's Learn-to-Swim · Dolphins (7/8 present)",
+    time: "today 16:12",
+  },
+  {
+    type: "incident",
+    text: "New incident logged: loose starting-block grip (Lane 8)",
+    time: "today 16:10",
+  },
+  {
+    type: "class",
+    text: "Coach cover: Coach Mariana is covering Family Learn-to-Swim on Saturday",
+    time: "yesterday",
+  },
+  { type: "billing", text: "Term 3 squad fees are due for 4 swimmers", time: "2 days ago" },
+];
+
+/* ── Messaging: persisted, two-way conversations ────────────────────────────
+ * A chat message belongs to a conversation between two people. The pair is
+ * stored canonically (a/b sorted) so a thread resolves the same regardless of
+ * who opened it — the counterpart, and any reply, is visible to BOTH accounts
+ * (persisted in the store, like record-book replies). `context: "swim"` marks
+ * club conversations so swim accounts only see their club threads. */
+export interface ChatMessage {
+  id: string;
+  a: string; // participant name (canonical — sorts first)
+  b: string; // participant name (canonical — sorts second)
+  fromName: string;
+  fromRole: string;
+  text: string;
+  at: string; // ISO
+  context?: "swim";
+}
+
+/** Canonical conversation key for a pair of participant names. */
+export function chatPair(x: string, y: string): [string, string] {
+  return x.localeCompare(y) <= 0 ? [x, y] : [y, x];
+}
+
+const chatMsg = (
+  id: string,
+  from: string,
+  fromRole: string,
+  to: string,
+  text: string,
+  at: string,
+  context?: "swim",
+): ChatMessage => {
+  const [a, b] = chatPair(from, to);
+  return { id, a, b, fromName: from, fromRole, text, at, context };
+};
+
+export const chatSeed: ChatMessage[] = [
+  // Coach Mariana ⇄ Nimal Perera (parent of Aarav) — swim
+  chatMsg(
+    "CH-001",
+    "Coach Mariana Cruz",
+    "Head Swim Coach",
+    "Nimal Perera",
+    "Hi Nimal — Aarav's freestyle turns are looking sharp. I've moved him to lane 2 for sprint sets. He's ready for the club gala time-trials on Friday.",
+    d(1, 17, 20),
+    "swim",
+  ),
+  chatMsg(
+    "CH-002",
+    "Nimal Perera",
+    "Parent",
+    "Coach Mariana Cruz",
+    "That's wonderful, thank you Coach! He's been practising his starts at home. We'll make sure he's there Friday.",
+    d(1, 19, 5),
+    "swim",
+  ),
+  chatMsg(
+    "CH-003",
+    "Coach Mariana Cruz",
+    "Head Swim Coach",
+    "Nimal Perera",
+    "Perfect. Please bring his club cap and a water bottle. Warm-up is 4:45 sharp.",
+    d(0, 9, 15),
+    "swim",
+  ),
+  // Club admin Nadeesha ⇄ Coach Mariana — swim
+  chatMsg(
+    "CH-010",
+    "Nadeesha Fonseka",
+    "Club Admin",
+    "Coach Mariana Cruz",
+    "Coach Aisha is out sick this Saturday — could you cover Family Learn-to-Swim at 9 AM?",
+    d(2, 14, 0),
+    "swim",
+  ),
+  chatMsg(
+    "CH-011",
+    "Coach Mariana Cruz",
+    "Head Swim Coach",
+    "Nadeesha Fonseka",
+    "Yes, happy to cover. I'll prep a parent-and-child water-familiarisation plan.",
+    d(2, 15, 30),
+    "swim",
+  ),
+  // Generic (non-swim) threads so other demo accounts still have an inbox.
+  chatMsg(
+    "CH-020",
+    "Dr. Saman Silva",
+    "Teacher",
+    "Nimal Perera",
+    "Reminder: physics lab is tomorrow at 3 PM. Aarav did excellent work on the last quiz.",
+    d(1, 10, 42),
+  ),
+  chatMsg(
+    "CH-021",
+    "Dr. Saman Silva",
+    "Teacher",
+    "Aarav Perera",
+    "Great work on your chemistry essay — see my notes in your record book.",
+    d(2, 12, 0),
+  ),
+  chatMsg(
+    "CH-022",
+    "Priya Kumar",
+    "Platform Admin",
+    "Dr. Saman Silva",
+    "Q3 tenant onboarding is on track — two new institutes go live next week. Great job on the migration.",
+    d(1, 9, 0),
+  ),
+  chatMsg(
+    "CH-023",
+    "Ananda Wijesinghe",
+    "Institute Admin",
+    "Nimal Perera",
+    "Thank you for your feedback at the parent forum — we've extended library hours as requested.",
+    d(3, 15, 30),
+  ),
+  chatMsg(
+    "CH-024",
+    "Dr. Saman Silva",
+    "Teacher",
+    "Senuli Fernando",
+    "Your seat in the Mon/Wed A/L Physics revision is confirmed — joining link is in your record book.",
+    d(2, 16, 0),
+  ),
+];
+
+/* Swim-club fee invoices (courseId C-SWIM) — squad & learn-to-swim term fees.
+ * Concatenated onto `invoices` by the store seed; the swim admin's finance page
+ * filters to these so it never shows the wider college's tuition receivables. */
+export const swimInvoices: InvoiceRow[] = [
+  {
+    id: "INV-SW-1001",
+    date: "2026-06-01",
+    desc: "Competitive Squad — Term 3 fees (Aarav Perera)",
+    amount: 120,
+    status: "Paid",
+    method: "Visa •••• 4242",
+    studentId: "S-1001",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    courseId: SWIM_COURSE_ID,
+  },
+  {
+    id: "INV-SW-1002",
+    date: "2026-06-01",
+    desc: "Learn-to-Swim — Term 3 fees (Tashi Perera)",
+    amount: 80,
+    status: "Due",
+    method: "—",
+    studentId: "S-1009",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    courseId: SWIM_COURSE_ID,
+  },
+  {
+    id: "INV-SW-1003",
+    date: "2026-06-01",
+    desc: "Competitive Squad — Term 3 fees (Sandeepa Liyanage)",
+    amount: 120,
+    status: "Paid",
+    method: "PayHere",
+    studentId: "S-1012",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    courseId: SWIM_COURSE_ID,
+  },
+  {
+    id: "INV-SW-1004",
+    date: "2026-06-10",
+    desc: "Gala entry & timing fee (Competitive Squad)",
+    amount: 25,
+    status: "Due",
+    method: "—",
+    studentId: "S-1011",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    courseId: SWIM_COURSE_ID,
+  },
+  {
+    id: "INV-SW-1005",
+    date: "2026-05-15",
+    desc: "Learn-to-Swim — Term 3 fees (Nethmi Fernando)",
+    amount: 80,
+    status: "Paid",
+    method: "PayPal",
+    studentId: "S-1004",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    courseId: SWIM_COURSE_ID,
+  },
+  {
+    id: "INV-SW-1006",
+    date: "2026-06-05",
+    desc: "Diving programme — Term 3 fees (Imesha Karunaratne)",
+    amount: 95,
+    status: "Upcoming",
+    method: "—",
+    studentId: "S-1010",
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    courseId: SWIM_COURSE_ID,
+  },
+];
+
+/* Swim-club CRM enquiries (program: "Swim") — prospective swimmers/parents.
+ * The swim admin's Marketing & CRM filters to these. Concatenated onto `leads`. */
+export const swimLeads: LeadRow[] = [
+  {
+    name: "Dilhani Ratnayake",
+    source: "Facebook Ad",
+    interest: "Learn-to-Swim (age 6)",
+    stage: "Qualified",
+    owner: "Aquatics — Nadeesha",
+    value: 240,
+    phone: "+94 77 214 6690",
+    email: "dilhani.ratnayake@gmail.com",
+    program: "Swim",
+  },
+  {
+    name: "Rukshan Mendis",
+    source: "Referral",
+    interest: "Competitive Squad tryout",
+    stage: "Demo Booked",
+    owner: "Aquatics — Coach Mariana",
+    value: 480,
+    phone: "+94 71 508 3321",
+    email: "rukshan.mendis@outlook.com",
+    program: "Swim",
+  },
+  {
+    name: "Fathima Nazeer",
+    source: "Instagram",
+    interest: "Adult beginner classes",
+    stage: "Contacted",
+    owner: "Aquatics — Nadeesha",
+    value: 320,
+    phone: "+94 76 331 9047",
+    email: "fathima.nazeer@gmail.com",
+    program: "Swim",
+  },
+  {
+    name: "Gayan Perera",
+    source: "Web Form",
+    interest: "Diving programme",
+    stage: "New",
+    owner: "Unassigned",
+    value: 380,
+    phone: "+94 70 662 1185",
+    email: "gayan.perera@gmail.com",
+    program: "Swim",
+  },
+  {
+    name: "Shanika Fernando",
+    source: "Walk-in",
+    interest: "Parent & child water class",
+    stage: "Qualified",
+    owner: "Aquatics — Coach Aisha",
+    value: 200,
+    phone: "+94 77 940 2278",
+    email: "shanika.f@yahoo.com",
+    program: "Swim",
+  },
+  {
+    name: "Ashen Silva",
+    source: "Google Search",
+    interest: "Stroke-correction clinic",
+    stage: "Closed Won",
+    owner: "Aquatics — Coach Dilan",
+    value: 300,
+    phone: "+94 71 776 5540",
+    email: "ashen.silva@gmail.com",
+    program: "Swim",
+  },
+];
+
+/* Swim-club staff (program: "Swim", T-006) — coaches, club admin, lifeguard and
+ * front desk. The swim admin's Users & Roles filters to these. Concatenated
+ * onto `platformUsers`. */
+export const swimStaff: PlatformUserRow[] = [
+  {
+    name: "Nadeesha Fonseka",
+    email: "clubadmin@demo.com",
+    role: "Club Admin",
+    lastLogin: "just now",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    program: "Swim",
+  },
+  {
+    name: "Coach Mariana Cruz",
+    email: "coach@demo.com",
+    role: "Head Swim Coach",
+    lastLogin: "12 min ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    program: "Swim",
+  },
+  {
+    name: "Coach Dilan Perera",
+    email: "dilan@royalvista.com",
+    role: "Swim Coach",
+    lastLogin: "2 hours ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    program: "Swim",
+  },
+  {
+    name: "Coach Aisha Rahman",
+    email: "aisha@royalvista.com",
+    role: "Swim Coach",
+    lastLogin: "yesterday",
+    mfa: false,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    program: "Swim",
+  },
+  {
+    name: "Coach Tomas Berg",
+    email: "tomas@royalvista.com",
+    role: "Swim Coach",
+    lastLogin: "3 days ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    program: "Swim",
+  },
+  {
+    name: "Ravindu Jayasena",
+    email: "lifeguard@royalvista.com",
+    role: "Lifeguard",
+    lastLogin: "1 hour ago",
+    mfa: false,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    program: "Swim",
+  },
+  {
+    name: "Malsha Wickrama",
+    email: "reception@royalvista.com",
+    role: "Front Desk",
+    lastLogin: "30 min ago",
+    mfa: true,
+    institutionId: "T-006",
+    institutionName: "Royal Vista College",
+    program: "Swim",
+  },
+];
+
+/* ════════════════════════════════════════════════════════════════════════════
+ * Swim-club — extended demo scenarios
+ *
+ * Additional operational data added for the swim-club walkthrough: temporary /
+ * permanent class moves & registrations, level assessments ("qualify for next
+ * level"), competitive race times & PBs, payment mandates (Direct Debit / Card
+ * / Cash), CPD assignments, lead outreach logs and wellbeing check-ins. Every
+ * item is a NEW store collection layered on top of the seed timetable — the
+ * baseline `poolSessions` roster is never mutated. See store.ts (add by key,
+ * never bump STORAGE_KEY).
+ * ════════════════════════════════════════════════════════════════════════════ */
+
+/* A future-dated ISO helper (mirror of `d`, but forward in time). */
+const dPlus = (days: number, hour = 9, minute = 0): string => {
+  const x = new Date(today);
+  x.setDate(x.getDate() + days);
+  x.setHours(hour, minute, 0, 0);
+  return x.toISOString();
+};
+
+/* ── Swimmer roster moves: registration/enrolment + temporary / permanent ────
+ *  - "enroll"    : add a swimmer to a session (new registration or assignment).
+ *  - "temp"      : move a swimmer to another session for the day; auto-reverts
+ *                  12h after `at` (expiresAt) unless moved back sooner.
+ *  - "permanent" : move a swimmer permanently between sessions.
+ * The effective roster is computed from the baseline + active moves. */
+export type SwimmerMoveKind = "enroll" | "temp" | "permanent" | "unenroll";
+
+export interface SwimmerMove {
+  id: string;
+  studentId: string;
+  studentName: string;
+  sessionId: string; // target session the swimmer now trains in
+  fromSessionId?: string; // origin session (temp / permanent moves)
+  kind: SwimmerMoveKind;
+  reason?: string;
+  by: string;
+  at: string; // ISO
+  expiresAt?: string; // ISO — temp moves only (at + TEMP_MOVE_HOURS)
+  reverted?: boolean;
+}
+
+/** How long a temporary class move stays in effect before auto-reverting. */
+export const TEMP_MOVE_HOURS = 12;
+
+/** Is a move currently in effect? Temp moves lapse after their 12h window. */
+export function isMoveActive(m: SwimmerMove, now = Date.now()): boolean {
+  if (m.reverted) return false;
+  if (m.kind === "temp") return !!m.expiresAt && now < Date.parse(m.expiresAt);
+  return true;
+}
+
+/** Effective swimmer IDs for a session, applying enrol / temp / permanent /
+ * unenroll moves. Moves are applied oldest-first so the most recent change wins
+ * when a swimmer is removed then re-added to the same session (or vice-versa). */
+export function effectiveSwimmerIds(
+  session: PoolSession,
+  moves: SwimmerMove[],
+  now = Date.now(),
+): string[] {
+  const ids = new Set(session.swimmerIds);
+  const ordered = moves.slice().sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+  for (const m of ordered) {
+    if (!isMoveActive(m, now)) continue;
+    if (m.fromSessionId === session.id) ids.delete(m.studentId); // moved / removed out
+    if (m.sessionId === session.id) ids.add(m.studentId); // moved / enrolled in
+  }
+  return Array.from(ids);
+}
+
+/** Temp moves currently in effect (for "temporarily here — move back" banners). */
+export function activeTempMoves(moves: SwimmerMove[], now = Date.now()): SwimmerMove[] {
+  return moves.filter((m) => m.kind === "temp" && isMoveActive(m, now));
+}
+
+export const swimmerMoves: SwimmerMove[] = [
+  // A recent registration: Mihir was enrolled into a Learn-to-Swim group.
+  {
+    id: "MOV-1001",
+    studentId: "S-1003",
+    studentName: swimmerName("S-1003"),
+    sessionId: "PS-07",
+    kind: "enroll",
+    reason: "New registration — Learn-to-Swim (Dolphins)",
+    by: "Nadeesha Fonseka",
+    at: d(8, 10, 15),
+  },
+];
+
+/* ── Level assessments: "qualify for next level" ─────────────────────────────
+ * Learn-to-Swim → Stroke Development → Competitive Squad is the linear ladder.
+ * Diving is a separate strand (no linear progression). A coach assesses a
+ * swimmer against the criteria to LEAVE their current level; meeting them all
+ * yields a "Qualified" recommendation the club can action. */
+export const SWIM_LEVEL_LADDER = [
+  "Learn-to-Swim",
+  "Stroke Development",
+  "Competitive Squad",
+] as const;
+
+export function nextSwimLevel(level: string): string | null {
+  const i = (SWIM_LEVEL_LADDER as readonly string[]).indexOf(level);
+  if (i < 0 || i >= SWIM_LEVEL_LADDER.length - 1) return null;
+  return SWIM_LEVEL_LADDER[i + 1];
+}
+
+/** The most advanced ladder level a swimmer currently trains at (Diving aside). */
+export function swimmerCurrentLevel(studentId: string): string {
+  const levels = sessionsForSwimmer(studentId).map((s) => s.level);
+  for (let i = SWIM_LEVEL_LADDER.length - 1; i >= 0; i--) {
+    if (levels.includes(SWIM_LEVEL_LADDER[i])) return SWIM_LEVEL_LADDER[i];
+  }
+  return levels[0] ?? "Learn-to-Swim";
+}
+
+/** Criteria a swimmer must meet to progress FROM a given level. */
+export const LEVEL_CRITERIA: Record<string, string[]> = {
+  "Learn-to-Swim": [
+    "Submerge and recover breath with confidence",
+    "Float on front and back unaided",
+    "Swim 10 m front crawl with rhythmic breathing",
+    "Push and glide from the wall",
+  ],
+  "Stroke Development": [
+    "Swim 25 m front crawl with bilateral breathing",
+    "Legal backstroke and breaststroke technique",
+    "Tumble turn on freestyle",
+    "Complete a 100 m individual medley",
+  ],
+  "Competitive Squad": [
+    "Meet a club qualifying time for an age-group event",
+    "Legal starts, turns and finishes across all four strokes",
+    "Complete a 400 m aerobic set on a coach-set interval",
+    "Attend 80%+ of squad sessions this term",
+  ],
+};
+
+export type LevelOutcome = "Qualified" | "Not yet";
+
+export interface LevelAssessment {
+  id: string;
+  studentId: string;
+  studentName: string;
+  coachName: string;
+  fromLevel: string;
+  toLevel: string;
+  metCriteria: string[]; // subset of LEVEL_CRITERIA[fromLevel] that were met
+  outcome: LevelOutcome;
+  note?: string;
+  at: string;
+}
+
+export const levelAssessments: LevelAssessment[] = [
+  {
+    id: "LA-1001",
+    studentId: "S-1009",
+    studentName: swimmerName("S-1009"),
+    coachName: "Coach Aisha Rahman",
+    fromLevel: "Learn-to-Swim",
+    toLevel: "Stroke Development",
+    metCriteria: LEVEL_CRITERIA["Learn-to-Swim"],
+    outcome: "Qualified",
+    note: "Tashi is confident on front and back and swims 10 m unaided with lovely rhythmic breathing. Ready to move up to Stroke Development.",
+    at: d(3, 17, 10),
+  },
+  {
+    id: "LA-1002",
+    studentId: "S-1006",
+    studentName: swimmerName("S-1006"),
+    coachName: "Coach Aisha Rahman",
+    fromLevel: "Learn-to-Swim",
+    toLevel: "Stroke Development",
+    metCriteria: LEVEL_CRITERIA["Learn-to-Swim"].slice(0, 2),
+    outcome: "Not yet",
+    note: "Great floating and confidence. Still working on 10 m crawl with breathing — reassess in 3 weeks.",
+    at: d(5, 17, 20),
+  },
+  {
+    id: "LA-1003",
+    studentId: "S-1002",
+    studentName: swimmerName("S-1002"),
+    coachName: "Coach Dilan Perera",
+    fromLevel: "Stroke Development",
+    toLevel: "Competitive Squad",
+    metCriteria: LEVEL_CRITERIA["Stroke Development"],
+    outcome: "Qualified",
+    note: "Sara has a clean tumble turn and completed a 100 m IM legally. Recommending a squad tryout.",
+    at: d(9, 17, 0),
+  },
+];
+
+/* ── Competitive squad: race times & personal bests ──────────────────────────
+ * Timed swims from club time-trials and meets. The competitive-squad view
+ * derives each swimmer's personal best per event and highlights new PBs and
+ * term-on-term improvement. */
+export const SWIM_EVENTS = [
+  "50m Freestyle",
+  "100m Freestyle",
+  "50m Backstroke",
+  "50m Breaststroke",
+  "50m Butterfly",
+  "100m IM",
+] as const;
+export type SwimEvent = (typeof SWIM_EVENTS)[number];
+
+export interface RaceTime {
+  id: string;
+  studentId: string;
+  studentName: string;
+  event: SwimEvent;
+  seconds: number;
+  date: string; // ISO
+  meet: string;
+  coachName: string;
+}
+
+/** "31.42" for sub-minute swims, "1:04.40" otherwise. */
+export function formatSwimTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds - m * 60;
+  return m > 0 ? `${m}:${s.toFixed(2).padStart(5, "0")}` : s.toFixed(2);
+}
+
+/** Personal best (lowest time) per `studentId|event`. */
+export function personalBests(times: RaceTime[]): Map<string, RaceTime> {
+  const best = new Map<string, RaceTime>();
+  for (const t of times) {
+    const key = `${t.studentId}|${t.event}`;
+    const cur = best.get(key);
+    if (!cur || t.seconds < cur.seconds) best.set(key, t);
+  }
+  return best;
+}
+
+const rt = (
+  id: string,
+  studentId: string,
+  event: SwimEvent,
+  seconds: number,
+  dayAgo: number,
+  meet: string,
+  coachName = "Coach Mariana Cruz",
+): RaceTime => ({
+  id,
+  studentId,
+  studentName: swimmerName(studentId),
+  event,
+  seconds,
+  date: d(dayAgo, 17, 0),
+  meet,
+  coachName,
+});
+
+const MEET_AUTUMN = "Autumn Club Time-Trial";
+const MEET_REGIONAL = "Regional Age-Group Meet";
+const MEET_GALA = "Club Gala Time-Trial";
+
+export const raceTimes: RaceTime[] = [
+  // Aarav Perera (S-1001) — the student-demo swimmer, steady improvement.
+  rt("RT-1001", "S-1001", "50m Freestyle", 32.1, 56, MEET_AUTUMN),
+  rt("RT-1002", "S-1001", "50m Freestyle", 31.3, 28, MEET_REGIONAL),
+  rt("RT-1003", "S-1001", "50m Freestyle", 30.5, 6, MEET_GALA),
+  rt("RT-1004", "S-1001", "100m Freestyle", 71.2, 56, MEET_AUTUMN),
+  rt("RT-1005", "S-1001", "100m Freestyle", 69.8, 6, MEET_GALA),
+  rt("RT-1006", "S-1001", "50m Butterfly", 36.9, 28, MEET_REGIONAL, "Coach Dilan Perera"),
+  rt("RT-1007", "S-1001", "50m Butterfly", 35.8, 6, MEET_GALA, "Coach Dilan Perera"),
+  rt("RT-1008", "S-1001", "100m IM", 82.5, 6, MEET_GALA),
+  // Sandeepa Liyanage (S-1012) — the squad's quickest; big 100m drop.
+  rt("RT-1010", "S-1012", "50m Freestyle", 29.8, 56, MEET_AUTUMN),
+  rt("RT-1011", "S-1012", "50m Freestyle", 29.1, 6, MEET_GALA),
+  rt("RT-1012", "S-1012", "100m Freestyle", 66.5, 56, MEET_AUTUMN),
+  rt("RT-1013", "S-1012", "100m Freestyle", 64.4, 6, MEET_GALA),
+  rt("RT-1014", "S-1012", "100m IM", 76.2, 6, MEET_GALA),
+  // Sara Wijesinghe (S-1002)
+  rt("RT-1020", "S-1002", "50m Freestyle", 33.4, 56, MEET_AUTUMN),
+  rt("RT-1021", "S-1002", "50m Freestyle", 32.9, 6, MEET_GALA),
+  rt("RT-1022", "S-1002", "50m Backstroke", 38.1, 6, MEET_GALA),
+  // Pasindu Wickramasinghe (S-1011)
+  rt("RT-1030", "S-1011", "50m Freestyle", 31.9, 28, MEET_REGIONAL),
+  rt("RT-1031", "S-1011", "50m Freestyle", 31.4, 6, MEET_GALA),
+  rt("RT-1032", "S-1011", "50m Breaststroke", 41.2, 6, MEET_GALA, "Coach Tomas Berg"),
+  // Tushari Munasinghe (S-1015)
+  rt("RT-1040", "S-1015", "50m Butterfly", 37.5, 28, MEET_REGIONAL, "Coach Dilan Perera"),
+  rt("RT-1041", "S-1015", "50m Butterfly", 36.4, 6, MEET_GALA, "Coach Dilan Perera"),
+  rt("RT-1042", "S-1015", "50m Freestyle", 33.8, 6, MEET_GALA),
+  // Imesha Karunaratne (S-1010) & Sachini Goonewardene (S-1018)
+  rt("RT-1050", "S-1010", "50m Freestyle", 32.6, 6, MEET_GALA),
+  rt("RT-1051", "S-1010", "100m Freestyle", 72.1, 6, MEET_GALA),
+  rt("RT-1052", "S-1018", "50m Freestyle", 34.2, 6, MEET_GALA),
+  rt("RT-1053", "S-1018", "100m IM", 88.3, 6, MEET_GALA),
+];
+
+/* ── Finance: preferred payment methods / direct-debit mandates ──────────────
+ * Each family's standing payment arrangement — Direct Debit, Card, Cash or Bank
+ * Transfer — with mandate status so the club can see who's set up, pending or
+ * failed (dunning). */
+export const SWIM_PAYMENT_METHODS = ["Direct Debit", "Card", "Cash", "Bank Transfer"] as const;
+export type SwimPaymentMethod = (typeof SWIM_PAYMENT_METHODS)[number];
+
+export interface PaymentMandate {
+  id: string;
+  studentId: string;
+  studentName: string;
+  payerName: string;
+  method: SwimPaymentMethod;
+  reference: string;
+  status: "Active" | "Pending" | "Failed";
+  since: string;
+}
+
+export const paymentMandates: PaymentMandate[] = [
+  {
+    id: "PM-1001",
+    studentId: "S-1001",
+    studentName: swimmerName("S-1001"),
+    payerName: "Nimal Perera",
+    method: "Direct Debit",
+    reference: "DD •••• 8842",
+    status: "Active",
+    since: d(210, 9, 0),
+  },
+  {
+    id: "PM-1002",
+    studentId: "S-1009",
+    studentName: swimmerName("S-1009"),
+    payerName: "Nimal Perera",
+    method: "Direct Debit",
+    reference: "DD •••• 8842",
+    status: "Active",
+    since: d(210, 9, 0),
+  },
+  {
+    id: "PM-1003",
+    studentId: "S-1002",
+    studentName: swimmerName("S-1002"),
+    payerName: "Roshan Wijesinghe",
+    method: "Card",
+    reference: "Visa •••• 4242",
+    status: "Active",
+    since: d(120, 9, 0),
+  },
+  {
+    id: "PM-1004",
+    studentId: "S-1012",
+    studentName: swimmerName("S-1012"),
+    payerName: "Anoma Liyanage",
+    method: "Direct Debit",
+    reference: "DD •••• 5190",
+    status: "Active",
+    since: d(150, 9, 0),
+  },
+  {
+    id: "PM-1005",
+    studentId: "S-1006",
+    studentName: swimmerName("S-1006"),
+    payerName: "Kumari Fernando",
+    method: "Cash",
+    reference: "Cash — front desk",
+    status: "Active",
+    since: d(60, 9, 0),
+  },
+  {
+    id: "PM-1006",
+    studentId: "S-1015",
+    studentName: swimmerName("S-1015"),
+    payerName: "Priya Munasinghe",
+    method: "Direct Debit",
+    reference: "DD •••• 3310",
+    status: "Failed",
+    since: d(95, 9, 0),
+  },
+  {
+    id: "PM-1007",
+    studentId: "S-1004",
+    studentName: swimmerName("S-1004"),
+    payerName: "Chathuri Silva",
+    method: "Direct Debit",
+    reference: "Mandate pending signature",
+    status: "Pending",
+    since: d(4, 9, 0),
+  },
+  {
+    id: "PM-1008",
+    studentId: "S-1011",
+    studentName: swimmerName("S-1011"),
+    payerName: "Sunil Wickramasinghe",
+    method: "Card",
+    reference: "Mastercard •••• 7781",
+    status: "Active",
+    since: d(80, 9, 0),
+  },
+];
+
+/* ── CPD: courses recommended / assigned to a coach by the club manager ────── */
+export interface CpdAssignment {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  coachName: string;
+  assignedBy: string;
+  status: "Assigned" | "In Progress" | "Completed";
+  due?: string; // ISO
+  note?: string;
+  at: string;
+}
+
+export const cpdAssignments: CpdAssignment[] = [
+  {
+    id: "CPD-1001",
+    courseId: "TRN-SQUAD",
+    courseTitle: "Competitive Squad Coaching & Periodisation",
+    coachName: "Coach Dilan Perera",
+    assignedBy: "Nadeesha Fonseka",
+    status: "In Progress",
+    due: dPlus(21, 17, 0),
+    note: "Ahead of taking the distance squad next term.",
+    at: d(10, 9, 30),
+  },
+  {
+    id: "CPD-1002",
+    courseId: "TRN-AQSAFE",
+    courseTitle: "Safeguarding in Aquatics",
+    coachName: "Coach Mariana Cruz",
+    assignedBy: "Nadeesha Fonseka",
+    status: "Assigned",
+    due: dPlus(30, 17, 0),
+    note: "Annual safeguarding refresher — required for all coaches.",
+    at: d(2, 9, 30),
+  },
+  {
+    id: "CPD-1003",
+    courseId: "TRN-AQSAFE",
+    courseTitle: "Safeguarding in Aquatics",
+    coachName: "Coach Aisha Rahman",
+    assignedBy: "Nadeesha Fonseka",
+    status: "Completed",
+    at: d(40, 9, 30),
+  },
+  {
+    id: "CPD-1004",
+    courseId: "TRN-STRK",
+    courseTitle: "Stroke Correction & Technique",
+    coachName: "Coach Tomas Berg",
+    assignedBy: "Nadeesha Fonseka",
+    status: "Assigned",
+    due: dPlus(45, 17, 0),
+    at: d(1, 9, 30),
+  },
+];
+
+/* ── Marketing: outreach logged against a lead ───────────────────────────── */
+export type OutreachChannel = "Call" | "Email" | "WhatsApp" | "SMS" | "Meeting";
+
+export interface LeadContact {
+  id: string;
+  leadName: string;
+  channel: OutreachChannel;
+  note: string;
+  by: string;
+  at: string;
+}
+
+export const leadContacts: LeadContact[] = [
+  {
+    id: "LC-1001",
+    leadName: "Rukshan Mendis",
+    channel: "Call",
+    note: "Spoke to dad — keen on the squad. Booked a Saturday tryout with Coach Mariana.",
+    by: "Nadeesha Fonseka",
+    at: d(4, 11, 0),
+  },
+  {
+    id: "LC-1002",
+    leadName: "Rukshan Mendis",
+    channel: "WhatsApp",
+    note: "Sent tryout confirmation, kit list and directions to the Olympic pool.",
+    by: "Nadeesha Fonseka",
+    at: d(4, 11, 20),
+  },
+  {
+    id: "LC-1003",
+    leadName: "Fathima Nazeer",
+    channel: "Email",
+    note: "Emailed adult-beginner timetable and first-session offer.",
+    by: "Nadeesha Fonseka",
+    at: d(6, 9, 45),
+  },
+  {
+    id: "LC-1004",
+    leadName: "Fathima Nazeer",
+    channel: "Call",
+    note: "Follow-up call — considering Tuesday evenings. Will confirm next week.",
+    by: "Nadeesha Fonseka",
+    at: d(2, 16, 10),
+  },
+  {
+    id: "LC-1005",
+    leadName: "Ashen Silva",
+    channel: "Meeting",
+    note: "Pool-side meeting after a trial clinic — signed up for the term.",
+    by: "Coach Dilan Perera",
+    at: d(12, 18, 0),
+  },
+];
+
+/* ── Safety & wellbeing check-ins ────────────────────────────────────────────
+ * Lightweight RAG wellbeing notes coaches log alongside safety incidents; the
+ * club report surfaces amber/red flags for pastoral follow-up. */
+export type WellbeingFlag = "Green" | "Amber" | "Red";
+
+export interface WellbeingCheck {
+  id: string;
+  studentId: string;
+  studentName: string;
+  coachName: string;
+  flag: WellbeingFlag;
+  note: string;
+  at: string;
+}
+
+export const wellbeingChecks: WellbeingCheck[] = [
+  {
+    id: "WB-1001",
+    studentId: "S-1001",
+    studentName: swimmerName("S-1001"),
+    coachName: "Coach Mariana Cruz",
+    flag: "Green",
+    note: "Bright, motivated and leading warm-ups. Thriving in the sprint group.",
+    at: d(1, 17, 5),
+  },
+  {
+    id: "WB-1002",
+    studentId: "S-1020",
+    studentName: swimmerName("S-1020"),
+    coachName: "Coach Aisha Rahman",
+    flag: "Amber",
+    note: "Quieter than usual and tired after school. Kept the set light; will check in with parents.",
+    at: d(2, 17, 15),
+  },
+  {
+    id: "WB-1003",
+    studentId: "S-1015",
+    studentName: swimmerName("S-1015"),
+    coachName: "Coach Dilan Perera",
+    flag: "Amber",
+    note: "Mentioned shoulder soreness — reduced butterfly volume and added mobility work.",
+    at: d(3, 16, 40),
+  },
+  {
+    id: "WB-1004",
+    studentId: "S-1006",
+    studentName: swimmerName("S-1006"),
+    coachName: "Coach Aisha Rahman",
+    flag: "Green",
+    note: "Growing in confidence — happy to put face in the water without prompting.",
+    at: d(4, 16, 30),
+  },
+];
+
+/* ── Off-boarding: a person leaves a tenant, but their history is kept ────────
+ * GDPR-friendly leaver flow. A tenant admin *deactivates* a swimmer or coach for
+ * their institute instead of deleting them — all past attendance, record-book
+ * notes, invoices and messages are retained, but the relationship is marked
+ * ended so recurring billing (Direct Debit / card) and automated / recurring
+ * messaging (fee reminders, session nudges) stop. The person's platform account
+ * and their records at other tenants are untouched. Reactivation just removes
+ * the leaver record. Nothing is seeded — every off-boarding is created live in
+ * the demo. */
+export type OffboardPersonType = "swimmer" | "coach";
+
+export interface Offboarding {
+  id: string;
+  personId: string; // swimmer 1StudentID (S-xxxx) or coach display name
+  personName: string;
+  personType: OffboardPersonType;
+  tenantId: string; // institutionId the person is leaving
+  tenantName: string;
+  reason: string;
+  note?: string;
+  stopPayments: boolean; // cancel recurring billing / mandates
+  stopMessaging: boolean; // stop automated & recurring messaging
+  effectiveAt: string; // ISO date the relationship ends
+  by: string; // admin who off-boarded
+  at: string; // ISO recorded
+}
+
+export const OFFBOARD_REASONS = [
+  "Left the club",
+  "Moved away / relocated",
+  "Season ended — not renewing",
+  "Transferred to another club",
+  "Financial / affordability",
+  "Medical",
+  "End of contract",
+  "Other",
+] as const;
+
+export const offboardings: Offboarding[] = [];
+
+/** Whether a person (swimmer id or coach name) has been off-boarded at a tenant. */
+export function isOffboarded(personId: string, list: Offboarding[], tenantId?: string): boolean {
+  return list.some((o) => o.personId === personId && (tenantId ? o.tenantId === tenantId : true));
+}
+
+/** The active off-boarding record for a person, if any. */
+export function offboardingFor(
+  personId: string,
+  list: Offboarding[],
+  tenantId?: string,
+): Offboarding | undefined {
+  return list.find((o) => o.personId === personId && (tenantId ? o.tenantId === tenantId : true));
+}

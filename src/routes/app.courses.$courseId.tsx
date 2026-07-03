@@ -12,6 +12,8 @@ import {
   sessionsByCourse,
   poolById,
   teacherByName,
+  effectiveCoachNames,
+  effectiveSwimmerIds,
   children as parentChildren,
   type PoolSession,
   type Weekday,
@@ -58,15 +60,39 @@ function SwimCourseView({ courseId }: { courseId: string }) {
   const students = useCollection("students");
   const ratings = useCollection("teacherRatings");
   const attendance = useCollection("sessionAttendance");
+  const rosters = useCollection("sessionRosters");
+  const moves = useCollection("swimmerMoves");
 
-  const sessions = useMemo(() => sessionsByCourse(courseId), [courseId]);
+  const allSessions = useMemo(() => sessionsByCourse(courseId), [courseId]);
+  const rosterNames = (s: PoolSession) => effectiveCoachNames(s.id, rosters);
+  const rosterSwimmerIds = (s: PoolSession) => effectiveSwimmerIds(s, moves);
 
-  // Role scoping.
-  const isInstructor = user?.role === "teacher" && club.coachNames.includes(user.name);
+  // Role scoping. A coach only ever sees her own sessions & swimmers (real-world
+  // least privilege); the club admin sees the whole club.
+  const isInstructor =
+    user?.role === "teacher" && allSessions.some((s) => rosterNames(s).includes(user.name));
   const isAdmin =
     user?.role === "admin" &&
     (user.adminScope !== "institute" || user.institutionId === club.institutionId);
   const isStaff = isInstructor || isAdmin;
+
+  // The coach's view is narrowed to the sessions she coaches.
+  const sessions = useMemo(
+    () =>
+      isInstructor && user
+        ? allSessions.filter((s) => effectiveCoachNames(s.id, rosters).includes(user.name))
+        : allSessions,
+    [allSessions, isInstructor, user, rosters],
+  );
+
+  // Coaching team shown: the whole club (admin) or just the coaches sharing the
+  // coach's own sessions.
+  const teamCoaches = useMemo(
+    () =>
+      isAdmin ? club.coachNames : Array.from(new Set(sessions.flatMap((s) => rosterNames(s)))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isAdmin, sessions, rosters, club.coachNames],
+  );
 
   const myStudentIds = useMemo(() => {
     if (user?.role === "student") return new Set([user.oneEduId ?? ""]);
@@ -83,8 +109,9 @@ function SwimCourseView({ courseId }: { courseId: string }) {
     attendance.filter((a) => a.sessionId === sessionId && a.status === "Present").length;
 
   const allSwimmerIds = useMemo(
-    () => Array.from(new Set(sessions.flatMap((s) => s.swimmerIds))),
-    [sessions],
+    () => Array.from(new Set(sessions.flatMap((s) => rosterSwimmerIds(s)))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessions, moves],
   );
   const nameFor = (id: string) => students.find((s) => s.id === id)?.name ?? id;
 
@@ -101,10 +128,18 @@ function SwimCourseView({ courseId }: { courseId: string }) {
             : "Your swim sessions and details."
         }
         actions={
-          <Button variant="outline" onClick={() => navigate({ to: "/app/courses" })}>
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">All courses</span>
-          </Button>
+          <>
+            {isAdmin && (
+              <Button onClick={() => navigate({ to: "/app/coaching" })}>
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Manage coaches</span>
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => navigate({ to: "/app/courses" })}>
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">All courses</span>
+            </Button>
+          </>
         }
       />
 
@@ -117,10 +152,12 @@ function SwimCourseView({ courseId }: { courseId: string }) {
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-xl sm:text-2xl font-bold">{club.name}</h2>
-              <div className="text-xs opacity-90 mt-1 inline-flex items-center gap-1">
-                <Building2 className="h-3 w-3" />
-                {club.institutionName}
-              </div>
+              {club.institutionName !== club.name && (
+                <div className="text-xs opacity-90 mt-1 inline-flex items-center gap-1">
+                  <Building2 className="h-3 w-3" />
+                  {club.institutionName}
+                </div>
+              )}
               <p className="text-sm opacity-90 mt-2 max-w-2xl">{club.blurb}</p>
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {club.levels.map((l) => (
@@ -175,17 +212,30 @@ function SwimCourseView({ courseId }: { courseId: string }) {
           </Section>
 
           {/* Timetable */}
-          <Section title="Weekly timetable" description="All sessions grouped by day.">
-            <Timetable sessions={sessions} onOpen={openSession} presentCountFor={presentCountFor} />
+          <Section
+            title="Weekly timetable"
+            description={isAdmin ? "All sessions grouped by day." : "Your sessions grouped by day."}
+          >
+            <Timetable
+              sessions={sessions}
+              onOpen={openSession}
+              presentCountFor={presentCountFor}
+              totalFor={(s) => rosterSwimmerIds(s).length}
+              rosterNames={rosterNames}
+            />
           </Section>
 
           {/* Coaches */}
           <Section
             title="Coaching team"
-            description="This club is led by several coaches across the week."
+            description={
+              isAdmin
+                ? "This club is led by several coaches across the week."
+                : "Coaches you share sessions with."
+            }
           >
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {club.coachNames.map((name) => {
+              {teamCoaches.map((name) => {
                 const t = teacherByName[name];
                 const a = t ? computeAppraisal(t, ratings) : null;
                 const card = (
@@ -302,10 +352,14 @@ function Timetable({
   sessions,
   onOpen,
   presentCountFor,
+  totalFor,
+  rosterNames,
 }: {
   sessions: PoolSession[];
   onOpen: (id: string) => void;
   presentCountFor: (id: string) => number;
+  totalFor: (s: PoolSession) => number;
+  rosterNames: (s: PoolSession) => string[];
 }) {
   const days: Weekday[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const byDay = days
@@ -338,12 +392,12 @@ function Timetable({
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-medium truncate">{s.title}</div>
                         <div className="text-[11px] text-muted-foreground truncate">
-                          {pool?.name} · lanes {s.laneFrom}–{s.laneTo} · {s.coachNames.join(", ")}
+                          {pool?.name} · lanes {s.laneFrom}–{s.laneTo} · {rosterNames(s).join(", ")}
                         </div>
                       </div>
                       <span className="text-[11px] text-muted-foreground inline-flex items-center gap-1 shrink-0">
                         <Users className="h-3 w-3" />
-                        {presentCountFor(s.id)}/{s.swimmerIds.length}
+                        {presentCountFor(s.id)}/{totalFor(s)}
                       </span>
                       <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </button>

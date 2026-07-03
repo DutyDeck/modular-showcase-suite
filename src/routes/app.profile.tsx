@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/profile")({
-  head: () => ({ meta: [{ title: "My Profile — One Edu" }] }),
+  head: () => ({ meta: [{ title: "My Profile — 1StudentID" }] }),
   component: ProfilePage,
 });
 
@@ -110,7 +110,7 @@ function GuardianshipCard() {
           <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
             {adult ? (
               <>
-                You are <b>{age}</b> and manage your own One Edu account. You can
+                You are <b>{age}</b> and manage your own 1StudentID account. You can
                 handle <b>enrolment, fee payments and course selection</b>{" "}
                 yourself — no guardian approval is required.
               </>

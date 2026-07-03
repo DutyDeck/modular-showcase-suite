@@ -16,10 +16,11 @@ import {
 import { useCollection, addItem, type PlatformUser } from "@/lib/store";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import { useAuth } from "@/lib/auth";
+import { isSwimAdmin } from "@/lib/mockData";
 import { ShieldCheck, Plus, Upload, Building2, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/app/users")({
-  head: () => ({ meta: [{ title: "Users & Roles — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Users & Roles — 1StudentID" }] }),
   component: UsersPage,
 });
 
@@ -48,12 +49,16 @@ function UsersPage() {
   const importer = useDisclosure();
 
   const isInstituteScoped = user?.adminScope === "institute";
-  // Institute admin: only see users tagged to their institute. The global
-  // super-admin (no institutionId) is intentionally hidden — they are not the
-  // institute admin's user to manage.
-  const users = isInstituteScoped
-    ? allUsers.filter((u) => u.institutionId === user?.institutionId)
-    : allUsers;
+  // The swim-club admin manages only the club's staff (coaches, lifeguard,
+  // reception). Institute admins see users tagged to their institute; the
+  // global super-admin (no institutionId) is intentionally hidden — they are
+  // not the institute admin's user to manage.
+  const swim = isSwimAdmin(user);
+  const users = swim
+    ? allUsers.filter((u) => u.program === "Swim")
+    : isInstituteScoped
+      ? allUsers.filter((u) => u.institutionId === user?.institutionId)
+      : allUsers;
 
   const [form, setForm] = useState({
     name: "",
@@ -116,36 +121,35 @@ function UsersPage() {
           <span>
             You can only invite or manage accounts belonging to{" "}
             <span className="font-semibold">{user?.institutionName ?? "your institute"}</span>.
-            Cross-tenant identity, the global super-admin role and platform SSO are reserved
-            for the global admin.
+            Cross-tenant identity, the global super-admin role and platform SSO are reserved for the
+            global admin.
           </span>
         </div>
       )}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {["Google SSO", "Microsoft Entra ID", "Apple Sign-in", "SAML / OIDC"].map(
-          (p) => (
-            <div
-              key={p}
-              className="p-4 rounded-lg border bg-card flex items-center gap-3"
-            >
-              <ShieldCheck className="h-5 w-5 text-success" />
-              <div>
-                <div className="text-sm font-medium">{p}</div>
-                <div className="text-[10px] text-success">● Enabled</div>
-              </div>
+        {["Google SSO", "Microsoft Entra ID", "Apple Sign-in", "SAML / OIDC"].map((p) => (
+          <div key={p} className="p-4 rounded-lg border bg-card flex items-center gap-3">
+            <ShieldCheck className="h-5 w-5 text-success" />
+            <div>
+              <div className="text-sm font-medium">{p}</div>
+              <div className="text-[10px] text-success">● Enabled</div>
             </div>
-          ),
-        )}
+          </div>
+        ))}
       </div>
-      <Section title={isInstituteScoped ? `Users at ${user?.institutionName ?? "your institute"}` : "Platform Users"}>
+      <Section
+        title={
+          isInstituteScoped
+            ? `Users at ${user?.institutionName ?? "your institute"}`
+            : "Platform Users"
+        }
+      >
         <DataTable
           columns={[
             { key: "name", label: "Name" },
             { key: "email", label: "Email" },
             { key: "role", label: "Role" },
-            ...(isInstituteScoped
-              ? []
-              : [{ key: "_institute", label: "Institute" }]),
+            ...(isInstituteScoped ? [] : [{ key: "_institute", label: "Institute" }]),
             { key: "lastLogin", label: "Last Login" },
             { key: "mfa", label: "MFA" },
           ]}
@@ -163,9 +167,7 @@ function UsersPage() {
               );
             if (key === "mfa")
               return (
-                <Badge tone={row.mfa ? "success" : "warning"}>
-                  {row.mfa ? "Enabled" : "Off"}
-                </Badge>
+                <Badge tone={row.mfa ? "success" : "warning"}>{row.mfa ? "Enabled" : "Off"}</Badge>
               );
             if (key === "role") return <Badge tone="default">{row.role}</Badge>;
             return String(row[key] ?? "");

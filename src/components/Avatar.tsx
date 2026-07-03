@@ -64,7 +64,7 @@ function initials(name: string): string {
  * Resolve a stable, gender-correct portrait for a person. An explicit override
  * (keyed by display name) wins so demo-critical faces stay identical
  * everywhere; otherwise a deterministic face is chosen from the pool matching
- * the person's gender, hashed by a stable key (One Edu ID or name).
+ * the person's gender, hashed by a stable key (1StudentID or name).
  */
 export function portraitFor(key: string, name?: string): string {
   const override = name ? photoOverride(name) : undefined;

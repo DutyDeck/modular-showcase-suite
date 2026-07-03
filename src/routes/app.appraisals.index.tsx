@@ -1,31 +1,36 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader, Section, Badge, StatCard } from "@/components/ui-kit";
 import { Avatar } from "@/components/Avatar";
 import { Stars } from "@/components/StarRating";
 import { useAuth } from "@/lib/auth";
 import { useCollection } from "@/lib/store";
-import { teachers as allTeachers } from "@/lib/mockData";
+import { teachers as allTeachers, teacherByName, isSwimAdmin, isSwimCoach } from "@/lib/mockData";
 import { computeAppraisal, appraisalLabel } from "@/lib/appraisal";
 import { Search, ChevronRight, Star, Building2, MessageSquare } from "lucide-react";
 
 export const Route = createFileRoute("/app/appraisals/")({
-  head: () => ({ meta: [{ title: "Teacher Appraisals — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Teacher Appraisals — 1StudentID" }] }),
   component: AppraisalsIndex,
 });
 
 function AppraisalsIndex() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const ratings = useCollection("teacherRatings");
   const [query, setQuery] = useState("");
 
+  const swimAdmin = isSwimAdmin(user);
+
   // Institute admins only appraise their own institute's staff (tenant
-  // isolation, mirroring the SRB index). Everyone else sees every teacher.
+  // isolation, mirroring the SRB index). The swim-club admin narrows further to
+  // the swim coaches only. Everyone else sees every teacher.
   const isInstituteScoped = user?.adminScope === "institute";
   const scoped = useMemo(() => {
+    if (swimAdmin) return allTeachers.filter((t) => isSwimCoach(t.name));
     if (!isInstituteScoped) return allTeachers;
     return allTeachers.filter((t) => t.institutionId === user?.institutionId);
-  }, [isInstituteScoped, user?.institutionId]);
+  }, [swimAdmin, isInstituteScoped, user?.institutionId]);
 
   const rows = useMemo(() => {
     const q = query.toLowerCase();
@@ -46,16 +51,30 @@ function AppraisalsIndex() {
 
   const isRater = user?.role === "parent" || (user?.role === "student" && !!user?.selfManaged);
 
+  // A teacher's "My Appraisal" opens their OWN appraisal, not the roster of all
+  // teachers. (Fix for a coach seeing other teachers.) Placed after all hooks.
+  if (user?.role === "teacher") {
+    const me = teacherByName[user.name];
+    if (me) {
+      navigate({ to: "/app/appraisals/$teacherId", params: { teacherId: me.id }, replace: true });
+      return null;
+    }
+  }
+
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Teacher Appraisals"
-        subtitle="Blended score from family star-ratings and student performance — to guide teacher and course selection."
+        title={swimAdmin ? "Coach Appraisals" : "Teacher Appraisals"}
+        subtitle={
+          swimAdmin
+            ? "How families rate the club's coaches, blended with squad performance."
+            : "Blended score from family star-ratings and student performance — to guide teacher and course selection."
+        }
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
-          label="Teachers rated"
+          label={swimAdmin ? "Coaches rated" : "Teachers rated"}
           value={rows.length}
           icon={<Star className="h-5 w-5" />}
           accent="primary"

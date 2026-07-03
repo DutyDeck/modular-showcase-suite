@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/attendance/")({
-  head: () => ({ meta: [{ title: "Attendance — One Edu" }] }),
+  head: () => ({ meta: [{ title: "Attendance — 1StudentID" }] }),
   component: AttendanceRouter,
 });
 
