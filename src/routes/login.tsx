@@ -167,7 +167,7 @@ function LoginPage() {
           {/* Testimonial */}
           <div className="flex items-start gap-3 pt-1">
             <Avatar
-              name="Dr. Anjali Ramanathan"
+              name="Dr. Rachel Hartley"
               src="https://randomuser.me/api/portraits/women/68.jpg"
               size={40}
               className="ring-2 ring-white/40"
@@ -180,7 +180,7 @@ function LoginPage() {
               </div>
               "1StudentID replaced 6 disconnected tools and gave us insight we'd never had."
               <div className="opacity-70 mt-1 text-[11px]">
-                — Dr. Anjali R., Principal · Horizon Academy
+                — Dr. Rachel H., Principal · Horizon Academy
               </div>
             </div>
           </div>
@@ -391,7 +391,9 @@ function LoginPage() {
                         : "Student"
                       : u.role === "teacher" && u.meta?.discipline === "Swimming"
                         ? "Swim coach"
-                        : u.role;
+                        : u.role === "parent" && u.meta?.role === "Co-parent"
+                          ? "Co-parent"
+                          : u.role;
                 return (
                   <button
                     key={u.id}

@@ -60,10 +60,10 @@ const SWIM_INTERESTS = [
 ];
 const SWIM_OWNERS = [
   "Unassigned",
-  "Aquatics — Nadeesha",
-  "Aquatics — Coach Mariana",
-  "Aquatics — Coach Aisha",
-  "Aquatics — Coach Dilan",
+  "Aquatics — Jessica",
+  "Aquatics — Coach Ava",
+  "Aquatics — Coach Poppy",
+  "Aquatics — Coach Thomas",
 ];
 
 function ChannelIcon({ channel }: { channel: OutreachChannel }) {
@@ -413,7 +413,7 @@ function MarketingPage() {
             data-tour="lead-name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="e.g. Ishara Madushani"
+            placeholder="e.g. Eleanor Newman"
             autoFocus
           />
         </Field>
@@ -423,7 +423,7 @@ function MarketingPage() {
             type="tel"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            placeholder="e.g. +94 77 123 4567"
+            placeholder="e.g. +44 7700 900123"
           />
         </Field>
         <Field label="Email">
@@ -475,7 +475,7 @@ function MarketingPage() {
             <TextInput
               value={form.owner}
               onChange={(e) => setForm({ ...form, owner: e.target.value })}
-              placeholder="e.g. Marketing — Rajiv"
+              placeholder="e.g. Marketing — Martin"
             />
           )}
         </Field>

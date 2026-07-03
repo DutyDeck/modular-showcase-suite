@@ -127,7 +127,7 @@ export function SwimRegisterDialog({
           data-tour="reg-name"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          placeholder="e.g. Nethmi Perera"
+          placeholder="e.g. Sophie Turner"
           autoFocus
         />
       </Field>
@@ -203,7 +203,7 @@ export function SwimRegisterDialog({
             <TextInput
               value={form.guardianName}
               onChange={(e) => setForm({ ...form, guardianName: e.target.value })}
-              placeholder="e.g. Nimal Perera"
+              placeholder="e.g. Jack Smith"
             />
           </Field>
         )}

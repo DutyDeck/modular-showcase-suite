@@ -20,6 +20,7 @@ import {
   removeItem,
   nextId,
   type CoachAttendance,
+  type CoachMove,
 } from "@/lib/store";
 import {
   swimCourses,
@@ -29,6 +30,8 @@ import {
   effectiveCoachNames,
   isSwimAdmin,
   isOffboarded,
+  isCoachMoveActive,
+  TEMP_COACH_MOVE_HOURS,
   SWIM_COURSE_ID,
   type PoolSession,
   type Weekday,
@@ -42,6 +45,9 @@ import {
   ArrowLeft,
   ShieldAlert,
   CheckCircle2,
+  Timer,
+  Undo2,
+  Clock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/coaching")({
@@ -86,6 +92,7 @@ function CoachingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const rosters = useCollection("sessionRosters");
+  const coachMoves = useCollection("coachMoves");
   const offboardings = useCollection("offboardings");
   const club = swimCourses[0];
   const sessions = useMemo(() => sessionsByCourse(SWIM_COURSE_ID), []);
@@ -111,8 +118,14 @@ function CoachingPage() {
     );
   }
 
-  const rosterFor = (sid: string) => effectiveCoachNames(sid, rosters);
+  const rosterFor = (sid: string) => effectiveCoachNames(sid, rosters, coachMoves);
   const isOverridden = (sid: string) => rosters.some((r) => r.sessionId === sid);
+  const tempCoverFor = (sid: string) =>
+    coachMoves.filter((m) => m.sessionId === sid && m.kind === "temp" && isCoachMoveActive(m));
+  const endCover = (id: string) => {
+    updateItem("coachMoves", (m) => m.id === id, { reverted: true });
+    toast.success("Temporary cover ended");
+  };
 
   const byDay = DAYS.map((d) => ({
     day: d,
@@ -189,6 +202,8 @@ function CoachingPage() {
             {items.map((s) => {
               const roster = rosterFor(s.id);
               const pool = poolById[s.poolId];
+              const temps = tempCoverFor(s.id);
+              const tempNames = new Set(temps.map((m) => m.coachName));
               return (
                 <li
                   key={s.id}
@@ -207,15 +222,37 @@ function CoachingPage() {
                       {roster.map((name) => (
                         <span
                           key={name}
-                          className="inline-flex items-center gap-1 rounded-full border bg-card pl-0.5 pr-2 py-0.5"
+                          className={cn(
+                            "inline-flex items-center gap-1 rounded-full border pl-0.5 pr-2 py-0.5",
+                            tempNames.has(name) ? "bg-info/10 border-info/30" : "bg-card",
+                          )}
                         >
                           <Avatar name={name} size={18} />
                           <span className="text-[11px]">{name.replace("Coach ", "")}</span>
+                          {tempNames.has(name) && <Timer className="h-3 w-3 text-info" />}
                         </span>
                       ))}
                       {roster.length === 0 && <Badge tone="destructive">No coach assigned</Badge>}
                       {isOverridden(s.id) && <Badge tone="info">Updated</Badge>}
                     </div>
+                    {temps.length > 0 && (
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                        {temps.map((m) => (
+                          <span key={m.id} className="inline-flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {m.coachName.replace("Coach ", "")} covering ·{" "}
+                            {hoursLeftLabel(m.expiresAt)}
+                            <button
+                              onClick={() => endCover(m.id)}
+                              className="text-primary font-medium hover:underline inline-flex items-center gap-0.5"
+                            >
+                              <Undo2 className="h-3 w-3" />
+                              End now
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <Button
                     size="sm"
@@ -256,6 +293,15 @@ function CoachingPage() {
   );
 }
 
+function hoursLeftLabel(expiresAt?: string): string {
+  if (!expiresAt) return "";
+  const ms = Date.parse(expiresAt) - Date.now();
+  if (ms <= 0) return "expiring";
+  const h = Math.floor(ms / 3600000);
+  const m = Math.round((ms % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m left` : `${m}m left`;
+}
+
 function dayLabel(d: Weekday) {
   const map: Record<Weekday, string> = {
     Mon: "Monday",
@@ -283,16 +329,53 @@ export function ManageCoachesDialog({
   onClose: () => void;
 }) {
   const rosters = useCollection("sessionRosters");
+  const coachMoves = useCollection("coachMoves");
   const offboardings = useCollection("offboardings");
-  const current = effectiveCoachNames(session.id, rosters);
+  const current = effectiveCoachNames(session.id, rosters, coachMoves);
   // Off-boarded coaches can never be added or picked as cover.
   const rosterableCoaches = clubCoaches.filter((c) => !isOffboarded(c, offboardings));
   const available = rosterableCoaches.filter((c) => !current.includes(c));
+  const tempNames = new Set(
+    coachMoves
+      .filter((m) => m.sessionId === session.id && m.kind === "temp" && isCoachMoveActive(m))
+      .map((m) => m.coachName),
+  );
 
   const [addPick, setAddPick] = useState(available[0] ?? "");
+  const [tempPick, setTempPick] = useState(available[0] ?? "");
   const [removing, setRemoving] = useState<string | null>(null);
   const [reason, setReason] = useState(REASONS[0]);
   const [replacement, setReplacement] = useState("");
+
+  const addTempCover = () => {
+    if (!tempPick || current.includes(tempPick)) return;
+    const now = new Date();
+    const expires = new Date(now.getTime() + TEMP_COACH_MOVE_HOURS * 3600 * 1000);
+    addItem("coachMoves", {
+      id: nextId("CM-", "coachMoves"),
+      coachName: tempPick,
+      sessionId: session.id,
+      kind: "temp",
+      reason: "Temporary cover",
+      by: adminName,
+      at: now.toISOString(),
+      expiresAt: expires.toISOString(),
+    } as CoachMove);
+    toast.success(
+      `${tempPick} covering ${session.title} for ${TEMP_COACH_MOVE_HOURS}h (auto-reverts)`,
+    );
+    setTempPick("");
+  };
+
+  const endTempCover = (coachName: string) => {
+    updateItem(
+      "coachMoves",
+      (m) =>
+        m.sessionId === session.id && m.coachName === coachName && m.kind === "temp" && !m.reverted,
+      { reverted: true },
+    );
+    toast.success(`${coachName}'s cover ended`);
+  };
 
   const setRoster = (coachNames: string[]) => {
     const exists = rosters.some((r) => r.sessionId === session.id);
@@ -375,18 +458,33 @@ export function ManageCoachesDialog({
               <li key={name} className="rounded-lg border bg-card">
                 <div className="flex items-center gap-2.5 p-2.5">
                   <Avatar name={name} size={30} />
-                  <span className="text-sm font-medium flex-1 truncate">{name}</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setRemoving(removing === name ? null : name);
-                      setReplacement(rosterableCoaches.find((c) => !current.includes(c)) ?? "");
-                    }}
-                  >
-                    <UserMinus className="h-3.5 w-3.5" />
-                    {removing === name ? "Cancel" : "Mark absent"}
-                  </Button>
+                  <span className="text-sm font-medium flex-1 truncate flex items-center gap-1.5">
+                    {name}
+                    {tempNames.has(name) && (
+                      <Badge tone="info">
+                        <Timer className="h-3 w-3" />
+                        Temp cover
+                      </Badge>
+                    )}
+                  </span>
+                  {tempNames.has(name) ? (
+                    <Button size="sm" variant="outline" onClick={() => endTempCover(name)}>
+                      <Undo2 className="h-3.5 w-3.5" />
+                      End cover
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setRemoving(removing === name ? null : name);
+                        setReplacement(rosterableCoaches.find((c) => !current.includes(c)) ?? "");
+                      }}
+                    >
+                      <UserMinus className="h-3.5 w-3.5" />
+                      {removing === name ? "Cancel" : "Mark absent"}
+                    </Button>
+                  )}
                 </div>
                 {removing === name && (
                   <div className="border-t p-2.5 space-y-2 bg-muted/30">
@@ -449,10 +547,38 @@ export function ManageCoachesDialog({
           </div>
         )}
 
+        {/* Temporary cover (auto-reverts) */}
+        {available.length > 0 && (
+          <div className="space-y-2 pt-2 border-t">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Timer className="h-3.5 w-3.5" />
+              Temporary cover · auto-reverts in {TEMP_COACH_MOVE_HOURS}h
+            </div>
+            <div className="flex items-center gap-2">
+              <Select
+                value={tempPick}
+                onChange={(e) => setTempPick(e.target.value)}
+                options={available.map((c) => ({ value: c, label: c }))}
+                className="flex-1"
+              />
+              <Button
+                variant="outline"
+                onClick={addTempCover}
+                disabled={!tempPick}
+                data-tour="cover-12h-btn"
+              >
+                <Timer className="h-4 w-4" />
+                Cover 12h
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-start gap-2 rounded-lg bg-muted/40 p-2.5 text-[11px] text-muted-foreground mt-1">
           <Waves className="h-3.5 w-3.5 mt-0.5 shrink-0" />
           Marking a coach absent records it in the coach-attendance report and, if you pick a cover,
-          swaps them into the session roster on the timetable.
+          swaps them into the session roster on the timetable. A temporary cover drops a coach in
+          for {TEMP_COACH_MOVE_HOURS} hours and then reverts automatically.
         </div>
 
         <div className="flex justify-end pt-1">

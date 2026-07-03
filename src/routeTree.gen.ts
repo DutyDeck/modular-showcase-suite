@@ -38,6 +38,7 @@ import { Route as AppComplianceRouteImport } from './routes/app.compliance'
 import { Route as AppCoachingRouteImport } from './routes/app.coaching'
 import { Route as AppChildrenRouteImport } from './routes/app.children'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
+import { Route as AppAwardsRouteImport } from './routes/app.awards'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
 import { Route as AppAssignmentsRouteImport } from './routes/app.assignments'
 import { Route as AppAppraisalsRouteImport } from './routes/app.appraisals'
@@ -52,6 +53,7 @@ import { Route as AppSrbStudentIdRouteImport } from './routes/app.srb.$studentId
 import { Route as AppSessionsSessionIdRouteImport } from './routes/app.sessions.$sessionId'
 import { Route as AppInvoiceIdRouteImport } from './routes/app.invoice.$id'
 import { Route as AppCoursesCourseIdRouteImport } from './routes/app.courses.$courseId'
+import { Route as AppCertificateProgressIdRouteImport } from './routes/app.certificate.$progressId'
 import { Route as AppAttendanceTakeRouteImport } from './routes/app.attendance.take'
 import { Route as AppAppraisalsTeacherIdRouteImport } from './routes/app.appraisals.$teacherId'
 
@@ -200,6 +202,11 @@ const AppCalendarRoute = AppCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAwardsRoute = AppAwardsRouteImport.update({
+  id: '/awards',
+  path: '/awards',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAttendanceRoute = AppAttendanceRouteImport.update({
   id: '/attendance',
   path: '/attendance',
@@ -270,6 +277,12 @@ const AppCoursesCourseIdRoute = AppCoursesCourseIdRouteImport.update({
   path: '/$courseId',
   getParentRoute: () => AppCoursesRoute,
 } as any)
+const AppCertificateProgressIdRoute =
+  AppCertificateProgressIdRouteImport.update({
+    id: '/certificate/$progressId',
+    path: '/certificate/$progressId',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppAttendanceTakeRoute = AppAttendanceTakeRouteImport.update({
   id: '/take',
   path: '/take',
@@ -289,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/app/appraisals': typeof AppAppraisalsRouteWithChildren
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
+  '/app/awards': typeof AppAwardsRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/coaching': typeof AppCoachingRoute
@@ -317,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
+  '/app/certificate/$progressId': typeof AppCertificateProgressIdRoute
   '/app/courses/$courseId': typeof AppCoursesCourseIdRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
   '/app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
@@ -333,6 +348,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/app/ai-insights': typeof AppAiInsightsRoute
   '/app/assignments': typeof AppAssignmentsRoute
+  '/app/awards': typeof AppAwardsRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/coaching': typeof AppCoachingRoute
@@ -358,6 +374,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
+  '/app/certificate/$progressId': typeof AppCertificateProgressIdRoute
   '/app/courses/$courseId': typeof AppCoursesCourseIdRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
   '/app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
@@ -378,6 +395,7 @@ export interface FileRoutesById {
   '/app/appraisals': typeof AppAppraisalsRouteWithChildren
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
+  '/app/awards': typeof AppAwardsRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/coaching': typeof AppCoachingRoute
@@ -406,6 +424,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
+  '/app/certificate/$progressId': typeof AppCertificateProgressIdRoute
   '/app/courses/$courseId': typeof AppCoursesCourseIdRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
   '/app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
@@ -427,6 +446,7 @@ export interface FileRouteTypes {
     | '/app/appraisals'
     | '/app/assignments'
     | '/app/attendance'
+    | '/app/awards'
     | '/app/calendar'
     | '/app/children'
     | '/app/coaching'
@@ -455,6 +475,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
+    | '/app/certificate/$progressId'
     | '/app/courses/$courseId'
     | '/app/invoice/$id'
     | '/app/sessions/$sessionId'
@@ -471,6 +492,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/app/ai-insights'
     | '/app/assignments'
+    | '/app/awards'
     | '/app/calendar'
     | '/app/children'
     | '/app/coaching'
@@ -496,6 +518,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
+    | '/app/certificate/$progressId'
     | '/app/courses/$courseId'
     | '/app/invoice/$id'
     | '/app/sessions/$sessionId'
@@ -515,6 +538,7 @@ export interface FileRouteTypes {
     | '/app/appraisals'
     | '/app/assignments'
     | '/app/attendance'
+    | '/app/awards'
     | '/app/calendar'
     | '/app/children'
     | '/app/coaching'
@@ -543,6 +567,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
+    | '/app/certificate/$progressId'
     | '/app/courses/$courseId'
     | '/app/invoice/$id'
     | '/app/sessions/$sessionId'
@@ -766,6 +791,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCalendarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/awards': {
+      id: '/app/awards'
+      path: '/awards'
+      fullPath: '/app/awards'
+      preLoaderRoute: typeof AppAwardsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/attendance': {
       id: '/app/attendance'
       path: '/attendance'
@@ -864,6 +896,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCoursesCourseIdRouteImport
       parentRoute: typeof AppCoursesRoute
     }
+    '/app/certificate/$progressId': {
+      id: '/app/certificate/$progressId'
+      path: '/certificate/$progressId'
+      fullPath: '/app/certificate/$progressId'
+      preLoaderRoute: typeof AppCertificateProgressIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/attendance/take': {
       id: '/app/attendance/take'
       path: '/take'
@@ -955,6 +994,7 @@ interface AppRouteChildren {
   AppAppraisalsRoute: typeof AppAppraisalsRouteWithChildren
   AppAssignmentsRoute: typeof AppAssignmentsRoute
   AppAttendanceRoute: typeof AppAttendanceRouteWithChildren
+  AppAwardsRoute: typeof AppAwardsRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppChildrenRoute: typeof AppChildrenRoute
   AppCoachingRoute: typeof AppCoachingRoute
@@ -981,6 +1021,7 @@ interface AppRouteChildren {
   AppTrainingRoute: typeof AppTrainingRouteWithChildren
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppCertificateProgressIdRoute: typeof AppCertificateProgressIdRoute
   AppInvoiceIdRoute: typeof AppInvoiceIdRoute
   AppSessionsSessionIdRoute: typeof AppSessionsSessionIdRoute
 }
@@ -990,6 +1031,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAppraisalsRoute: AppAppraisalsRouteWithChildren,
   AppAssignmentsRoute: AppAssignmentsRoute,
   AppAttendanceRoute: AppAttendanceRouteWithChildren,
+  AppAwardsRoute: AppAwardsRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppChildrenRoute: AppChildrenRoute,
   AppCoachingRoute: AppCoachingRoute,
@@ -1016,6 +1058,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTrainingRoute: AppTrainingRouteWithChildren,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
+  AppCertificateProgressIdRoute: AppCertificateProgressIdRoute,
   AppInvoiceIdRoute: AppInvoiceIdRoute,
   AppSessionsSessionIdRoute: AppSessionsSessionIdRoute,
 }

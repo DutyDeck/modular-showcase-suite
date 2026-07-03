@@ -153,7 +153,7 @@ function InvoicePage() {
         <footer className="mt-10 pt-6 border-t text-xs text-muted-foreground">
           Thank you for studying with 1StudentID. Questions? Email{" "}
           <span className="text-foreground">finance@oneedu.app</span> or call
-          +94 11 2 345 678.
+          +44 20 7946 0018.
           <div className="mt-2">
             This is an electronically generated invoice. No signature required.
           </div>

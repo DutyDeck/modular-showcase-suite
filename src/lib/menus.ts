@@ -334,6 +334,13 @@ export const swimCoachMenu: MenuItem[] = [
   { label: "Dashboard", to: "/app", icon: "LayoutDashboard", group: "Club", moduleId: "core" },
   swimClubItem,
   {
+    label: "Courses & Awards",
+    to: "/app/awards",
+    icon: "Award",
+    group: "Coaching",
+    moduleId: "core",
+  },
+  {
     label: "Record Books",
     to: "/app/srb",
     icon: "NotebookPen",
@@ -392,6 +399,13 @@ export const swimAdminMenu: MenuItem[] = [
     label: "Swimmers",
     to: "/app/students",
     icon: "Users",
+    group: "Club",
+    moduleId: "core",
+  },
+  {
+    label: "Courses & Awards",
+    to: "/app/awards",
+    icon: "Award",
     group: "Club",
     moduleId: "core",
   },
@@ -493,5 +507,11 @@ export const swimAdminMenu: MenuItem[] = [
 export function menuForUser(user: DemoUser | null): MenuItem[] {
   if (isSwimAdmin(user)) return swimAdminMenu;
   if (isSwimUser(user)) return swimCoachMenu;
-  return menusByRole[user?.role ?? "student"];
+  const menu = menusByRole[user?.role ?? "student"];
+  // Appraising teachers is an adult responsibility — hide it from minor students
+  // (only 18+ self-managed students may rate; for a minor the parent does it).
+  if (user?.role === "student" && !user.selfManaged) {
+    return menu.filter((m) => m.to !== "/app/appraisals");
+  }
+  return menu;
 }

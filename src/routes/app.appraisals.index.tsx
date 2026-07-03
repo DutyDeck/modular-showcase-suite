@@ -51,6 +51,23 @@ function AppraisalsIndex() {
 
   const isRater = user?.role === "parent" || (user?.role === "student" && !!user?.selfManaged);
 
+  // Appraising teachers is an adult responsibility — a minor student can't; their
+  // parent appraises on their behalf.
+  if (user?.role === "student" && !user.selfManaged) {
+    return (
+      <div className="text-center py-16 space-y-2">
+        <Star className="h-8 w-8 mx-auto text-muted-foreground" />
+        <div className="text-sm font-medium">
+          Teacher appraisals aren't available on your account
+        </div>
+        <div className="text-xs text-muted-foreground max-w-sm mx-auto">
+          Rating teachers is done by an adult — your parent or guardian can leave appraisals for
+          you.
+        </div>
+      </div>
+    );
+  }
+
   // A teacher's "My Appraisal" opens their OWN appraisal, not the roster of all
   // teachers. (Fix for a coach seeing other teachers.) Placed after all hooks.
   if (user?.role === "teacher") {

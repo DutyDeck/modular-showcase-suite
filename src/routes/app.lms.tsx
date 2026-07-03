@@ -64,7 +64,7 @@ function SwimLmsView() {
               <Badge tone="muted">● NEW</Badge>
               <h3 className="text-lg sm:text-xl font-bold mt-2">Freestyle Technique Masterclass</h3>
               <p className="text-sm opacity-90 mt-1">
-                Coach Mariana Cruz · 6 lessons · underwater video breakdowns
+                Coach Ava Johnson · 6 lessons · underwater video breakdowns
               </p>
             </div>
             <button
@@ -163,7 +163,7 @@ function GenericLmsView() {
                 Advanced Physics — Quantum Mechanics
               </h3>
               <p className="text-sm opacity-85 mt-1">
-                Dr. Saman Silva · 38 attending · started 12 min ago
+                Dr. Charlie Brown · 38 attending · started 12 min ago
               </p>
             </div>
             <button

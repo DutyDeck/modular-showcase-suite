@@ -49,7 +49,7 @@ const COURSE_IMPORT_FIELDS: ImportField[] = [
   { key: "title", label: "Title", required: true, sample: "Advanced Physics" },
   { key: "code", label: "Code", required: true, sample: "PHY-12" },
   { key: "category", label: "Category", sample: "Science" },
-  { key: "teacher", label: "Teacher", sample: "Dr. Saman Silva" },
+  { key: "teacher", label: "Teacher", sample: "Dr. Charlie Brown" },
   { key: "schedule", label: "Schedule", sample: "Mon/Wed 4-6 PM" },
   { key: "credits", label: "Credits", sample: "4" },
   { key: "price", label: "Price", sample: "120" },
@@ -296,7 +296,7 @@ function CoursesPage() {
           <TextInput
             value={form.teacher}
             onChange={(e) => setForm({ ...form, teacher: e.target.value })}
-            placeholder="e.g. Dr. Saman Silva"
+            placeholder="e.g. Dr. Charlie Brown"
           />
         </Field>
         <Field label="Schedule">

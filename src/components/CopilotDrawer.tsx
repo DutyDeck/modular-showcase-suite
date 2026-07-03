@@ -81,7 +81,7 @@ function generateReply(
     return `Weekly attendance is sitting at 91% average across the institution. Two batches are trending downward (Commerce-B at 72%). I can draft an intervention plan if you'd like.`;
   }
   if (/email|message|draft/.test(p)) {
-    return `Here's a draft:\n\n"Dear parent, we noticed [Student]'s attendance has dropped to 72% this term. We'd love to schedule a quick chat to discuss study habits and any support we can offer. Reply or call us at +94 11 2 345 678."`;
+    return `Here's a draft:\n\n"Dear parent, we noticed [Student]'s attendance has dropped to 72% this term. We'd love to schedule a quick chat to discuss study habits and any support we can offer. Reply or call us at +44 20 7946 0018."`;
   }
   if (/quiz|question|test/.test(p)) {
     return `Sure — 3 sample MCQs on Quantum Mechanics:\n1. Which equation describes the time-evolution of a quantum state? (a) Maxwell (b) Schrödinger ✓ (c) Newton (d) Bernoulli\n2. The Heisenberg uncertainty principle relates position and …? momentum ✓\n3. The square of the wavefunction represents …? probability density ✓`;
@@ -100,7 +100,7 @@ function generateSwimReply(prompt: string, ctx: { swimmers: number }, admin: boo
       : `No open safety incidents involving your swimmers this week. If you need to log one, use "Log incident" on the session page and I'll route it to the club admin.`;
   }
   if (/absent|cover|substitut|coach.*(absent|off|away)/.test(p)) {
-    return `This week Coach Mariana covered one of Coach Dilan's Tuesday squads; all other sessions ran with their assigned coach. Coach attendance is 96% for the month. The Summary Report's coach‑attendance section lists every absence and substitution.`;
+    return `This week Coach Ava covered one of Coach Thomas's Tuesday squads; all other sessions ran with their assigned coach. Coach attendance is 96% for the month. The Summary Report's coach‑attendance section lists every absence and substitution.`;
   }
   if (/fee|invoice|payment|due|mandate/.test(p)) {
     return `The next club fees are due at month‑end. A few families have a payment coming up in the next 30 days; off‑boarded swimmers have their mandates stopped automatically, so they're excluded. Open Finance to send reminders.`;

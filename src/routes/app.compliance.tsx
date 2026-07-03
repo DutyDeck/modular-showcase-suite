@@ -53,9 +53,9 @@ interface DsarRow {
 }
 
 const INITIAL_DSARS: DsarRow[] = [
-  { id: "DSAR-2026-0118", subject: "Nimal Perera (parent · S-1001 + S-1009)", type: "Access (Art. 15)", raised: "2026-05-29", dueBy: "2026-06-28", status: "Verified", origin: "In-app request" },
+  { id: "DSAR-2026-0118", subject: "Jack Smith (parent · S-1001 + S-1009)", type: "Access (Art. 15)", raised: "2026-05-29", dueBy: "2026-06-28", status: "Verified", origin: "In-app request" },
   { id: "DSAR-2026-0117", subject: "Former student · GCH-22-PHY-091", type: "Erasure (Art. 17)", raised: "2026-05-22", dueBy: "2026-06-21", status: "Open", origin: "Email · dpo@oneedu.uk" },
-  { id: "DSAR-2026-0116", subject: "Sara Wijesinghe (parent on behalf)", type: "Portability (Art. 20)", raised: "2026-05-18", dueBy: "2026-06-17", status: "Fulfilled", origin: "In-app request" },
+  { id: "DSAR-2026-0116", subject: "Isabella Evans (parent on behalf)", type: "Portability (Art. 20)", raised: "2026-05-18", dueBy: "2026-06-17", status: "Fulfilled", origin: "In-app request" },
   { id: "DSAR-2026-0115", subject: "Lawful basis correction · staff record", type: "Rectification (Art. 16)", raised: "2026-05-14", dueBy: "2026-06-13", status: "Fulfilled", origin: "DPO ticket" },
 ];
 

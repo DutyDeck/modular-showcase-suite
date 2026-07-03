@@ -30,6 +30,11 @@ import {
   leadContacts as initialLeadContacts,
   wellbeingChecks as initialWellbeingChecks,
   offboardings as initialOffboardings,
+  swimAwards as initialSwimAwards,
+  awardProgress as initialAwardProgress,
+  coachMoves as initialCoachMoves,
+  coachGrades as initialCoachGrades,
+  clubSettings as initialClubSettings,
 } from "./mockData";
 
 export type {
@@ -60,6 +65,15 @@ export type {
   WellbeingFlag,
   Offboarding,
   OffboardPersonType,
+  SwimAward,
+  AwardStrand,
+  AwardTone,
+  AwardProgress,
+  CoachMove,
+  CoachMoveKind,
+  CoachGrade,
+  CoachGradeLevel,
+  ClubSettings,
 } from "./mockData";
 
 export type Student = (typeof initialStudents)[number];
@@ -90,6 +104,11 @@ import type {
   LeadContact,
   WellbeingCheck,
   Offboarding,
+  SwimAward,
+  AwardProgress,
+  CoachMove,
+  CoachGrade,
+  ClubSettings,
 } from "./mockData";
 
 /* A cross-tenant enrolment created at runtime — i.e. a tenant admin enrolled an
@@ -138,9 +157,21 @@ interface State {
   leadContacts: LeadContact[];
   wellbeingChecks: WellbeingCheck[];
   offboardings: Offboarding[];
+  swimAwards: SwimAward[];
+  awardProgress: AwardProgress[];
+  coachMoves: CoachMove[];
+  coachGrades: CoachGrade[];
+  clubSettings: ClubSettings[];
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
+// Bump SEED_VERSION whenever seed data changes (new demo data, renamed people,
+// new collections). On the next load, any browser whose cached copy predates the
+// bump is auto-reseeded — testers no longer have to click "Reset demo" after a
+// deploy to clear stale names/threads. It does NOT rename STORAGE_KEY (which
+// would wipe data unconditionally); it only resets when the seed actually moves.
+const SEED_VERSION_KEY = "oneedu.store.seedver";
+const SEED_VERSION = "2026-07-uk-names-2";
 
 function makeInitialState(): State {
   return {
@@ -171,12 +202,23 @@ function makeInitialState(): State {
     leadContacts: [...initialLeadContacts],
     wellbeingChecks: [...initialWellbeingChecks],
     offboardings: [...initialOffboardings],
+    swimAwards: [...initialSwimAwards],
+    awardProgress: [...initialAwardProgress],
+    coachMoves: [...initialCoachMoves],
+    coachGrades: [...initialCoachGrades],
+    clubSettings: [...initialClubSettings],
   };
 }
 
 function loadFromStorage(): State {
   if (typeof window === "undefined") return makeInitialState();
   try {
+    // Seed data moved since this browser last cached? Start clean (auto Reset).
+    if (localStorage.getItem(SEED_VERSION_KEY) !== SEED_VERSION) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION);
+      return makeInitialState();
+    }
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return makeInitialState();
     const parsed = JSON.parse(raw) as Partial<State>;

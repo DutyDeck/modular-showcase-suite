@@ -39,9 +39,11 @@ import {
   sessionsForCoach,
   sessionsByCourse,
   effectiveCoachNames,
+  effectiveSwimmerIds,
   swimCourses,
   poolById,
   SWIM_COURSE_ID,
+  awardById,
   type PoolSession,
 } from "@/lib/mockData";
 import { useCollection } from "@/lib/store";
@@ -110,6 +112,8 @@ function SwimAdminDash() {
   const attendance = useCollection("sessionAttendance");
   const incidents = useCollection("incidents");
   const rosters = useCollection("sessionRosters");
+  const coachMoves = useCollection("coachMoves");
+  const moves = useCollection("swimmerMoves");
   const coachAtt = useCollection("coachAttendance");
   const club = swimCourses[0];
   const sessions = sessionsByCourse(SWIM_COURSE_ID);
@@ -131,6 +135,38 @@ function SwimAdminDash() {
     .filter((c) => c.replacedByName)
     .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
     .slice(0, 4);
+
+  // ── Capacity planning ──────────────────────────────────────────────────────
+  // Seat fill and staffing per session so the admin can spot under-filled (and
+  // therefore loss-making) classes and consolidate swimmers.
+  const capacity = sessions.map((s) => {
+    const filled = effectiveSwimmerIds(s, moves).length;
+    const coaches = effectiveCoachNames(s.id, rosters, coachMoves).length;
+    const planned = s.coachNames.length || 1;
+    const pct = s.capacity ? Math.round((filled / s.capacity) * 100) : 0;
+    const status = pct >= 100 ? "full" : pct >= 75 ? "healthy" : pct >= 50 ? "low" : "under";
+    return { s, filled, coaches, planned, pct, status, seatsLeft: s.capacity - filled };
+  });
+  const totalSeats = capacity.reduce((a, c) => a + c.s.capacity, 0);
+  const totalFilled = capacity.reduce((a, c) => a + c.filled, 0);
+  const overallPct = totalSeats ? Math.round((totalFilled / totalSeats) * 100) : 0;
+  const underfilled = capacity
+    .filter((c) => c.status === "under" || c.status === "low")
+    .sort((a, b) => a.pct - b.pct);
+  // Suggest a same-level session with spare seats to consolidate an under-filled
+  // group into.
+  const suggestFor = (c: (typeof capacity)[number]) => {
+    const target = capacity
+      .filter(
+        (t) =>
+          t.s.id !== c.s.id &&
+          t.s.level === c.s.level &&
+          t.seatsLeft >= c.filled &&
+          t.filled >= c.filled,
+      )
+      .sort((a, b) => b.filled - a.filled)[0];
+    return target?.s ?? null;
+  };
 
   return (
     <>
@@ -189,6 +225,101 @@ function SwimAdminDash() {
         </Link>
       </div>
 
+      {/* Capacity planning */}
+      <Section
+        title="Capacity planning"
+        description="Seat fill and staffing across the week. Consolidate under-filled sessions so classes run at a healthy, profitable size."
+        actions={
+          <span className="text-sm">
+            <span className="font-bold">{overallPct}%</span>{" "}
+            <span className="text-muted-foreground">
+              overall · {totalFilled}/{totalSeats} seats
+            </span>
+          </span>
+        }
+      >
+        {underfilled.length > 0 && (
+          <div className="mb-4 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 text-warning-foreground mt-0.5 shrink-0" />
+            <span>
+              <b>{underfilled.length}</b> session(s) are under-filled. Moving swimmers from a
+              near-empty class into another keeps groups viable — open a session to move swimmers,
+              or use Coaches &amp; Sessions to rebalance staffing.
+            </span>
+          </div>
+        )}
+        <ul className="divide-y -mx-4 sm:-mx-5" data-tour="capacity-planning">
+          {capacity
+            .slice()
+            .sort((a, b) => a.pct - b.pct)
+            .map(({ s, filled, coaches, planned, pct, status, seatsLeft }) => {
+              const tone =
+                status === "under"
+                  ? "bg-destructive"
+                  : status === "low"
+                    ? "bg-warning"
+                    : status === "full"
+                      ? "bg-primary"
+                      : "bg-success";
+              const suggest =
+                status === "under" || status === "low"
+                  ? suggestFor({ s, filled, coaches, planned, pct, status, seatsLeft })
+                  : null;
+              return (
+                <li key={s.id} className="px-4 sm:px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          to="/app/sessions/$sessionId"
+                          params={{ sessionId: s.id }}
+                          className="text-sm font-medium hover:text-primary hover:underline truncate"
+                        >
+                          {s.title}
+                        </Link>
+                        <span className="text-[11px] text-muted-foreground">
+                          {s.day} {s.start}
+                        </span>
+                        {status === "under" && <Badge tone="destructive">Under-filled</Badge>}
+                        {status === "low" && <Badge tone="warning">Low</Badge>}
+                        {status === "full" && <Badge tone="info">Full</Badge>}
+                        {coaches < planned && <Badge tone="warning">Understaffed</Badge>}
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-3">
+                        <div className="h-2 flex-1 max-w-[220px] rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={`h-full ${tone}`}
+                            style={{ width: `${Math.min(pct, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {filled}/{s.capacity} seats · {coaches}/{planned} coach
+                          {planned > 1 ? "es" : ""}
+                        </span>
+                      </div>
+                      {suggest && (
+                        <div className="mt-1 text-[11px] text-muted-foreground">
+                          Suggestion: move these {filled} swimmer{filled === 1 ? "" : "s"} into{" "}
+                          <Link
+                            to="/app/sessions/$sessionId"
+                            params={{ sessionId: s.id }}
+                            className="text-primary font-medium hover:underline"
+                          >
+                            {suggest.title}
+                          </Link>{" "}
+                          (has {suggest.capacity - effectiveSwimmerIds(suggest, moves).length} free
+                          seats).
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-lg font-bold tabular-nums shrink-0">{pct}%</span>
+                  </div>
+                </li>
+              );
+            })}
+        </ul>
+      </Section>
+
       <div className="grid lg:grid-cols-3 gap-6">
         <Section
           title={
@@ -219,7 +350,7 @@ function SwimAdminDash() {
             <ul className="space-y-2.5">
               {nextPool.sessions.map((s) => {
                 const pool = poolById[s.poolId];
-                const roster = effectiveCoachNames(s.id, rosters);
+                const roster = effectiveCoachNames(s.id, rosters, coachMoves);
                 const present = attendance.filter(
                   (a) =>
                     a.sessionId === s.id && a.status !== "Absent" && a.at.slice(0, 10) === todayKey,
@@ -399,6 +530,84 @@ function QuickAction({ icon, label }: { icon: React.ReactNode; label: string }) 
   );
 }
 
+/** Swim awards + certificates surfaced on the student / parent dashboard. Shows
+ * certified awards (with a printable certificate link) and in-progress ones. */
+function AwardsDashCard({ studentIds }: { studentIds: string[] }) {
+  const progress = useCollection("awardProgress");
+  const awards = useCollection("swimAwards");
+  const ids = new Set(studentIds.filter(Boolean));
+  const rows = progress
+    .filter((p) => ids.has(p.studentId))
+    .sort((a, b) => {
+      // Certified first, then most-recently updated.
+      if (!!a.certifiedAt !== !!b.certifiedAt) return a.certifiedAt ? -1 : 1;
+      return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+    });
+  if (rows.length === 0) return null;
+  const multi = studentIds.length > 1;
+  const awardFor = (id: string) => awardById[id] ?? awards.find((a) => a.id === id);
+
+  return (
+    <Section
+      title="Swim awards & certificates"
+      description="Awards earned and progress in the club's swim pathway."
+    >
+      <ul className="space-y-2.5" data-tour="awards-dash">
+        {rows.map((r) => {
+          const award = awardFor(r.awardId);
+          if (!award) return null;
+          const total = award.activities.length;
+          const done = r.done.length;
+          const pct = Math.round((done / total) * 100);
+          const certified = !!r.certifiedAt;
+          return (
+            <li key={r.id} className="rounded-lg border bg-card p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      certified ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    <Award className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold truncate">{award.name}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {multi ? `${r.studentName.split(" ")[0]} · ` : ""}
+                      {award.strand}
+                    </div>
+                  </div>
+                </div>
+                {certified ? (
+                  <Link
+                    to="/app/certificate/$progressId"
+                    params={{ progressId: r.id }}
+                    className="text-xs font-medium text-emerald-600 inline-flex items-center gap-1 hover:underline shrink-0"
+                  >
+                    <Award className="h-3.5 w-3.5" />
+                    Certificate
+                  </Link>
+                ) : (
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {done}/{total}
+                  </span>
+                )}
+              </div>
+              <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full ${certified ? "bg-emerald-500" : "bg-primary"}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
+  );
+}
+
 function StudentDash() {
   const { user } = useAuth();
   const assignments = useCollection("assignments");
@@ -476,6 +685,8 @@ function StudentDash() {
           </ul>
         </Section>
       </div>
+      {user?.oneEduId && <AwardsDashCard studentIds={[user.oneEduId]} />}
+
       <Section title="Grade Trend" description="Final scores per subject">
         <BarTrend
           data={grades.map((g) => ({ subject: g.course.split(" ")[0], score: g.final }))}
@@ -580,6 +791,8 @@ function ParentDash() {
           );
         })}
       </div>
+
+      <AwardsDashCard studentIds={children.map((c) => c.id)} />
     </>
   );
 }
@@ -853,7 +1066,7 @@ function TeacherDash() {
 function AdminDash() {
   const { user } = useAuth();
   // Institute-scoped admins (e.g. a college principal) see a single-tenant
-  // dashboard. The global super-admin (Priya) sees the platform-wide one.
+  // dashboard. The global super-admin (Isla) sees the platform-wide one.
   if (user?.adminScope === "institute") return <InstituteAdminDash />;
   return <GlobalAdminDash />;
 }

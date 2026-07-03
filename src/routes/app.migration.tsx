@@ -55,10 +55,10 @@ const SOURCES: SourceSystem[] = [
 ];
 
 const STUDENT_IMPORT_FIELDS: ImportField[] = [
-  { key: "name", label: "Name", required: true, sample: "Aarav Perera" },
+  { key: "name", label: "Name", required: true, sample: "Oliver Smith" },
   { key: "grade", label: "Grade", required: true, sample: "Grade 12" },
   { key: "batch", label: "Batch", sample: "Science-A" },
-  { key: "parent", label: "Parent", sample: "Nimal Perera" },
+  { key: "parent", label: "Parent", sample: "Jack Smith" },
   { key: "attendance", label: "Attendance", sample: "94" },
   { key: "gpa", label: "GPA", sample: "3.8" },
   { key: "status", label: "Status", sample: "Active" },
@@ -68,7 +68,7 @@ const COURSE_IMPORT_FIELDS: ImportField[] = [
   { key: "title", label: "Title", required: true, sample: "Advanced Physics" },
   { key: "code", label: "Code", required: true, sample: "PHY-12" },
   { key: "category", label: "Category", sample: "Science" },
-  { key: "teacher", label: "Teacher", sample: "Dr. Saman Silva" },
+  { key: "teacher", label: "Teacher", sample: "Dr. Charlie Brown" },
   { key: "schedule", label: "Schedule", sample: "Mon/Wed 4-6 PM" },
   { key: "credits", label: "Credits", sample: "4" },
   { key: "price", label: "Price", sample: "120" },

@@ -264,7 +264,7 @@ export function CrossTenantEnrollDialog({
 
             <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
               <span>Try:</span>
-              {["senuli.fernando@gmail.com", "S-2002"].map((s) => (
+              {["emily.taylor01@gmail.com", "S-2002"].map((s) => (
                 <button
                   key={s}
                   onClick={() => {

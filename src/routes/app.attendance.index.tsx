@@ -89,7 +89,7 @@ function ParentAttendance() {
 
   // Resolve every child individually: prefer the full student record when it
   // exists, otherwise synthesise a hero-card-shaped entry from parentChildren
-  // so kids missing from the roster (e.g. Tashi) still appear.
+  // so kids missing from the roster (e.g. Olivia) still appear.
   const kids: Student[] = useMemo(() => {
     return parentChildren.map((c) => {
       const full = students.find((s) => s.id === c.id);

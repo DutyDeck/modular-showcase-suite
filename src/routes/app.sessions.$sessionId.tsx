@@ -33,6 +33,7 @@ import {
   type SwimmerMove,
   type WellbeingCheck,
   type WellbeingFlag,
+  type ChatMessage,
 } from "@/lib/store";
 import {
   sessionById,
@@ -45,7 +46,13 @@ import {
   TEMP_MOVE_HOURS,
   SWIM_COURSE_ID,
   children as parentChildren,
+  awardById,
+  isAwardComplete,
+  guardiansForSwimmer,
+  chatPair,
   type PoolSession,
+  type SwimAward,
+  type AwardProgress,
 } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import {
@@ -67,6 +74,9 @@ import {
   Timer,
   Undo2,
   HeartPulse,
+  Award,
+  Sparkles,
+  ChevronDown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/sessions/$sessionId")({
@@ -96,7 +106,11 @@ function SessionDetailPage() {
   const session = sessionById[sessionId] ?? null;
   const pool = session ? poolById[session.poolId] : null;
   const zone = useMemo(() => pool?.zones.find((z) => z.id === session?.zoneId), [pool, session]);
-  const roster = useMemo(() => effectiveCoachNames(sessionId, rosters), [sessionId, rosters]);
+  const coachMoves = useCollection("coachMoves");
+  const roster = useMemo(
+    () => effectiveCoachNames(sessionId, rosters, coachMoves),
+    [sessionId, rosters, coachMoves],
+  );
 
   // The effective swimmer roster applies any enrol / temporary / permanent moves
   // on top of the seed timetable, so a swimmer moved here for the day shows up.
@@ -419,6 +433,9 @@ function SessionDetailPage() {
               })}
             </ul>
           </Section>
+
+          {/* Award / course activity tracking */}
+          <AwardTracker swimmers={swimmers} coachName={user!.name} />
 
           {/* Record book + tasks */}
           <div className="grid lg:grid-cols-2 gap-5">
@@ -1001,6 +1018,209 @@ function Brief({ icon, label, value }: { icon: React.ReactNode; label: string; v
       </div>
       <div className="text-sm font-bold mt-0.5 text-white truncate">{value}</div>
     </div>
+  );
+}
+
+/* ── In-session award / course activity tracking ────────────────────────────
+ * Coaches assign a swimmer to a course (award) and tick each activity off as
+ * it's mastered. Completing the final activity issues the certificate and
+ * notifies the swimmer's guardians. */
+function AwardTracker({
+  swimmers,
+  coachName,
+}: {
+  swimmers: { id: string; name: string }[];
+  coachName: string;
+}) {
+  const awards = useCollection("swimAwards");
+  const progress = useCollection("awardProgress");
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const activeFor = (sid: string) => progress.find((p) => p.studentId === sid && !p.certifiedAt);
+  const certifiedFor = (sid: string) =>
+    progress.filter((p) => p.studentId === sid && p.certifiedAt);
+  const awardFor = (awardId: string) => awardById[awardId] ?? awards.find((a) => a.id === awardId);
+
+  const assign = (sid: string, sname: string, awardId: string) => {
+    if (!awardId) return;
+    const now = new Date().toISOString();
+    addItem("awardProgress", {
+      id: nextId("AP-", "awardProgress"),
+      studentId: sid,
+      studentName: sname,
+      awardId,
+      done: [],
+      startedAt: now,
+      updatedAt: now,
+      updatedBy: coachName,
+    } as AwardProgress);
+    toast.success(`Started ${awardFor(awardId)?.name ?? "award"} for ${sname.split(" ")[0]}`);
+    setExpanded(sid);
+  };
+
+  const toggle = (p: AwardProgress, award: SwimAward, index: number) => {
+    const has = p.done.includes(index);
+    const done = has ? p.done.filter((i) => i !== index) : [...p.done, index].sort((a, b) => a - b);
+    const complete = award.activities.every((_, i) => done.includes(i));
+    const now = new Date().toISOString();
+    if (complete && !p.certifiedAt) {
+      updateItem("awardProgress", (r) => r.id === p.id, {
+        done,
+        updatedAt: now,
+        updatedBy: coachName,
+        certifiedAt: now,
+        certifiedBy: coachName,
+        notified: true,
+      });
+      const guardians = guardiansForSwimmer(p.studentId);
+      const first = p.studentName.split(" ")[0];
+      const text = `🏅 Great news! ${first} has completed ${award.name} and earned their certificate.${
+        award.awardedText ? ` ${award.awardedText}` : ""
+      } You can view the certificate in the app.`;
+      for (const g of guardians) {
+        const [a, b] = chatPair(coachName, g);
+        addItem("chat", {
+          id: nextId("CH-", "chat"),
+          a,
+          b,
+          fromName: coachName,
+          fromRole: "Coach",
+          text,
+          at: now,
+          context: "swim",
+        } as ChatMessage);
+      }
+      toast.success(
+        `${first} earned ${award.name}!${guardians.length ? " Parents notified." : ""}`,
+      );
+    } else {
+      updateItem("awardProgress", (r) => r.id === p.id, {
+        done,
+        updatedAt: now,
+        updatedBy: coachName,
+      });
+    }
+  };
+
+  return (
+    <Section
+      title="Courses & awards"
+      description="Assign each swimmer to a course and tick off activities as they master them. Completing every activity issues the certificate and notifies parents."
+    >
+      <ul className="divide-y -mx-4 sm:-mx-5" data-tour="award-tracker">
+        {swimmers.map((s) => {
+          const active = activeFor(s.id);
+          const award = active ? awardFor(active.awardId) : undefined;
+          const certified = certifiedFor(s.id);
+          const isOpen = expanded === s.id;
+          const assignable = awards.filter(
+            (a) => a.id !== active?.awardId && !certified.some((c) => c.awardId === a.id),
+          );
+          return (
+            <li key={s.id} className="px-4 sm:px-5 py-3">
+              <div className="flex items-center gap-3">
+                <Avatar name={s.name} seed={s.id} size={34} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium truncate">{s.name}</div>
+                  <div className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-1.5">
+                    {award && active ? (
+                      <span>
+                        {award.name} · {active.done.length}/{award.activities.length} activities
+                      </span>
+                    ) : (
+                      <span>No course in progress</span>
+                    )}
+                    {certified.map((c) => (
+                      <Link
+                        key={c.id}
+                        to="/app/certificate/$progressId"
+                        params={{ progressId: c.id }}
+                        className="inline-flex items-center gap-1 text-emerald-600 font-medium hover:underline"
+                      >
+                        <Award className="h-3 w-3" />
+                        {awardFor(c.awardId)?.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+                {active && award ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setExpanded(isOpen ? null : s.id)}
+                    data-tour="award-activities-btn"
+                  >
+                    <ListChecks className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Activities</span>
+                    <ChevronDown
+                      className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")}
+                    />
+                  </Button>
+                ) : (
+                  assignable.length > 0 && (
+                    <select
+                      defaultValue=""
+                      onChange={(e) => {
+                        if (e.target.value) assign(s.id, s.name, e.target.value);
+                      }}
+                      className="h-8 rounded-md border bg-background px-2 text-xs max-w-[9rem]"
+                    >
+                      <option value="" disabled>
+                        Start a course…
+                      </option>
+                      {assignable.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}
+                        </option>
+                      ))}
+                    </select>
+                  )
+                )}
+              </div>
+
+              {isOpen && active && award && (
+                <div className="mt-3 ml-11 rounded-lg border bg-muted/20 p-3">
+                  <ul className="space-y-1.5">
+                    {award.activities.map((act, i) => {
+                      const done = active.done.includes(i);
+                      return (
+                        <li key={i}>
+                          <button
+                            onClick={() => toggle(active, award, i)}
+                            className="w-full flex items-start gap-2.5 text-left text-sm group"
+                            data-tour={`award-act-${i}`}
+                          >
+                            <span
+                              className={cn(
+                                "shrink-0 mt-0.5 h-5 w-5 rounded-md border flex items-center justify-center transition-colors",
+                                done
+                                  ? "bg-emerald-500 border-emerald-500 text-white"
+                                  : "border-input group-hover:border-primary",
+                              )}
+                            >
+                              {done && <Check className="h-3.5 w-3.5" />}
+                            </span>
+                            <span className={cn(done && "text-muted-foreground line-through")}>
+                              {act}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {isAwardComplete(award, active) && (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      All activities complete — certificate issued.
+                    </div>
+                  )}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
   );
 }
 

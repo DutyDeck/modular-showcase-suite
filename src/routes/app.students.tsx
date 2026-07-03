@@ -58,10 +58,10 @@ const BATCHES = ["Science-A", "Science-B", "Commerce-A", "Commerce-B", "Arts-A"]
 const STATUS = ["Active", "At Risk", "Inactive"];
 
 const STUDENT_IMPORT_FIELDS: ImportField[] = [
-  { key: "name", label: "Name", required: true, sample: "Aarav Perera" },
+  { key: "name", label: "Name", required: true, sample: "Oliver Smith" },
   { key: "grade", label: "Grade", required: true, sample: "Grade 12" },
   { key: "batch", label: "Batch", sample: "Science-A" },
-  { key: "parent", label: "Parent", sample: "Nimal Perera" },
+  { key: "parent", label: "Parent", sample: "Jack Smith" },
   { key: "attendance", label: "Attendance", sample: "94" },
   { key: "gpa", label: "GPA", sample: "3.8" },
   { key: "status", label: "Status", sample: "Active" },
@@ -554,7 +554,7 @@ function StudentsPage() {
           <TextInput
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="e.g. Aarav Perera"
+            placeholder="e.g. Oliver Smith"
             autoFocus
           />
         </Field>
@@ -576,7 +576,7 @@ function StudentsPage() {
           <TextInput
             value={form.parent}
             onChange={(e) => setForm({ ...form, parent: e.target.value })}
-            placeholder="e.g. Nimal Perera"
+            placeholder="e.g. Jack Smith"
           />
         </Field>
         <Field label="Attendance %">

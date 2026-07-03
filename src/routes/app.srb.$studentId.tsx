@@ -8,6 +8,9 @@ import {
   isSwimUser,
   sessionsForSwimmer,
   SWIM_COURSE_ID,
+  awardById,
+  awardProgressFor,
+  isAwardComplete,
 } from "@/lib/mockData";
 import { Avatar } from "@/components/Avatar";
 import { Badge, Button, PageHeader, Section, useDisclosure } from "@/components/ui-kit";
@@ -327,6 +330,10 @@ function SrbStudentPage() {
         <LevelProgression studentId={student.id} studentName={student.name} canAssess={isStaff} />
       )}
 
+      {/* Awards & certificates — shown to anyone viewing a swimmer with awards
+          (parents/co-parents included, who aren't "swim users"). */}
+      <AwardsPanel studentId={student.id} />
+
       {/* Timeline */}
       <div data-tour="srb-timeline">
         <SrbTimeline studentId={student.id} institutionId={scopeInst} courseId={scopeCourse} />
@@ -359,6 +366,77 @@ function SrbStudentPage() {
         </button>
       )}
     </div>
+  );
+}
+
+/** Swimmer-facing view of the award pathway: what they're working on and the
+ * certificates they've earned. Shown to parents, the swimmer and staff. */
+function AwardsPanel({ studentId }: { studentId: string }) {
+  const progressRows = useCollection("awardProgress");
+  const awards = useCollection("swimAwards");
+  const rows = awardProgressFor(studentId, progressRows);
+  if (rows.length === 0) return null;
+
+  const awardFor = (id: string) => awardById[id] ?? awards.find((a) => a.id === id);
+
+  return (
+    <Section
+      title="Awards & certificates"
+      description="Swim England-style award pathway — progress and certificates earned."
+    >
+      <ul className="grid sm:grid-cols-2 gap-3">
+        {rows.map((r) => {
+          const award = awardFor(r.awardId);
+          if (!award) return null;
+          const total = award.activities.length;
+          const done = r.done.length;
+          const pct = Math.round((done / total) * 100);
+          const certified = !!r.certifiedAt && isAwardComplete(award, r);
+          return (
+            <li key={r.id} className="rounded-lg border bg-card p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+                      certified ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    <Award className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold">{award.name}</div>
+                    <div className="text-[11px] text-muted-foreground">{award.strand}</div>
+                  </div>
+                </div>
+                {certified ? (
+                  <Badge tone="success">Certified</Badge>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    {done}/{total}
+                  </span>
+                )}
+              </div>
+              <div className="mt-2.5 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full ${certified ? "bg-emerald-500" : "bg-primary"}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              {certified && (
+                <Link
+                  to="/app/certificate/$progressId"
+                  params={{ progressId: r.id }}
+                  className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 hover:underline"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  View / print certificate
+                </Link>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
   );
 }
 

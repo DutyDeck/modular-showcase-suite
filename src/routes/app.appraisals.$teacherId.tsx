@@ -5,8 +5,22 @@ import { PageHeader, Section, Badge, Button, Field, TextArea, Select } from "@/c
 import { Avatar } from "@/components/Avatar";
 import { Stars, StarInput } from "@/components/StarRating";
 import { useAuth } from "@/lib/auth";
-import { addItem, nextId, useCollection, type TeacherRating } from "@/lib/store";
-import { teachers as allTeachers, children as myChildren } from "@/lib/mockData";
+import {
+  addItem,
+  updateItem,
+  nextId,
+  useCollection,
+  type TeacherRating,
+  type CoachGrade,
+  type CoachGradeLevel,
+} from "@/lib/store";
+import {
+  teachers as allTeachers,
+  children as myChildren,
+  isSwimCoach,
+  coachGradeFor,
+  COACH_GRADE_LEVELS,
+} from "@/lib/mockData";
 import { computeAppraisal, appraisalLabel } from "@/lib/appraisal";
 import {
   ArrowLeft,
@@ -16,6 +30,11 @@ import {
   Award,
   Star,
   CheckCircle2,
+  Medal,
+  Eye,
+  EyeOff,
+  Lock,
+  UserX,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/appraisals/$teacherId")({
@@ -36,6 +55,8 @@ function TeacherAppraisalPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const ratings = useCollection("teacherRatings");
+  const grades = useCollection("coachGrades");
+  const settings = useCollection("clubSettings");
 
   const teacher = allTeachers.find((t) => t.id === teacherId) ?? null;
   const appraisal = useMemo(
@@ -53,6 +74,9 @@ function TeacherAppraisalPage() {
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState("");
   const [childName, setChildName] = useState("");
+  const [anon, setAnon] = useState(false);
+  const [gradeLevel, setGradeLevel] = useState<CoachGradeLevel>("Silver");
+  const [gradeComment, setGradeComment] = useState("");
 
   if (!teacher || !appraisal) {
     return (
@@ -72,10 +96,63 @@ function TeacherAppraisalPage() {
 
   const isParent = user?.role === "parent";
   const isAdultStudent = user?.role === "student" && !!user?.selfManaged;
+  const isMinorStudent = user?.role === "student" && !user?.selfManaged;
   const canRate = isParent || isAdultStudent;
   const isSelf = user?.role === "teacher" && user?.name === teacher.name;
+  const isAdmin = user?.role === "admin";
+
+  // Minor students can't appraise teachers — their parent does it for them.
+  if (isMinorStudent) {
+    return (
+      <div className="text-center py-16 space-y-2">
+        <Star className="h-8 w-8 mx-auto text-muted-foreground" />
+        <div className="text-sm font-medium">
+          Teacher appraisals aren't available on your account
+        </div>
+        <div className="text-xs text-muted-foreground max-w-sm mx-auto">
+          Rating teachers is done by an adult — your parent or guardian can leave appraisals for
+          you.
+        </div>
+      </div>
+    );
+  }
+
+  // Club coach grading (medal + comment). Only the admin can set it; visibility
+  // to everyone else is admin-controlled. It's a coach — not a school teacher.
+  const isCoach = isSwimCoach(teacher.name);
+  const grade = coachGradeFor(teacher.id, grades);
+  const gradingVisible = settings[0]?.coachGradingVisible ?? false;
+  // Who may see the grade: the admin, the coach about themselves, or anyone when
+  // the admin has switched grading public.
+  const canSeeGrade = !!grade && (isAdmin || isSelf || gradingVisible);
 
   const maxDist = Math.max(1, ...appraisal.distribution.slice(1));
+
+  const saveGrade = () => {
+    if (!user) return;
+    addItem("coachGrades", {
+      id: nextId("CG-", "coachGrades"),
+      teacherId: teacher.id,
+      coachName: teacher.name,
+      level: gradeLevel,
+      comment: gradeComment.trim(),
+      by: user.name,
+      at: new Date().toISOString(),
+    } as CoachGrade);
+    toast.success(`Saved ${gradeLevel} grade for ${teacher.name}`);
+    setGradeComment("");
+  };
+
+  const toggleGradeVisibility = () => {
+    updateItem("clubSettings", (s) => s.id === "settings", {
+      coachGradingVisible: !gradingVisible,
+    });
+    toast.success(
+      !gradingVisible
+        ? "Coach grades are now visible to parents & coaches"
+        : "Coach grades are now private (admin & coach only)",
+    );
+  };
 
   const submit = () => {
     if (!user) return;
@@ -92,13 +169,19 @@ function TeacherAppraisalPage() {
       stars,
       comment: comment.trim(),
       at: new Date().toISOString(),
-      childName: isParent ? childName || undefined : undefined,
+      childName: isParent && !anon ? childName || undefined : undefined,
+      anonymous: anon || undefined,
     };
     addItem("teacherRatings", rating);
-    toast.success("Thanks — your appraisal was submitted");
+    toast.success(
+      anon
+        ? "Thanks — your anonymous appraisal was submitted"
+        : "Thanks — your appraisal was submitted",
+    );
     setStars(0);
     setComment("");
     setChildName("");
+    setAnon(false);
   };
 
   return (
@@ -132,6 +215,12 @@ function TeacherAppraisalPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xl sm:text-2xl font-bold truncate">{teacher.name}</h2>
                 {isSelf && <Badge tone="muted">You</Badge>}
+                {canSeeGrade && grade && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/15 ring-1 ring-white/25 px-2 py-0.5 text-xs font-semibold">
+                    <Medal className="h-3.5 w-3.5" />
+                    {grade.level}
+                  </span>
+                )}
               </div>
               <div className="text-sm opacity-90 mt-0.5">
                 {teacher.subject} · {teacher.experienceYears} yrs experience
@@ -231,7 +320,7 @@ function TeacherAppraisalPage() {
               title="Rate this teacher"
               description="Your star rating and comment are shared to help others choose."
             >
-              <div className="space-y-3">
+              <div className="space-y-3" data-tour="rate-form">
                 <div className="flex items-center gap-3 flex-wrap">
                   <StarInput value={stars} onChange={setStars} />
                   {stars > 0 && <span className="text-sm text-muted-foreground">{stars} / 5</span>}
@@ -254,10 +343,27 @@ function TeacherAppraisalPage() {
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="What stood out about this teacher's coaching?"
                     className="min-h-[80px]"
+                    data-tour="rate-comment"
                   />
                 </Field>
+                <label className="flex items-start gap-2.5 rounded-lg border bg-muted/30 p-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={anon}
+                    onChange={(e) => setAnon(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-primary"
+                    data-tour="rate-anon"
+                  />
+                  <span className="text-xs">
+                    <span className="font-medium">Submit anonymously</span>
+                    <span className="block text-muted-foreground mt-0.5">
+                      The coach won't see your name{isParent ? " or which child" : ""}. The club
+                      admin can still see it for accountability.
+                    </span>
+                  </span>
+                </label>
                 <div className="flex justify-end">
-                  <Button onClick={submit} disabled={!stars}>
+                  <Button onClick={submit} disabled={!stars} data-tour="rate-submit">
                     <Star className="h-4 w-4" />
                     Submit appraisal
                   </Button>
@@ -273,6 +379,90 @@ function TeacherAppraisalPage() {
             </div>
           )}
 
+          {/* Club coach grade — management appraisal (medal + private comment) */}
+          {isCoach && (isAdmin || (grade && (isSelf || gradingVisible))) && (
+            <Section
+              title="Club grade"
+              description={
+                isAdmin
+                  ? "Management's own view of this coach — a medal level, separate from parent ratings."
+                  : isSelf
+                    ? "How the club rates your coaching. Private to you and management unless made public."
+                    : "The club's grade for this coach."
+              }
+            >
+              {grade ? (
+                <div className="flex items-start gap-3" data-tour="club-grade">
+                  <MedalBadge level={grade.level} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold">{grade.level}</span>
+                      {!gradingVisible && (isAdmin || isSelf) && (
+                        <Badge tone="muted">
+                          <Lock className="h-3 w-3" />
+                          Private
+                        </Badge>
+                      )}
+                    </div>
+                    {grade.comment && (
+                      <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
+                        {grade.comment}
+                      </p>
+                    )}
+                    <div className="text-[11px] text-muted-foreground mt-1">
+                      by {grade.by} · {timeAgo(grade.at)}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Not graded yet.</p>
+              )}
+
+              {isAdmin && (
+                <div className="mt-4 pt-4 border-t space-y-3">
+                  <div className="grid sm:grid-cols-[160px_1fr] gap-3 items-start">
+                    <Field label="Grade level">
+                      <Select
+                        value={gradeLevel}
+                        onChange={(e) => setGradeLevel(e.target.value as CoachGradeLevel)}
+                        options={COACH_GRADE_LEVELS.map((l) => ({ value: l, label: l }))}
+                        data-tour="grade-level"
+                      />
+                    </Field>
+                    <Field label="Private management note">
+                      <TextArea
+                        value={gradeComment}
+                        onChange={(e) => setGradeComment(e.target.value)}
+                        placeholder="What's strong; what would move them up a level…"
+                        className="min-h-[64px]"
+                        data-tour="grade-comment"
+                      />
+                    </Field>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <button
+                      onClick={toggleGradeVisibility}
+                      className="inline-flex items-center gap-1.5 text-xs rounded-md border px-2.5 py-1.5 hover:bg-muted"
+                    >
+                      {gradingVisible ? (
+                        <Eye className="h-3.5 w-3.5 text-success" />
+                      ) : (
+                        <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                      {gradingVisible
+                        ? "Visible to parents & coaches"
+                        : "Private (admin & coach only)"}
+                    </button>
+                    <Button onClick={saveGrade} data-tour="grade-save">
+                      <Medal className="h-4 w-4" />
+                      Save grade
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Section>
+          )}
+
           <Section title={`Reviews (${reviews.length})`}>
             {reviews.length === 0 ? (
               <div className="text-sm text-muted-foreground italic py-4 text-center">
@@ -280,39 +470,78 @@ function TeacherAppraisalPage() {
               </div>
             ) : (
               <ul className="divide-y -my-2">
-                {reviews.map((r) => (
-                  <li key={r.id} className="py-4 flex gap-3">
-                    <Avatar name={r.authorName} size={36} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-semibold truncate">{r.authorName}</span>
-                        <Badge tone={r.authorRole === "parent" ? "info" : "muted"}>
-                          {r.authorRole === "parent" ? "Parent" : "Student"}
-                        </Badge>
-                        <span className="text-[11px] text-muted-foreground">· {timeAgo(r.at)}</span>
-                      </div>
-                      <div className="mt-1">
-                        <Stars value={r.stars} size={13} />
-                      </div>
-                      {r.comment && (
-                        <p className="text-sm text-muted-foreground mt-1.5 whitespace-pre-wrap">
-                          {r.comment}
-                        </p>
-                      )}
-                      {r.childName && (
-                        <div className="text-[11px] text-muted-foreground mt-1 inline-flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3 text-success" />
-                          Verified family · {r.childName}
+                {reviews.map((r) => {
+                  // Anonymous reviews hide the author from everyone except the club
+                  // admin (who keeps accountability). The coach sees "Anonymous".
+                  const hideIdentity = r.anonymous && !isAdmin;
+                  const shownName = hideIdentity ? "Anonymous parent" : r.authorName;
+                  return (
+                    <li key={r.id} className="py-4 flex gap-3">
+                      {hideIdentity ? (
+                        <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center shrink-0">
+                          <UserX className="h-4 w-4 text-muted-foreground" />
                         </div>
+                      ) : (
+                        <Avatar name={r.authorName} size={36} />
                       )}
-                    </div>
-                  </li>
-                ))}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-semibold truncate">{shownName}</span>
+                          <Badge tone={r.authorRole === "parent" ? "info" : "muted"}>
+                            {r.authorRole === "parent" ? "Parent" : "Student"}
+                          </Badge>
+                          {r.anonymous && (
+                            <Badge tone="muted">
+                              <UserX className="h-3 w-3" />
+                              Anonymous
+                            </Badge>
+                          )}
+                          <span className="text-[11px] text-muted-foreground">
+                            · {timeAgo(r.at)}
+                          </span>
+                        </div>
+                        <div className="mt-1">
+                          <Stars value={r.stars} size={13} />
+                        </div>
+                        {r.comment && (
+                          <p className="text-sm text-muted-foreground mt-1.5 whitespace-pre-wrap">
+                            {r.comment}
+                          </p>
+                        )}
+                        {r.childName && !hideIdentity && (
+                          <div className="text-[11px] text-muted-foreground mt-1 inline-flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3 text-success" />
+                            Verified family · {r.childName}
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </Section>
         </div>
       </div>
+    </div>
+  );
+}
+
+const MEDAL_TONE: Record<CoachGradeLevel, string> = {
+  Bronze: "bg-gradient-to-br from-amber-600 to-amber-800",
+  Silver: "bg-gradient-to-br from-slate-300 to-slate-500",
+  Gold: "bg-gradient-to-br from-yellow-400 to-amber-500",
+  Platinum: "bg-gradient-to-br from-cyan-300 to-violet-400",
+};
+
+function MedalBadge({ level, size = 44 }: { level: CoachGradeLevel; size?: number }) {
+  return (
+    <div
+      className={`shrink-0 rounded-xl flex items-center justify-center text-white shadow ${MEDAL_TONE[level]}`}
+      style={{ width: size, height: size }}
+      title={`${level} coach grade`}
+    >
+      <Medal style={{ width: size * 0.5, height: size * 0.5 }} />
     </div>
   );
 }

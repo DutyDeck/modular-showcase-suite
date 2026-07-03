@@ -61,10 +61,11 @@ function SwimCourseView({ courseId }: { courseId: string }) {
   const ratings = useCollection("teacherRatings");
   const attendance = useCollection("sessionAttendance");
   const rosters = useCollection("sessionRosters");
+  const coachMoves = useCollection("coachMoves");
   const moves = useCollection("swimmerMoves");
 
   const allSessions = useMemo(() => sessionsByCourse(courseId), [courseId]);
-  const rosterNames = (s: PoolSession) => effectiveCoachNames(s.id, rosters);
+  const rosterNames = (s: PoolSession) => effectiveCoachNames(s.id, rosters, coachMoves);
   const rosterSwimmerIds = (s: PoolSession) => effectiveSwimmerIds(s, moves);
 
   // Role scoping. A coach only ever sees her own sessions & swimmers (real-world
@@ -80,9 +81,11 @@ function SwimCourseView({ courseId }: { courseId: string }) {
   const sessions = useMemo(
     () =>
       isInstructor && user
-        ? allSessions.filter((s) => effectiveCoachNames(s.id, rosters).includes(user.name))
+        ? allSessions.filter((s) =>
+            effectiveCoachNames(s.id, rosters, coachMoves).includes(user.name),
+          )
         : allSessions,
-    [allSessions, isInstructor, user, rosters],
+    [allSessions, isInstructor, user, rosters, coachMoves],
   );
 
   // Coaching team shown: the whole club (admin) or just the coaches sharing the

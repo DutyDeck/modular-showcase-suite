@@ -21,6 +21,7 @@ import {
   children as parentChildren,
   isSwimAdmin,
   isOffboarded,
+  guardiansForSwimmer,
   SWIM_COURSE_ID,
   SWIM_PAYMENT_METHODS,
 } from "@/lib/mockData";
@@ -119,11 +120,20 @@ function FinancePage() {
 
   const [payMethod, setPayMethod] = useState(methodOptions[0]);
 
+  // Co-parents: the other guardian(s) who share access to this parent's children.
+  const coGuardians = isParent
+    ? Array.from(new Set(parentChildren.flatMap((c) => guardiansForSwimmer(c.id)))).filter(
+        (g) => g !== user?.name,
+      )
+    : [];
+
   const submitPayment = () => {
     if (!payTarget) return;
     updateItem("invoices", (i) => i.id === payTarget.id, {
       status: "Paid",
       method: payMethod,
+      // Record which guardian settled it (co-parents pay separately).
+      ...(isParent && user ? { paidBy: user.name } : {}),
     });
     toast.success(`Paid ${formatMoney(payTarget.amount)} for ${payTarget.id}`);
     setPayTarget(null);
@@ -207,6 +217,24 @@ function FinancePage() {
           />
         )}
       </div>
+      {isParent && coGuardians.length > 0 && (
+        <div
+          className="rounded-xl border border-info/30 bg-info/5 px-4 py-3 flex items-start gap-3"
+          data-tour="coparent-banner"
+        >
+          <div className="h-9 w-9 rounded-full bg-info/15 text-info flex items-center justify-center shrink-0">
+            <Repeat className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 text-sm">
+            <div className="font-medium">Shared with {coGuardians.join(" & ")}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              You both look after {parentChildren.map((c) => c.name.split(" ")[0]).join(" & ")}.
+              Each of you can view the children and pay for different classes independently — every
+              payment shows who settled it.
+            </div>
+          </div>
+        </div>
+      )}
       <Section title="Invoices">
         <DataTable
           anchor="finance-invoices"
@@ -237,7 +265,16 @@ function FinancePage() {
             if (key === "status") {
               const tone =
                 row.status === "Paid" ? "success" : row.status === "Due" ? "destructive" : "info";
-              return <Badge tone={tone}>{row.status}</Badge>;
+              return (
+                <div className="flex flex-col items-start gap-0.5">
+                  <Badge tone={tone}>{row.status}</Badge>
+                  {row.status === "Paid" && row.paidBy && (
+                    <span className="text-[10px] text-muted-foreground">
+                      by {row.paidBy.split(" ")[0]}
+                    </span>
+                  )}
+                </div>
+              );
             }
             if (key === "_actions") {
               return (

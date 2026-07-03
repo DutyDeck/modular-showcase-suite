@@ -36,7 +36,7 @@ const ROLES = [
 ];
 
 const USER_IMPORT_FIELDS: ImportField[] = [
-  { key: "name", label: "Name", required: true, sample: "Saman Silva" },
+  { key: "name", label: "Name", required: true, sample: "Charlie Brown" },
   { key: "email", label: "Email", required: true, sample: "saman@gch.lk" },
   { key: "role", label: "Role", sample: "Teacher" },
   { key: "mfa", label: "MFA (true/false)", sample: "true" },
@@ -187,7 +187,7 @@ function UsersPage() {
           <TextInput
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="e.g. Saman Silva"
+            placeholder="e.g. Charlie Brown"
             autoFocus
           />
         </Field>
