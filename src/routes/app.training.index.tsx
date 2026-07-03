@@ -120,9 +120,17 @@ function TrainingIndex() {
         }
       />
 
-      {swimAdmin && <CpdAdminBoard cpd={cpd} />}
+      {swimAdmin && (
+        <div data-tour="assign-cpd">
+          <CpdAdminBoard cpd={cpd} />
+        </div>
+      )}
 
-      {swim && !swimAdmin && myCpd.length > 0 && <CpdRecommended items={myCpd} />}
+      {swim && !swimAdmin && myCpd.length > 0 && (
+        <div data-tour="cpd-recommended">
+          <CpdRecommended items={myCpd} />
+        </div>
+      )}
 
       {!swimAdmin && (
         <>
@@ -416,7 +424,7 @@ function CpdAdminBoard({ cpd }: { cpd: CpdAssignment[] }) {
         title="Coach CPD assignments"
         description="Recommend and track professional development across your coaching team."
         actions={
-          <Button size="sm" onClick={assign.onOpen}>
+          <Button size="sm" onClick={assign.onOpen} data-tour="assign-cpd-btn">
             <UserPlus className="h-4 w-4" />
             Assign CPD
           </Button>
@@ -467,6 +475,7 @@ function CpdAdminBoard({ cpd }: { cpd: CpdAssignment[] }) {
       >
         <Field label="Coach" required>
           <Select
+            data-tour="cpd-coach"
             value={form.coachName}
             onChange={(e) => setForm({ ...form, coachName: e.target.value })}
             options={coachNames.map((n) => ({ value: n, label: n }))}
@@ -474,6 +483,7 @@ function CpdAdminBoard({ cpd }: { cpd: CpdAssignment[] }) {
         </Field>
         <Field label="Course" required>
           <Select
+            data-tour="cpd-course"
             value={form.courseId}
             onChange={(e) => setForm({ ...form, courseId: e.target.value })}
             options={aquaticsCourses.map((c) => ({ value: c.id, label: c.title }))}

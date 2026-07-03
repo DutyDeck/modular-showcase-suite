@@ -318,11 +318,21 @@ function SessionDetailPage() {
             description="Tap a status for each swimmer, then save. Defaults to existing marks."
             actions={
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => setMoveOpen(true)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setMoveOpen(true)}
+                  data-tour="move-btn"
+                >
                   <ArrowLeftRight className="h-3.5 w-3.5" />
                   Move swimmer
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setAll("Present")}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setAll("Present")}
+                  data-tour="attend-all-present"
+                >
                   <Check className="h-3.5 w-3.5" />
                   All present
                 </Button>
@@ -417,15 +427,23 @@ function SessionDetailPage() {
               description="Post a note or rating to a swimmer's family, log a poolside incident, or record a wellbeing check for pastoral follow-up."
             >
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => setComposer(true)}>
+                <Button onClick={() => setComposer(true)} data-tour="note-btn">
                   <NotebookPen className="h-4 w-4" />
                   New record-book note
                 </Button>
-                <Button variant="outline" onClick={() => setIncidentOpen(true)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIncidentOpen(true)}
+                  data-tour="incident-btn"
+                >
                   <AlertTriangle className="h-4 w-4" />
                   Log incident
                 </Button>
-                <Button variant="outline" onClick={() => setWellbeingOpen(true)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setWellbeingOpen(true)}
+                  data-tour="wellbeing-btn"
+                >
                   <HeartPulse className="h-4 w-4" />
                   Wellbeing check
                 </Button>
@@ -513,7 +531,11 @@ function SessionDetailPage() {
                   {counts.Present} present · {counts.Late} late · {counts.Absent} absent
                 </span>
               </div>
-              <Button onClick={save} disabled={Object.keys(draft).length === 0}>
+              <Button
+                onClick={save}
+                disabled={Object.keys(draft).length === 0}
+                data-tour="attend-save"
+              >
                 <Save className="h-4 w-4" />
                 Save attendance
               </Button>
@@ -676,6 +698,7 @@ function IncidentComposer({
           </Field>
           <Field label="Title" required>
             <TextInput
+              data-tour="incident-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Swallowed water — coughing fit"
@@ -683,6 +706,7 @@ function IncidentComposer({
           </Field>
           <Field label="What happened & action taken" required>
             <TextArea
+              data-tour="incident-body"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder="Describe the incident and the action you took…"
@@ -694,7 +718,7 @@ function IncidentComposer({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" onClick={submit}>
+          <Button type="button" onClick={submit} data-tour="incident-submit">
             <AlertTriangle className="h-4 w-4" />
             Log incident
           </Button>
@@ -760,6 +784,7 @@ function WellbeingComposer({
         <div className="space-y-3">
           <Field label="Swimmer" required>
             <Select
+              data-tour="wb-swimmer"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
               options={[
@@ -796,6 +821,7 @@ function WellbeingComposer({
           </Field>
           <Field label="Note" required>
             <TextArea
+              data-tour="wb-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="e.g. Tired after school; kept the set light and will check in with parents."
@@ -807,7 +833,7 @@ function WellbeingComposer({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" onClick={submit}>
+          <Button type="button" onClick={submit} data-tour="wellbeing-submit">
             <HeartPulse className="h-4 w-4" />
             Log wellbeing check
           </Button>
@@ -897,6 +923,7 @@ function MoveSwimmerDialog({
         <div className="space-y-3">
           <Field label="Swimmer" required>
             <Select
+              data-tour="move-swimmer"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
               options={[
@@ -907,6 +934,7 @@ function MoveSwimmerDialog({
           </Field>
           <Field label="Move to session" required>
             <Select
+              data-tour="move-target"
               value={targetSessionId}
               onChange={(e) => setTargetSessionId(e.target.value)}
               options={[
@@ -954,7 +982,7 @@ function MoveSwimmerDialog({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" onClick={submit}>
+          <Button type="button" onClick={submit} data-tour="move-submit">
             <ArrowLeftRight className="h-4 w-4" />
             Move swimmer
           </Button>

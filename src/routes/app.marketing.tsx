@@ -188,7 +188,7 @@ function MarketingPage() {
             : "Campaigns, lead pipeline, course marketing and onboarding."
         }
         actions={
-          <Button onClick={add.onOpen}>
+          <Button onClick={add.onOpen} data-tour="new-lead-btn">
             <Plus className="h-4 w-4" />
             New Lead
           </Button>
@@ -223,6 +223,7 @@ function MarketingPage() {
       </div>
       <Section title="Lead Pipeline">
         <DataTable
+          anchor="lead-pipeline"
           columns={[
             { key: "name", label: "Name" },
             { key: "_contact", label: "Contact" },
@@ -282,6 +283,7 @@ function MarketingPage() {
                 <div className="flex items-center gap-1.5 justify-end">
                   <button
                     onClick={() => openContact(row)}
+                    data-tour="lead-contact-btn"
                     className="text-xs px-2.5 py-1 rounded-md border font-medium text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1"
                   >
                     <Phone className="h-3 w-3" />
@@ -389,6 +391,7 @@ function MarketingPage() {
         </Field>
         <Field label="Notes" required className="sm:col-span-2">
           <TextInput
+            data-tour="lead-note"
             value={contactForm.note}
             onChange={(e) => setContactForm({ ...contactForm, note: e.target.value })}
             placeholder="e.g. Spoke to mum — booked a Saturday tryout"
@@ -407,6 +410,7 @@ function MarketingPage() {
       >
         <Field label="Full name" required className="sm:col-span-2">
           <TextInput
+            data-tour="lead-name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="e.g. Ishara Madushani"
@@ -415,6 +419,7 @@ function MarketingPage() {
         </Field>
         <Field label="Phone">
           <TextInput
+            data-tour="lead-phone"
             type="tel"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -423,6 +428,7 @@ function MarketingPage() {
         </Field>
         <Field label="Email">
           <TextInput
+            data-tour="lead-email"
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}

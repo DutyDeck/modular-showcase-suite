@@ -73,17 +73,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "1StudentID — Education Super App" },
-      { name: "description", content: "Modular Showcase Suite is a prototype application demonstrating distinct modules with a unified user experience." },
+      {
+        name: "description",
+        content:
+          "Modular Showcase Suite is a prototype application demonstrating distinct modules with a unified user experience.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "1StudentID — Education Super App" },
-      { property: "og:description", content: "Modular Showcase Suite is a prototype application demonstrating distinct modules with a unified user experience." },
+      {
+        property: "og:description",
+        content:
+          "Modular Showcase Suite is a prototype application demonstrating distinct modules with a unified user experience.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "1StudentID — Education Super App" },
-      { name: "twitter:description", content: "Modular Showcase Suite is a prototype application demonstrating distinct modules with a unified user experience." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/wGp20Pu4AJWtMoe2NY2OCXWGoNr1/social-images/social-1779906036268-globaledu-logo.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/wGp20Pu4AJWtMoe2NY2OCXWGoNr1/social-images/social-1779906036268-globaledu-logo.webp" },
+      {
+        name: "twitter:description",
+        content:
+          "Modular Showcase Suite is a prototype application demonstrating distinct modules with a unified user experience.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/wGp20Pu4AJWtMoe2NY2OCXWGoNr1/social-images/social-1779906036268-globaledu-logo.webp",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/wGp20Pu4AJWtMoe2NY2OCXWGoNr1/social-images/social-1779906036268-globaledu-logo.webp",
+      },
     ],
     links: [
       {
@@ -115,6 +135,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 import { AuthProvider } from "@/lib/auth";
 import { PrefsProvider } from "@/lib/prefs";
 import { Toaster } from "sonner";
+import { TourLayer } from "@/components/tour/TourLayer";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -124,12 +145,8 @@ function RootComponent() {
       <PrefsProvider>
         <AuthProvider>
           <Outlet />
-          <Toaster
-            position="top-right"
-            richColors
-            closeButton
-            toastOptions={{ duration: 2500 }}
-          />
+          <TourLayer />
+          <Toaster position="top-right" richColors closeButton toastOptions={{ duration: 2500 }} />
         </AuthProvider>
       </PrefsProvider>
     </QueryClientProvider>

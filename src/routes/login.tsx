@@ -12,8 +12,10 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  PlayCircle,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { tourApi } from "@/lib/tour";
 import { demoUsers, SWIM_COURSE_ID } from "@/lib/mockData";
 import { Avatar } from "@/components/Avatar";
 import { BrandLockup } from "@/components/BrandLogo";
@@ -206,12 +208,30 @@ function LoginPage() {
             </div>
           </div>
 
-          <div className="mb-7">
+          <div className="mb-6">
             <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
             <p className="text-sm text-muted-foreground mt-1.5">
               Sign in to your unified student workspace.
             </p>
           </div>
+
+          {/* Self-running guided demo — auto-signs in and walks the whole script */}
+          <button
+            type="button"
+            onClick={() => tourApi.start()}
+            className="group mb-6 flex w-full items-center gap-3 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-fuchsia-500 p-[1.5px] shadow-soft transition-transform hover:scale-[1.01]"
+          >
+            <span className="flex w-full items-center gap-3 rounded-[10px] bg-card px-4 py-3 text-left">
+              <PlayCircle className="h-6 w-6 shrink-0 text-indigo-500" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">Start guided demo</span>
+                <span className="block text-[11px] text-muted-foreground">
+                  A self-running tour of every feature — you can pause anytime.
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </button>
 
           <form onSubmit={submit} className="space-y-4">
             <div>

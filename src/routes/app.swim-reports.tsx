@@ -376,10 +376,11 @@ function SwimReportsPage() {
       {/* Period toggle + range nav */}
       <Section className="!py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex rounded-lg border overflow-hidden">
+          <div className="inline-flex rounded-lg border overflow-hidden" data-tour="report-periods">
             {PERIODS.map((p) => (
               <button
                 key={p.id}
+                data-tour={p.id === "month" ? "report-month" : undefined}
                 onClick={() => {
                   setPeriod(p.id);
                   setOffset(0);
@@ -451,7 +452,7 @@ function SwimReportsPage() {
           title={`Monthly evaluation — ${rangeLabel}`}
           description="A month-end roll-up for club review and HR: every swimmer's attendance and every coach's activity, reliability and safeguarding contribution."
         >
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5" data-tour="monthly-eval">
             <MiniStat
               label="Swimmers active"
               value={monthlyEval.summary.swimmerCount}

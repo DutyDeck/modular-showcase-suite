@@ -328,7 +328,9 @@ function SrbStudentPage() {
       )}
 
       {/* Timeline */}
-      <SrbTimeline studentId={student.id} institutionId={scopeInst} courseId={scopeCourse} />
+      <div data-tour="srb-timeline">
+        <SrbTimeline studentId={student.id} institutionId={scopeInst} courseId={scopeCourse} />
+      </div>
 
       <SrbComposer
         open={composer.open}

@@ -24,13 +24,9 @@ export function PageHeader({
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
           {title}
         </h1>
-        {subtitle && (
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-xs sm:text-sm text-muted-foreground mt-1">{subtitle}</p>}
       </div>
-      {actions && (
-        <div className="flex items-center gap-2 flex-wrap">{actions}</div>
-      )}
+      {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
     </div>
   );
 }
@@ -100,9 +96,7 @@ export function Section({
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-5 py-3 sm:py-4 border-b">
           <div className="min-w-0">
             {title && <h3 className="font-semibold text-sm">{title}</h3>}
-            {description && (
-              <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
-            )}
+            {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
           </div>
           {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
         </header>
@@ -144,11 +138,14 @@ export function DataTable<T extends Record<string, any>>({
   rows,
   renderCell,
   emptyText = "No records",
+  anchor,
 }: {
   columns: { key: string; label: string; className?: string }[];
   rows: T[];
   renderCell?: (row: any, key: string) => ReactNode;
   emptyText?: string;
+  /** Optional data-tour anchor for the guided demo. */
+  anchor?: string;
 }) {
   const render = (row: any, key: string) =>
     renderCell ? renderCell(row, key) : String(row[key] ?? "");
@@ -158,9 +155,7 @@ export function DataTable<T extends Record<string, any>>({
       {/* Mobile: stacked cards */}
       <div className="md:hidden -mx-4 sm:-mx-5 divide-y">
         {rows.length === 0 && (
-          <div className="px-5 py-10 text-center text-sm text-muted-foreground">
-            {emptyText}
-          </div>
+          <div className="px-5 py-10 text-center text-sm text-muted-foreground">{emptyText}</div>
         )}
         {rows.map((row, i) => {
           const primary = columns.find((c) => !c.key.startsWith("_")) ?? columns[0];
@@ -188,7 +183,7 @@ export function DataTable<T extends Record<string, any>>({
       </div>
 
       {/* Desktop: traditional table */}
-      <div className="hidden md:block overflow-x-auto -mx-4 sm:-mx-5">
+      <div className="hidden md:block overflow-x-auto -mx-4 sm:-mx-5" data-tour={anchor}>
         <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground border-b">
@@ -211,10 +206,7 @@ export function DataTable<T extends Record<string, any>>({
               </tr>
             )}
             {rows.map((row, i) => (
-              <tr
-                key={i}
-                className="border-b last:border-b-0 hover:bg-muted/40 transition-colors"
-              >
+              <tr key={i} className="border-b last:border-b-0 hover:bg-muted/40 transition-colors">
                 {columns.map((c) => (
                   <td key={c.key} className={cn("px-4 sm:px-5 py-3 align-middle", c.className)}>
                     {render(row, c.key)}
@@ -259,8 +251,7 @@ type Variant = "primary" | "secondary" | "outline" | "ghost" | "destructive";
 type Size = "sm" | "md";
 
 const buttonStyles: Record<Variant, string> = {
-  primary:
-    "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft",
+  primary: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft",
   secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
   outline: "border bg-background hover:bg-muted",
   ghost: "hover:bg-muted text-foreground",
@@ -329,21 +320,12 @@ export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
 }
 
 export function NumberInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      type="number"
-      {...props}
-      className={cn(inputClass, props.className)}
-    />
-  );
+  return <input type="number" {...props} className={cn(inputClass, props.className)} />;
 }
 
 export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
-    <textarea
-      {...props}
-      className={cn(inputClass, "h-auto py-2 min-h-[80px]", props.className)}
-    />
+    <textarea {...props} className={cn(inputClass, "h-auto py-2 min-h-[80px]", props.className)} />
   );
 }
 

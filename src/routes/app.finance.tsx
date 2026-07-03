@@ -160,11 +160,11 @@ function FinancePage() {
         }
         actions={
           <>
-            <Button variant="outline" onClick={add.onOpen}>
+            <Button variant="outline" onClick={add.onOpen} data-tour="new-invoice-btn">
               <Plus className="h-4 w-4" />
               New Invoice
             </Button>
-            <Button onClick={payNext}>
+            <Button onClick={payNext} data-tour="record-payment-btn">
               <CreditCard className="h-4 w-4" />
               {isAdmin ? "Record payment" : "Pay Now"}
             </Button>
@@ -209,6 +209,7 @@ function FinancePage() {
       </div>
       <Section title="Invoices">
         <DataTable
+          anchor="finance-invoices"
           columns={[
             { key: "id", label: "Invoice" },
             { key: "date", label: "Date" },
@@ -318,6 +319,7 @@ function FinancePage() {
             )}
           </div>
           <DataTable
+            anchor="finance-mandates"
             columns={[
               { key: "studentName", label: "Swimmer" },
               { key: "payerName", label: "Payer" },
@@ -371,6 +373,7 @@ function FinancePage() {
       >
         <Field label="Description" required className="sm:col-span-2">
           <TextInput
+            data-tour="inv-desc"
             value={form.desc}
             onChange={(e) => setForm({ ...form, desc: e.target.value })}
             placeholder="e.g. June Tuition — All subjects"
@@ -379,6 +382,7 @@ function FinancePage() {
         </Field>
         <Field label="Amount (USD)" required>
           <TextInput
+            data-tour="inv-amount"
             type="number"
             min={0}
             value={form.amount}

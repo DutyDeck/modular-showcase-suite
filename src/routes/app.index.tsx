@@ -67,7 +67,7 @@ function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="dashboard">
       <div className="rounded-2xl bg-gradient-hero text-white p-6 md:p-8 shadow-elegant relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-20"

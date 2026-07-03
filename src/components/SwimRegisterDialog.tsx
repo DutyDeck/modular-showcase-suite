@@ -124,6 +124,7 @@ export function SwimRegisterDialog({
     >
       <Field label="Swimmer name" required className="sm:col-span-2">
         <TextInput
+          data-tour="reg-name"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           placeholder="e.g. Nethmi Perera"
@@ -132,6 +133,7 @@ export function SwimRegisterDialog({
       </Field>
       <Field label="Date of birth" required>
         <TextInput
+          data-tour="reg-dob"
           type="date"
           value={form.dob}
           onChange={(e) => setForm({ ...form, dob: e.target.value })}
@@ -148,6 +150,7 @@ export function SwimRegisterDialog({
       </Field>
       <Field label="Assign to session" required className="sm:col-span-2">
         <Select
+          data-tour="reg-session"
           value={form.sessionId}
           onChange={(e) => setForm({ ...form, sessionId: e.target.value })}
           options={[
@@ -161,7 +164,10 @@ export function SwimRegisterDialog({
       </Field>
 
       {/* Platform login — who holds it depends on the swimmer's age */}
-      <div className="sm:col-span-2 rounded-lg border bg-muted/30 p-3 space-y-3">
+      <div
+        data-tour="reg-login"
+        className="sm:col-span-2 rounded-lg border bg-muted/30 p-3 space-y-3"
+      >
         <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
           <UserCog className="h-4 w-4 text-primary" />
           1StudentID login
@@ -203,6 +209,7 @@ export function SwimRegisterDialog({
         )}
         <Field label={isAdult ? "Swimmer's email" : "Parent / guardian email"} required>
           <TextInput
+            data-tour="reg-email"
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}

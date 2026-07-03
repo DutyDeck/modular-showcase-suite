@@ -139,7 +139,7 @@ function CoachingPage() {
         title="Coaching team"
         description="Coaches available to lead and cover sessions. Off-board a coach who leaves the club — their history is kept, but they can no longer be rostered and payroll / messaging stops."
       >
-        <ul className="grid sm:grid-cols-2 gap-2">
+        <ul className="grid sm:grid-cols-2 gap-2" data-tour="coaching-team">
           {club.coachNames.map((name) => {
             const off = isOffboarded(name, offboardings);
             return (
@@ -171,6 +171,7 @@ function CoachingPage() {
                     variant="outline"
                     onClick={() => setOffboardCoach(name)}
                     aria-label={`Off-board ${name}`}
+                    data-tour="coach-offboard-btn"
                   >
                     <UserMinus className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Off-board</span>
@@ -221,6 +222,7 @@ function CoachingPage() {
                     variant="outline"
                     className="shrink-0"
                     onClick={() => setManageId(s.id)}
+                    data-tour="manage-coach-btn"
                   >
                     <Users className="h-3.5 w-3.5" />
                     Manage

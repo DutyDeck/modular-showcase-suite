@@ -159,7 +159,7 @@ function SquadPage() {
         subtitle="Race times, personal bests and meet performance for the club's competitive swimmers."
         actions={
           canLog ? (
-            <Button onClick={add.onOpen}>
+            <Button onClick={add.onOpen} data-tour="log-time-btn">
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Log a time</span>
             </Button>
@@ -167,7 +167,7 @@ function SquadPage() {
         }
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" data-tour="squad-board">
         <StatCard
           label="Squad swimmers"
           value={squadIds.size}
@@ -264,6 +264,7 @@ function SquadPage() {
       >
         <Field label="Swimmer" required className="sm:col-span-2">
           <Select
+            data-tour="time-swimmer"
             value={form.studentId}
             onChange={(e) => setForm({ ...form, studentId: e.target.value })}
             options={[
@@ -281,6 +282,7 @@ function SquadPage() {
         </Field>
         <Field label="Time" required>
           <TextInput
+            data-tour="time-value"
             value={form.time}
             onChange={(e) => setForm({ ...form, time: e.target.value })}
             placeholder="e.g. 31.42 or 1:04.40"

@@ -168,7 +168,10 @@ function MessagesPage() {
               <ArrowLeft className="h-3 w-3" />
               Back to inbox
             </button>
-            <div className="flex-1 space-y-3 min-h-[300px] overflow-y-auto">
+            <div
+              data-tour="messages-thread"
+              className="flex-1 space-y-3 min-h-[300px] overflow-y-auto"
+            >
               {active.messages.map((m) => {
                 const mine = m.fromName === me;
                 return (
@@ -191,6 +194,7 @@ function MessagesPage() {
             </div>
             <div className="flex items-center gap-2 mt-4 pt-3 border-t">
               <input
+                data-tour="msg-input"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && send()}
@@ -200,6 +204,7 @@ function MessagesPage() {
               <button
                 onClick={send}
                 disabled={!draft.trim()}
+                data-tour="msg-send"
                 className="h-10 px-3 sm:px-4 rounded-md bg-primary text-primary-foreground text-sm flex items-center gap-2 disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />

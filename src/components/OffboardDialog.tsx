@@ -169,7 +169,7 @@ export function OffboardDialog({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" onClick={submit}>
+          <Button type="button" onClick={submit} data-tour="offboard-submit">
             <UserMinus className="h-4 w-4" />
             Off-board {noun}
           </Button>

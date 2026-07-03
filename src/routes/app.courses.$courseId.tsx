@@ -145,7 +145,10 @@ function SwimCourseView({ courseId }: { courseId: string }) {
 
       {/* Hero */}
       <Section className="!p-0 overflow-hidden">
-        <div className="bg-gradient-to-br from-sky-500 to-cyan-600 text-white p-5 sm:p-6">
+        <div
+          data-tour="club-hero"
+          className="bg-gradient-to-br from-sky-500 to-cyan-600 text-white p-5 sm:p-6"
+        >
           <div className="flex items-start gap-4">
             <div className="h-14 w-14 rounded-2xl bg-white/15 ring-1 ring-white/30 flex items-center justify-center shrink-0">
               <Waves className="h-7 w-7" />
@@ -216,13 +219,15 @@ function SwimCourseView({ courseId }: { courseId: string }) {
             title="Weekly timetable"
             description={isAdmin ? "All sessions grouped by day." : "Your sessions grouped by day."}
           >
-            <Timetable
-              sessions={sessions}
-              onOpen={openSession}
-              presentCountFor={presentCountFor}
-              totalFor={(s) => rosterSwimmerIds(s).length}
-              rosterNames={rosterNames}
-            />
+            <div data-tour="club-timetable">
+              <Timetable
+                sessions={sessions}
+                onOpen={openSession}
+                presentCountFor={presentCountFor}
+                totalFor={(s) => rosterSwimmerIds(s).length}
+                rosterNames={rosterNames}
+              />
+            </div>
           </Section>
 
           {/* Coaches */}

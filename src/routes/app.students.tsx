@@ -294,12 +294,12 @@ function StudentsPage() {
                 <Download className="h-4 w-4" />
                 <span className="hidden sm:inline">Export</span>
               </Button>
-              <Button variant="outline" onClick={crossEnroll.onOpen}>
+              <Button variant="outline" onClick={crossEnroll.onOpen} data-tour="enrol-existing">
                 <UserCheck className="h-4 w-4" />
                 <span className="hidden sm:inline">Enrol existing swimmer</span>
                 <span className="sm:hidden">Existing</span>
               </Button>
-              <Button onClick={registerNew.onOpen}>
+              <Button onClick={registerNew.onOpen} data-tour="register-swimmer">
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Register new swimmer</span>
                 <span className="sm:hidden">New</span>
@@ -364,6 +364,7 @@ function StudentsPage() {
         }
       >
         <DataTable
+          anchor="swimmers-table"
           columns={
             swim
               ? [
@@ -483,6 +484,7 @@ function StudentsPage() {
                         setProgrammeStudent(row);
                         programmeMgr.onOpen();
                       }}
+                      data-tour="programme-btn"
                       className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
                       aria-label={`Manage programme for ${row.name}`}
                       title="Manage programme"
@@ -515,6 +517,7 @@ function StudentsPage() {
                           setOffboardStudent(row);
                           offboard.onOpen();
                         }}
+                        data-tour="offboard-btn"
                         className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         aria-label={`Off-board ${row.name}`}
                         title="Off-board swimmer"
