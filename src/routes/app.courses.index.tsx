@@ -16,7 +16,7 @@ import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import { Stars } from "@/components/StarRating";
 import { useAuth } from "@/lib/auth";
 import { useEnabledModules } from "@/lib/modules";
-import { teacherByName, swimCourseById } from "@/lib/mockData";
+import { teacherByName, swimCourseById, isSwimUser } from "@/lib/mockData";
 import { computeAppraisal } from "@/lib/appraisal";
 import {
   Star,
@@ -57,6 +57,7 @@ const COURSE_IMPORT_FIELDS: ImportField[] = [
 
 function CoursesPage() {
   const { user } = useAuth();
+  const swim = isSwimUser(user);
   const enabledModules = useEnabledModules(user?.institution ?? "");
   const appraisalOn = enabledModules.has("appraisal");
   const ratings = useCollection("teacherRatings");
@@ -71,6 +72,8 @@ function CoursesPage() {
       courses
         .filter(
           (c) =>
+            // Swim accounts are a single-purpose club product — only ever the club.
+            (swim ? !!swimCourseById[c.id] : true) &&
             (category ? c.category === category : true) &&
             (query
               ? `${c.title} ${c.code} ${c.teacher}`.toLowerCase().includes(query.toLowerCase())
@@ -78,7 +81,7 @@ function CoursesPage() {
         )
         // Showcase the multi-coach swim club first.
         .sort((a, b) => (swimCourseById[b.id] ? 1 : 0) - (swimCourseById[a.id] ? 1 : 0)),
-    [courses, query, category],
+    [courses, query, category, swim],
   );
 
   const [form, setForm] = useState({
@@ -125,19 +128,25 @@ function CoursesPage() {
   return (
     <div>
       <PageHeader
-        title="Academic Management"
-        subtitle="Courses, classes, timetables, sessions and instructors. Open any course for its class page."
+        title={swim ? "Swim Programmes" : "Academic Management"}
+        subtitle={
+          swim
+            ? "Your club's swim programmes, squads, timetables and coaches. Open a programme for its class page."
+            : "Courses, classes, timetables, sessions and instructors. Open any course for its class page."
+        }
         actions={
-          <>
-            <Button variant="outline" onClick={importer.onOpen}>
-              <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">Import CSV</span>
-            </Button>
-            <Button onClick={add.onOpen}>
-              <Plus className="h-4 w-4" />
-              New Course
-            </Button>
-          </>
+          swim ? undefined : (
+            <>
+              <Button variant="outline" onClick={importer.onOpen}>
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:inline">Import CSV</span>
+              </Button>
+              <Button onClick={add.onOpen}>
+                <Plus className="h-4 w-4" />
+                New Course
+              </Button>
+            </>
+          )
         }
       />
 
@@ -147,22 +156,28 @@ function CoursesPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search courses by title, code, teacher…"
+            placeholder={
+              swim
+                ? "Search programmes by name, code, coach…"
+                : "Search courses by title, code, teacher…"
+            }
             className="h-10 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="h-10 rounded-md border bg-background px-3 text-sm"
-        >
-          <option value="">All categories</option>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        {!swim && (
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="h-10 rounded-md border bg-background px-3 text-sm"
+          >
+            <option value="">All categories</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {filtered.length === 0 ? (

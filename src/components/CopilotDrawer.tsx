@@ -9,6 +9,7 @@ import {
 import { Sparkles, Send, BrainCircuit, Bot } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useCollection } from "@/lib/store";
+import { isSwimUser, isSwimAdmin } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 interface ChatMsg {
@@ -40,7 +41,35 @@ const SEED_BY_ROLE: Record<string, string[]> = {
   ],
 };
 
-function generateReply(prompt: string, ctx: { students: number; courses: number; invoices: number }): string {
+// Swim‑club accounts (coach / club admin / swim parent / swimmer) get a
+// single‑purpose aquatics assistant instead of the generic LMS prompts.
+const SWIM_SEEDS_BY_ROLE: Record<string, string[]> = {
+  student: [
+    "What did I work on in my last session?",
+    "When is my next squad session?",
+    "How's my attendance this term?",
+  ],
+  parent: [
+    "How is my swimmer progressing this month?",
+    "When is the next club fee due?",
+    "Any notes from the coach this week?",
+  ],
+  teacher: [
+    "Which swimmers in my squads are behind on attendance?",
+    "Draft a note to a parent about a missed session",
+    "Summarise this week's squad progress",
+  ],
+  admin: [
+    "How is club attendance trending this month?",
+    "Which coaches were absent or covered this week?",
+    "Any open safety incidents to review?",
+  ],
+};
+
+function generateReply(
+  prompt: string,
+  ctx: { students: number; courses: number; invoices: number },
+): string {
   const p = prompt.toLowerCase();
   if (/risk|at\s*risk|dropout/.test(p)) {
     return `Based on attendance < 70% and GPA < 2.7, I've flagged a handful of students across your ${ctx.students} learners. I'd recommend scheduling counsellor sessions this week. Open the AI Insights page for the full list.`;
@@ -63,6 +92,41 @@ function generateReply(prompt: string, ctx: { students: number; courses: number;
   return `I'm Edu-AI Copilot. I can help you with student risk analysis, grading drafts, parent communications, financial forecasts, and policy summaries. Try one of the suggestions above.`;
 }
 
+function generateSwimReply(prompt: string, ctx: { swimmers: number }, admin: boolean): string {
+  const p = prompt.toLowerCase();
+  if (/incident|safety|health|injur/.test(p)) {
+    return admin
+      ? `There are 2 open incidents on the club log — one Low (goggles/equipment) and one Medium (a poolside slip, under review). Everything else this month is resolved. Open Summary Reports for the full incident breakdown by severity.`
+      : `No open safety incidents involving your swimmers this week. If you need to log one, use "Log incident" on the session page and I'll route it to the club admin.`;
+  }
+  if (/absent|cover|substitut|coach.*(absent|off|away)/.test(p)) {
+    return `This week Coach Mariana covered one of Coach Dilan's Tuesday squads; all other sessions ran with their assigned coach. Coach attendance is 96% for the month. The Summary Report's coach‑attendance section lists every absence and substitution.`;
+  }
+  if (/fee|invoice|payment|due|mandate/.test(p)) {
+    return `The next club fees are due at month‑end. A few families have a payment coming up in the next 30 days; off‑boarded swimmers have their mandates stopped automatically, so they're excluded. Open Finance to send reminders.`;
+  }
+  if (/attendance/.test(p)) {
+    return admin
+      ? `Club attendance is trending at ~89% this month across all squads, up 3 points on last month. Learn‑to‑Swim is strongest; the senior competitive squad dipped slightly around the meet. Summary Reports → Monthly evaluation has the per‑swimmer detail.`
+      : `Your squads are averaging ~90% attendance this week. Two swimmers are below 75% and worth a quick check‑in — they're flagged in your Summary Report.`;
+  }
+  if (/note|message|email|draft|parent/.test(p)) {
+    return `Here's a draft:\n\n"Hi — we missed [swimmer] at Tuesday's squad session. No problem at all; just let us know if everything's okay and whether they'll make Thursday's session. They've been making lovely progress on their backstroke turns and we'd hate for them to lose momentum. — Coach"`;
+  }
+  if (/progress|improv|technique|stroke|time|pb|personal best/.test(p)) {
+    return `Progress is looking good — recent record‑book notes highlight improving stroke technique and a couple of new personal‑best times logged in the squad board. Average coach rating this month is 4.3/5. Open the Record Book for the full history.`;
+  }
+  if (/session|next|timetable|schedule/.test(p)) {
+    return `The next sessions are on the club timetable — Learn‑to‑Swim and squad sessions run through the week at the Royal Vista pools. Open the Swim Programme page for the full weekly timetable and pool map.`;
+  }
+  if (/summar|recap|progress this|week|month/.test(p)) {
+    return admin
+      ? `This month across the club: ~89% swimmer attendance, 96% coach attendance, ${ctx.swimmers} swimmers on the books, average session rating 4.3/5, and 2 open incidents. Full detail is in Summary Reports → Monthly evaluation.`
+      : `This week your squads trained on schedule with ~90% attendance, a handful of new personal bests logged, and no open incidents. Two swimmers need an attendance nudge — see your Summary Report.`;
+  }
+  return `I'm your club's aquatics assistant. I can help with swimmer attendance and progress, coach cover, session notes to parents, club fees, and safety incidents. Try one of the suggestions above.`;
+}
+
 export function CopilotDrawer({
   open,
   onOpenChange,
@@ -74,6 +138,8 @@ export function CopilotDrawer({
   const students = useCollection("students");
   const courses = useCollection("courses");
   const invoices = useCollection("invoices");
+  const swim = isSwimUser(user);
+  const swimAdmin = isSwimAdmin(user);
 
   const firstName = (() => {
     if (!user) return "there";
@@ -86,12 +152,17 @@ export function CopilotDrawer({
     {
       id: 0,
       from: "ai",
-      text: `Hi ${firstName} 👋 I'm Edu-AI. I've analysed your workspace — pick a suggestion below or ask me anything.`,
+      text: swim
+        ? `Hi ${firstName} 👋 I'm your Royal Vista aquatics assistant. I've reviewed the club's data — pick a suggestion below or ask me anything.`
+        : `Hi ${firstName} 👋 I'm Edu-AI. I've analysed your workspace — pick a suggestion below or ask me anything.`,
     },
   ]);
   const [draft, setDraft] = useState("");
 
-  const seeds = useMemo(() => SEED_BY_ROLE[user?.role ?? "student"] ?? [], [user?.role]);
+  const seeds = useMemo(
+    () => (swim ? SWIM_SEEDS_BY_ROLE : SEED_BY_ROLE)[user?.role ?? "student"] ?? [],
+    [user?.role, swim],
+  );
 
   const send = (text: string) => {
     const trimmed = text.trim();
@@ -100,11 +171,13 @@ export function CopilotDrawer({
     const reply: ChatMsg = {
       id: Date.now() + 1,
       from: "ai",
-      text: generateReply(trimmed, {
-        students: students.length,
-        courses: courses.length,
-        invoices: invoices.length,
-      }),
+      text: swim
+        ? generateSwimReply(trimmed, { swimmers: students.length }, swimAdmin)
+        : generateReply(trimmed, {
+            students: students.length,
+            courses: courses.length,
+            invoices: invoices.length,
+          }),
     };
     setMessages((m) => [...m, userMsg, reply]);
     setDraft("");
@@ -119,9 +192,13 @@ export function CopilotDrawer({
               <BrainCircuit className="h-5 w-5" />
             </div>
             <div>
-              <SheetTitle className="text-base">Edu-AI Copilot</SheetTitle>
+              <SheetTitle className="text-base">
+                {swim ? "Aquatics Copilot" : "Edu-AI Copilot"}
+              </SheetTitle>
               <SheetDescription className="text-xs">
-                Context-aware assistant for {user?.role ?? "you"}.
+                {swim
+                  ? "Context-aware assistant for your swim club."
+                  : `Context-aware assistant for ${user?.role ?? "you"}.`}
               </SheetDescription>
             </div>
           </div>
@@ -131,10 +208,7 @@ export function CopilotDrawer({
           {messages.map((m) => (
             <div
               key={m.id}
-              className={cn(
-                "flex gap-2",
-                m.from === "user" ? "justify-end" : "justify-start",
-              )}
+              className={cn("flex gap-2", m.from === "user" ? "justify-end" : "justify-start")}
             >
               {m.from === "ai" && (
                 <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
