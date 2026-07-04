@@ -22,6 +22,7 @@ import {
   coachAttendance as initialCoachAttendance,
   sessionRosters as initialSessionRosters,
   chatSeed as initialChat,
+  chatGroups as initialChatGroups,
   swimmerMoves as initialSwimmerMoves,
   levelAssessments as initialLevelAssessments,
   raceTimes as initialRaceTimes,
@@ -50,6 +51,8 @@ export type {
   CoachAttendance,
   SessionRoster,
   ChatMessage,
+  ChatAttachment,
+  ChatGroup,
   SwimmerMove,
   SwimmerMoveKind,
   LevelAssessment,
@@ -96,6 +99,7 @@ import type {
   CoachAttendance,
   SessionRoster,
   ChatMessage,
+  ChatGroup,
   SwimmerMove,
   LevelAssessment,
   RaceTime,
@@ -149,6 +153,7 @@ interface State {
   coachAttendance: CoachAttendance[];
   sessionRosters: SessionRoster[];
   chat: ChatMessage[];
+  chatGroups: ChatGroup[];
   swimmerMoves: SwimmerMove[];
   levelAssessments: LevelAssessment[];
   raceTimes: RaceTime[];
@@ -171,7 +176,7 @@ const STORAGE_KEY = "oneedu.store.v3";
 // deploy to clear stale names/threads. It does NOT rename STORAGE_KEY (which
 // would wipe data unconditionally); it only resets when the seed actually moves.
 const SEED_VERSION_KEY = "oneedu.store.seedver";
-const SEED_VERSION = "2026-07-uk-names-2";
+const SEED_VERSION = "2026-07-group-chat";
 
 function makeInitialState(): State {
   return {
@@ -194,6 +199,7 @@ function makeInitialState(): State {
     coachAttendance: [...initialCoachAttendance],
     sessionRosters: [...initialSessionRosters],
     chat: [...initialChat],
+    chatGroups: [...initialChatGroups],
     swimmerMoves: [...initialSwimmerMoves],
     levelAssessments: [...initialLevelAssessments],
     raceTimes: [...initialRaceTimes],

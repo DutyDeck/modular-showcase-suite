@@ -4559,6 +4559,16 @@ export const swimNotifications = [
  * who opened it — the counterpart, and any reply, is visible to BOTH accounts
  * (persisted in the store, like record-book replies). `context: "swim"` marks
  * club conversations so swim accounts only see their club threads. */
+/** An image or document shared in a chat. Persisted inline as a data: URI so the
+ *  demo works with no upload backend (kept small — the composer caps file size). */
+export interface ChatAttachment {
+  kind: "image" | "file";
+  name: string;
+  dataUrl: string; // data: URI
+  size: number; // bytes
+  mime?: string;
+}
+
 export interface ChatMessage {
   id: string;
   a: string; // participant name (canonical — sorts first)
@@ -4568,6 +4578,10 @@ export interface ChatMessage {
   text: string;
   at: string; // ISO
   context?: "swim";
+  /** When set, this is a post in the group chat with this id (a/b hold the
+   *  groupId so it never collides with a 1-to-1 thread). */
+  groupId?: string;
+  attachment?: ChatAttachment;
 }
 
 /** Canonical conversation key for a pair of participant names. */
@@ -4587,6 +4601,27 @@ const chatMsg = (
   const [a, b] = chatPair(from, to);
   return { id, a, b, fromName: from, fromRole, text, at, context };
 };
+
+/** A post in a group chat. `a`/`b` both carry the groupId so the message never
+ *  resolves as a 1-to-1 thread; membership is decided by the group's roster. */
+const groupMsg = (
+  id: string,
+  groupId: string,
+  from: string,
+  fromRole: string,
+  text: string,
+  at: string,
+): ChatMessage => ({
+  id,
+  a: groupId,
+  b: groupId,
+  fromName: from,
+  fromRole,
+  text,
+  at,
+  groupId,
+  context: "swim",
+});
 
 export const chatSeed: ChatMessage[] = [
   // Coach Ava ⇄ Jack Smith (parent of Oliver) — swim
@@ -4676,6 +4711,40 @@ export const chatSeed: ChatMessage[] = [
     "Emily Taylor",
     "Your seat in the Mon/Wed A/L Physics revision is confirmed — joining link is in your record book.",
     d(2, 16, 0),
+  ),
+  // ── Group chat: Sprint Squad (GRP-01, session PS-01) — admin-created broadcast
+  //    group so coaches + families coordinate the Monday sprint session at once. ──
+  groupMsg(
+    "CH-G01",
+    "GRP-01",
+    "Jessica Davies",
+    "Club Manager",
+    "Welcome to the Sprint Squad group 🏊 I'll post session updates, gala times and kit reminders here so we're all on the same page.",
+    d(3, 9, 0),
+  ),
+  groupMsg(
+    "CH-G02",
+    "GRP-01",
+    "Coach Ava Johnson",
+    "Head Swim Coach",
+    "Reminder: Friday's time-trials warm-up is 4:45 sharp ⏰ Please bring club caps and a full water bottle. Great effort from the squad this week! 💪",
+    d(2, 17, 30),
+  ),
+  groupMsg(
+    "CH-G03",
+    "GRP-01",
+    "Jack Smith",
+    "Parent",
+    "Thanks Coach — Oliver will be there. 👍",
+    d(2, 18, 10),
+  ),
+  groupMsg(
+    "CH-G04",
+    "GRP-01",
+    "Amelia Smith",
+    "Parent",
+    "Noted, thank you! Will drop him at 4:30. 🙏",
+    d(2, 18, 25),
   ),
 ];
 
@@ -5767,6 +5836,71 @@ export const swimmerGuardians: Record<string, string[]> = {
 export function guardiansForSwimmer(id: string): string[] {
   return swimmerGuardians[id] ?? [];
 }
+
+/* ── Group chats (admin-created, session/course scoped) ──────────────────────
+ * The club admin can spin up a broadcast group for a specific session or course
+ * that automatically includes everyone connected to it — the coaches, and each
+ * enrolled swimmer's guardians (adult swimmers themselves). Families and coaches
+ * then coordinate that session in one place (gala times, kit lists, closures)
+ * instead of a dozen 1-to-1 threads. Only an admin creates or edits the roster;
+ * any member can post. Posts live in the `chat` collection tagged with groupId. */
+export interface ChatGroup {
+  id: string;
+  name: string;
+  sessionId?: string;
+  courseId?: string;
+  members: string[]; // display names
+  createdBy: string;
+  createdAt: string; // ISO
+  context?: "swim";
+}
+
+/** Everyone connected to a pool session: its coaches, plus each enrolled
+ *  swimmer's guardians — or, for an adult/self-managed swimmer, the swimmer in
+ *  person. Used to auto-populate a session group's membership. */
+export function membersForSession(sessionId: string): string[] {
+  const s = poolSessions.find((p) => p.id === sessionId);
+  if (!s) return [];
+  const names = new Set<string>(s.coachNames);
+  for (const sid of s.swimmerIds) {
+    const guardians = guardiansForSwimmer(sid);
+    if (guardians.length) guardians.forEach((g) => names.add(g));
+    else names.add(swimmerName(sid)); // adult / self-managed swimmer
+  }
+  return Array.from(names);
+}
+
+/** Distinct swim-coach display names across every swim session. */
+export const swimCoachNames: string[] = Array.from(swimCoachNameSet);
+
+/** A contactable person for the "new chat" search. */
+export interface ChatContact {
+  name: string;
+  role: string;
+}
+
+/** The people a swim account can start a 1-to-1 chat with: every coach, the
+ *  club manager, and the swim families (guardians). */
+export function swimContactDirectory(): ChatContact[] {
+  const map = new Map<string, string>();
+  swimCoachNames.forEach((n) => map.set(n, "Swim coach"));
+  map.set("Jessica Davies", "Club Manager");
+  for (const g of Object.values(swimmerGuardians).flat()) map.set(g, "Parent / guardian");
+  return Array.from(map, ([name, role]) => ({ name, role }));
+}
+
+export const chatGroups: ChatGroup[] = [
+  {
+    id: "GRP-01",
+    name: "Competitive Squad — Sprint · Mon",
+    sessionId: "PS-01",
+    courseId: SWIM_COURSE_ID,
+    members: membersForSession("PS-01"),
+    createdBy: "Jessica Davies",
+    createdAt: d(3, 8, 55),
+    context: "swim",
+  },
+];
 
 /* ── Club coach grading (management appraisal) ────────────────────────────────
  * Separate from the family star-rating, the club admin grades each coach at a
