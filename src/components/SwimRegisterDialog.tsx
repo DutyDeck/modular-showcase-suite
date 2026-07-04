@@ -8,10 +8,11 @@ import {
   sessionsForCoach,
   isSwimAdmin,
   ageOn,
+  swimmerGuardians,
   SWIM_COURSE_ID,
 } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
-import { ShieldCheck, UserCog } from "lucide-react";
+import { ShieldCheck, UserCog, Users } from "lucide-react";
 
 /**
  * Register a brand-new swimmer — which also onboards them onto the 1StudentID
@@ -50,6 +51,9 @@ export function SwimRegisterDialog({
     guardianName: "",
     email: "",
     auth: "google" as (typeof AUTH_METHODS)[number]["id"],
+    addCoParent: false,
+    coName: "",
+    coEmail: "",
   });
 
   const age = form.dob ? ageOn(form.dob) : null;
@@ -66,7 +70,12 @@ export function SwimRegisterDialog({
       guardianName: "",
       email: "",
       auth: "google",
+      addCoParent: false,
+      coName: "",
+      coEmail: "",
     });
+
+  const withCoParent = isMinor && form.addCoParent;
 
   const submit = () => {
     if (!form.name.trim()) return toast.error("Swimmer name is required");
@@ -75,8 +84,13 @@ export function SwimRegisterDialog({
     if (isMinor && !form.guardianName.trim())
       return toast.error("A parent/guardian name is required for a minor");
     if (!form.email.trim()) return toast.error("An email is required to create the login");
+    if (withCoParent && !form.coName.trim())
+      return toast.error("Enter the co-parent's name, or turn off the second guardian");
+    if (withCoParent && !form.coEmail.trim())
+      return toast.error("A co-parent email is required to send their login");
 
-    const holder = isMinor ? form.guardianName.trim() : form.name.trim();
+    const primary = isMinor ? form.guardianName.trim() : form.name.trim();
+    const coName = form.coName.trim();
     const student: Student = {
       id: nextId("S-", "students"),
       name: form.name.trim(),
@@ -85,10 +99,14 @@ export function SwimRegisterDialog({
       attendance: 100,
       gpa: 0,
       status: "Active",
-      parent: isMinor ? form.guardianName.trim() : "Self-managed",
+      parent: isMinor ? form.guardianName.trim() + (withCoParent ? " +1" : "") : "Self-managed",
       risk: "low",
     };
     addItem("students", student);
+
+    // Link both guardians into the co-parent model so each can view the child
+    // and pay for their own classes (the finance & notification flows read this).
+    if (withCoParent) swimmerGuardians[student.id] = [primary, coName];
 
     const target = sessions.find((s) => s.id === form.sessionId);
     const move: SwimmerMove = {
@@ -104,7 +122,9 @@ export function SwimRegisterDialog({
     addItem("swimmerMoves", move);
 
     toast.success(
-      `Registered ${student.name}. A 1StudentID login invite was sent to ${holder} (${form.email.trim()}) to sign in with ${authLabel}.`,
+      withCoParent
+        ? `Registered ${student.name}. Separate 1StudentID login invites sent to ${primary} (${form.email.trim()}) and co-parent ${coName} (${form.coEmail.trim()}) — both can view ${student.name} and pay for classes independently.`
+        : `Registered ${student.name}. A 1StudentID login invite was sent to ${primary} (${form.email.trim()}) to sign in with ${authLabel}.`,
     );
     reset();
     onOpenChange(false);
@@ -216,6 +236,56 @@ export function SwimRegisterDialog({
             placeholder="name@example.com"
           />
         </Field>
+
+        {/* Co-parent (second guardian) — separated/shared-custody families where
+            both parents keep their own login and pay for their own classes. */}
+        {isMinor && (
+          <div className="rounded-md border bg-background/60 p-2.5 space-y-2.5">
+            <label
+              className="flex items-start gap-2 cursor-pointer select-none"
+              data-tour="reg-coparent-toggle"
+            >
+              <input
+                type="checkbox"
+                checked={form.addCoParent}
+                onChange={(e) => setForm({ ...form, addCoParent: e.target.checked })}
+                className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+              />
+              <span className="text-xs">
+                <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                  <Users className="h-3.5 w-3.5 text-primary" />
+                  Add a second parent / guardian (co-parent)
+                </span>
+                <span className="block text-muted-foreground">
+                  For separated or shared-custody families — both parents get their own login and
+                  can pay for classes independently.
+                </span>
+              </span>
+            </label>
+
+            {form.addCoParent && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+                <Field label="Co-parent name" required>
+                  <TextInput
+                    data-tour="reg-coparent-name"
+                    value={form.coName}
+                    onChange={(e) => setForm({ ...form, coName: e.target.value })}
+                    placeholder="e.g. Amelia Smith"
+                  />
+                </Field>
+                <Field label="Co-parent email" required>
+                  <TextInput
+                    data-tour="reg-coparent-email"
+                    type="email"
+                    value={form.coEmail}
+                    onChange={(e) => setForm({ ...form, coEmail: e.target.value })}
+                    placeholder="name@example.com"
+                  />
+                </Field>
+              </div>
+            )}
+          </div>
+        )}
 
         <div>
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
