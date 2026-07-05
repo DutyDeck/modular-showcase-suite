@@ -41,6 +41,8 @@ import {
   effectiveCoachNames,
   effectiveSwimmerIds,
   swimCourses,
+  swimCourseById,
+  effectiveCapacity,
   poolById,
   SWIM_COURSE_ID,
   awardById,
@@ -1168,11 +1170,33 @@ function InstituteAdminDash() {
   const invoices = useCollection("invoices");
   const tenants = useCollection("tenants");
   const srb = useCollection("srb");
+  const courses = useCollection("courses");
+  const capacityOverrides = useCollection("capacityOverrides");
   const { formatMoney } = usePrefs();
 
   const tenantId = user?.institutionId ?? "";
   const tenant = tenants.find((t) => t.id === tenantId);
   const instName = user?.institutionName ?? tenant?.name ?? "your institute";
+
+  // ── Class capacity planning ────────────────────────────────────────────────
+  // Seat fill per class (all the institute's academic courses — swim programmes
+  // plan capacity per pool session in the club view) so the admin can spot
+  // under-filled (loss-making) or over-subscribed classes at a glance.
+  const capacity = courses
+    .filter((c) => !swimCourseById[c.id])
+    .map((c) => {
+      const cap = effectiveCapacity(c.id, c.students, capacityOverrides);
+      const filled = c.students;
+      const pct = cap ? Math.round((filled / cap) * 100) : 0;
+      const status =
+        pct >= 100 ? "full" : pct >= 75 ? "healthy" : pct >= 50 ? "low" : ("under" as const);
+      return { c, cap, filled, pct, status, seatsLeft: Math.max(cap - filled, 0) };
+    })
+    .sort((a, b) => a.pct - b.pct);
+  const totalSeats = capacity.reduce((a, x) => a + x.cap, 0);
+  const totalFilled = capacity.reduce((a, x) => a + x.filled, 0);
+  const overallPct = totalSeats ? Math.round((totalFilled / totalSeats) * 100) : 0;
+  const underfilled = capacity.filter((x) => x.status === "under" || x.status === "low");
 
   // Filter the global collections to JUST this institute. We treat the
   // "institutionId" tag on invoices/SRB as authoritative, and use enrollments
@@ -1230,6 +1254,82 @@ function InstituteAdminDash() {
           accent="destructive"
         />
       </div>
+
+      {/* Class capacity planning — seat fill across all of the institute's classes */}
+      {capacity.length > 0 && (
+        <Section
+          title="Class capacity planning"
+          description="Seat fill across your classes. Spot under-filled classes to combine sections or boost enrolment, and over-subscribed ones to open another section."
+          actions={
+            <span className="text-sm">
+              <span className="font-bold">{overallPct}%</span>{" "}
+              <span className="text-muted-foreground">
+                overall · {totalFilled}/{totalSeats} seats
+              </span>
+            </span>
+          }
+        >
+          {underfilled.length > 0 && (
+            <div className="mb-4 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-warning-foreground mt-0.5 shrink-0" />
+              <span>
+                <b>{underfilled.length}</b> class(es) are below target. Under-filled classes are
+                costly to run — combine small sections, reschedule, or promote enrolment to keep
+                them viable.
+              </span>
+            </div>
+          )}
+          <ul className="divide-y -mx-4 sm:-mx-5" data-tour="institute-capacity-planning">
+            {capacity.map(({ c, cap, filled, pct, status, seatsLeft }) => {
+              const tone =
+                status === "under"
+                  ? "bg-destructive"
+                  : status === "low"
+                    ? "bg-warning"
+                    : status === "full"
+                      ? "bg-primary"
+                      : "bg-success";
+              return (
+                <li key={c.id} className="px-4 sm:px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          to="/app/courses/$courseId"
+                          params={{ courseId: c.id }}
+                          className="text-sm font-medium hover:text-primary hover:underline truncate"
+                        >
+                          {c.title}
+                        </Link>
+                        <span className="text-[11px] text-muted-foreground">
+                          {c.code} · {c.category}
+                        </span>
+                        {status === "under" && <Badge tone="destructive">Under-filled</Badge>}
+                        {status === "low" && <Badge tone="warning">Low</Badge>}
+                        {status === "full" && <Badge tone="info">Full</Badge>}
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-3">
+                        <div className="h-2 flex-1 max-w-[220px] rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={`h-full ${tone}`}
+                            style={{ width: `${Math.min(pct, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {filled}/{cap} seats
+                          {status !== "full" ? ` · ${seatsLeft} free` : " · full"}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-lg font-bold tabular-nums shrink-0">{pct}%</span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </Section>
+      )}
+
       <div className="grid lg:grid-cols-2 gap-4 lg:gap-6">
         <Section
           title="Recent record-book activity"

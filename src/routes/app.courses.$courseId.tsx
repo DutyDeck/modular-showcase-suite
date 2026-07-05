@@ -1,12 +1,23 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useMemo } from "react";
-import { PageHeader, Section, Badge, Button, StatCard } from "@/components/ui-kit";
+import { useMemo, useState } from "react";
+import {
+  PageHeader,
+  Section,
+  Badge,
+  Button,
+  StatCard,
+  FormDialog,
+  Field,
+  TextInput,
+  useDisclosure,
+} from "@/components/ui-kit";
 import { Avatar } from "@/components/Avatar";
 import { Stars } from "@/components/StarRating";
 import { PoolMap } from "@/components/PoolMap";
 import { useAuth } from "@/lib/auth";
 import { useEnabledModules } from "@/lib/modules";
-import { useCollection } from "@/lib/store";
+import { useCollection, addItem, updateItem, removeItem } from "@/lib/store";
+import { toast } from "sonner";
 import {
   swimCourseById,
   sessionsByCourse,
@@ -14,6 +25,8 @@ import {
   teacherByName,
   effectiveCoachNames,
   effectiveSwimmerIds,
+  courseCapacity,
+  effectiveCapacity,
   children as parentChildren,
   type PoolSession,
   type Weekday,
@@ -32,6 +45,11 @@ import {
   BookOpen,
   Star,
   DollarSign,
+  TrendingUp,
+  AlertTriangle,
+  Wallet,
+  ClipboardList,
+  SlidersHorizontal,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/courses/$courseId")({
@@ -468,6 +486,10 @@ function GenericCourseView({ courseId }: { courseId: string }) {
   const appraisalOn = enabled.has("appraisal");
   const courses = useCollection("courses");
   const ratings = useCollection("teacherRatings");
+  const assignments = useCollection("assignments");
+  const capacityOverrides = useCollection("capacityOverrides");
+  const capDialog = useDisclosure();
+  const [seatsInput, setSeatsInput] = useState("");
 
   const course = courses.find((c) => c.id === courseId);
   if (!course) {
@@ -488,6 +510,55 @@ function GenericCourseView({ courseId }: { courseId: string }) {
     .split(/\s*[,&]\s*|\s+\+\s*/)
     .map((s) => s.trim())
     .filter((s) => s && !/^\d+$/.test(s));
+
+  // ── Capacity & enrolment ──────────────────────────────────────────────────
+  const overrideRow = capacityOverrides.find((o) => o.courseId === course.id);
+  const defaultCap = courseCapacity(course.id, course.students);
+  const cap = effectiveCapacity(course.id, course.students, capacityOverrides);
+  const isCustomCap = !!overrideRow;
+  const filled = course.students;
+  const seatsLeft = Math.max(cap - filled, 0);
+  const waitlist = Math.max(filled - cap, 0);
+  const pct = cap ? Math.round((filled / cap) * 100) : 0;
+  const status: CapacityStatus =
+    pct >= 100 ? "full" : pct >= 75 ? "healthy" : pct >= 50 ? "low" : "under";
+  const meta = CAPACITY_META(status, waitlist);
+  const isStaff = user?.role === "admin" || user?.role === "teacher";
+
+  const openAdjust = () => {
+    setSeatsInput(String(cap));
+    capDialog.onOpen();
+  };
+  const saveSeats = () => {
+    const n = Math.round(Number(seatsInput));
+    if (!Number.isFinite(n) || n <= 0) {
+      toast.error("Enter a seat count above zero");
+      return;
+    }
+    const patch = { seats: n, by: user?.name ?? "Admin", at: new Date().toISOString() };
+    if (overrideRow) updateItem("capacityOverrides", (o) => o.courseId === course.id, patch);
+    else addItem("capacityOverrides", { courseId: course.id, ...patch });
+    toast.success(`Capacity set to ${n} seats for ${course.title}`);
+    capDialog.onClose();
+  };
+  const resetSeats = () => {
+    removeItem("capacityOverrides", (o) => o.courseId === course.id);
+    toast.success(`Capacity reset to the planned default (${defaultCap} seats)`);
+    capDialog.onClose();
+  };
+
+  // Fee × seats — makes the "empty seats are lost income" point concrete for staff.
+  const fee = course.price || 0;
+  const currentRevenue = filled * fee;
+  const potentialRevenue = cap * fee;
+  const revenueGap = seatsLeft * fee;
+
+  // Assignments set for this class (matched by course title; hidden when none).
+  const courseAssignments = assignments.filter((a) => {
+    const c = a.course.toLowerCase();
+    const t = course.title.toLowerCase();
+    return c === t || t.includes(c) || c.includes(t);
+  });
 
   return (
     <div className="space-y-5">
@@ -512,8 +583,8 @@ function GenericCourseView({ courseId }: { courseId: string }) {
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
             <HeroStat
               icon={<Users className="h-4 w-4" />}
-              label="Enrolled"
-              value={String(course.students)}
+              label="Enrolled / seats"
+              value={`${filled}/${cap}`}
             />
             <HeroStat
               icon={<Clock className="h-4 w-4" />}
@@ -532,6 +603,96 @@ function GenericCourseView({ courseId }: { courseId: string }) {
             />
           </div>
         </div>
+      </Section>
+
+      {/* Capacity & enrolment planning */}
+      <Section
+        title="Capacity & enrolment planning"
+        description="How full this class is running, and what it means for viability and revenue."
+        actions={
+          <div className="inline-flex items-center gap-2">
+            <Badge tone={meta.tone}>{meta.label}</Badge>
+            <span className="text-sm font-bold tabular-nums">{pct}%</span>
+            {isStaff && (
+              <Button variant="outline" size="sm" onClick={openAdjust}>
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Adjust seats</span>
+              </Button>
+            )}
+          </div>
+        }
+      >
+        <div className="grid sm:grid-cols-4 gap-3">
+          <CapTile
+            label="Capacity"
+            value={String(cap)}
+            sub={isCustomCap ? "custom · seats" : "planned seats"}
+          />
+          <CapTile label="Enrolled" value={String(filled)} sub="students" />
+          <CapTile
+            label={waitlist > 0 ? "Waitlist" : "Seats available"}
+            value={String(waitlist > 0 ? waitlist : seatsLeft)}
+            sub={waitlist > 0 ? "over capacity" : "still open"}
+            tone={waitlist > 0 ? "warning" : seatsLeft === 0 ? "success" : "default"}
+          />
+          <CapTile label="Fill rate" value={`${pct}%`} sub="of capacity" />
+        </div>
+
+        <div className="mt-4">
+          <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+            <div className={`h-full ${meta.bar}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground flex items-start gap-1.5">
+            {status === "healthy" || status === "full" ? (
+              <TrendingUp className="h-3.5 w-3.5 mt-0.5 shrink-0 text-success" />
+            ) : (
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-warning-foreground" />
+            )}
+            <span>{meta.advice}</span>
+          </p>
+        </div>
+
+        {/* Revenue impact — staff only. Empty seats are unearned term fees. */}
+        {isStaff && fee > 0 && (
+          <div className="mt-4 rounded-lg border bg-muted/30 p-3">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+              <Wallet className="h-3.5 w-3.5 text-primary" />
+              Revenue impact · this term
+            </div>
+            <div className="mt-2 grid grid-cols-3 gap-3 text-center">
+              <div>
+                <div className="text-sm font-bold tabular-nums">{usd(currentRevenue)}</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Earning now
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-bold tabular-nums">{usd(potentialRevenue)}</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  At full capacity
+                </div>
+              </div>
+              <div>
+                <div
+                  className={`text-sm font-bold tabular-nums ${revenueGap > 0 ? "text-warning-foreground" : "text-success"}`}
+                >
+                  {usd(revenueGap)}
+                </div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {revenueGap > 0 ? "Unearned (empty seats)" : "Fully utilised"}
+                </div>
+              </div>
+            </div>
+            {revenueGap > 0 && (
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                {seatsLeft} empty seat{seatsLeft === 1 ? "" : "s"} × {usd(fee)} fee ={" "}
+                <span className="font-semibold text-foreground">{usd(revenueGap)}</span> of term
+                fees left on the table. Filling this class — or combining it with another — recovers
+                that.
+              </p>
+            )}
+          </div>
+        )}
       </Section>
 
       <div className="grid lg:grid-cols-3 gap-5">
@@ -582,9 +743,158 @@ function GenericCourseView({ courseId }: { courseId: string }) {
           <StatCard label="Category" value={course.category} accent="info" />
         </div>
       </div>
+
+      {/* Coursework — this class's assignments (hidden when none are on file) */}
+      {courseAssignments.length > 0 && (
+        <Section
+          title="Coursework"
+          description="Assignments set for this class."
+          actions={
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <ClipboardList className="h-3.5 w-3.5" />
+              {courseAssignments.length} item{courseAssignments.length === 1 ? "" : "s"}
+            </span>
+          }
+        >
+          <ul className="divide-y -mx-4 sm:-mx-5">
+            {courseAssignments.map((a) => (
+              <li key={a.id} className="px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{a.title}</div>
+                  <div className="text-[11px] text-muted-foreground">Due {a.due}</div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {a.score != null && (
+                    <span className="text-xs font-semibold tabular-nums">{a.score}%</span>
+                  )}
+                  <Badge
+                    tone={
+                      a.status === "Graded"
+                        ? "success"
+                        : a.status === "Submitted"
+                          ? "info"
+                          : "warning"
+                    }
+                  >
+                    {a.status}
+                  </Badge>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Adjust seats — admins/teachers set this class's planned capacity */}
+      <FormDialog
+        open={capDialog.open}
+        onOpenChange={capDialog.setOpen}
+        title="Adjust class capacity"
+        description={`Set the planned number of seats for ${course.title}. This drives the fill rate and the under-filled / full flags here and on the dashboard.`}
+        onSubmit={saveSeats}
+        submitLabel="Save capacity"
+      >
+        <Field label="Seats (capacity)" required className="sm:col-span-2">
+          <TextInput
+            type="number"
+            min={1}
+            value={seatsInput}
+            onChange={(e) => setSeatsInput(e.target.value)}
+            autoFocus
+          />
+        </Field>
+        <div className="sm:col-span-2 flex items-center justify-between gap-2 text-xs">
+          <span className="text-muted-foreground">
+            {filled} enrolled · planned default {defaultCap} seats
+          </span>
+          {isCustomCap && (
+            <button
+              type="button"
+              onClick={resetSeats}
+              className="font-medium text-primary hover:underline"
+            >
+              Reset to default ({defaultCap})
+            </button>
+          )}
+        </div>
+      </FormDialog>
     </div>
   );
 }
+
+/* ── Capacity helpers (academic course view) ─────────────────────────────── */
+
+type CapacityStatus = "under" | "low" | "healthy" | "full";
+
+function CAPACITY_META(
+  status: CapacityStatus,
+  waitlist: number,
+): {
+  tone: "destructive" | "warning" | "success" | "info";
+  label: string;
+  bar: string;
+  advice: string;
+} {
+  switch (status) {
+    case "under":
+      return {
+        tone: "destructive",
+        label: "Under-filled",
+        bar: "bg-destructive",
+        advice:
+          "Well below a viable size. Combine it with another section, move it to a higher-demand slot, or run an enrolment push before the term locks in.",
+      };
+    case "low":
+      return {
+        tone: "warning",
+        label: "Low",
+        bar: "bg-warning",
+        advice:
+          "Below a healthy size. A short promotion or a schedule tweak could lift it to target and protect the margin.",
+      };
+    case "healthy":
+      return {
+        tone: "success",
+        label: "Healthy",
+        bar: "bg-success",
+        advice: "A healthy, profitable class size — no action needed.",
+      };
+    case "full":
+      return {
+        tone: "info",
+        label: waitlist > 0 ? "Waitlisted" : "Full",
+        bar: "bg-primary",
+        advice:
+          waitlist > 0
+            ? `At capacity with ${waitlist} on the waitlist — strong demand. Consider opening another section.`
+            : "At capacity. If demand continues, opening another section captures it.",
+      };
+  }
+}
+
+function CapTile({
+  label,
+  value,
+  sub,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  tone?: "default" | "success" | "warning";
+}) {
+  const valueTone =
+    tone === "warning" ? "text-warning-foreground" : tone === "success" ? "text-success" : "";
+  return (
+    <div className="rounded-xl border bg-card p-3">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`text-xl font-bold tabular-nums mt-0.5 ${valueTone}`}>{value}</div>
+      <div className="text-[10px] text-muted-foreground">{sub}</div>
+    </div>
+  );
+}
+
+const usd = (n: number) => "$" + n.toLocaleString();
 
 function HeroStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (

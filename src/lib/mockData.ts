@@ -1392,6 +1392,48 @@ export const courses = [
   },
 ];
 
+/* ── Class capacity planning (academic courses) ─────────────────────────────
+ * Planned seat capacity per academic course, so an institute admin can see
+ * class fill and spot under-filled (loss-making) or over-subscribed classes —
+ * the academic counterpart to the swim club's per-session capacity planning
+ * (swim programmes plan seats per pool session instead; see poolSessions).
+ * A course not listed here falls back to a sensible headroom over its current
+ * enrolment so newly created classes still get a believable target. */
+export const COURSE_CAPACITY: Record<string, number> = {
+  "C-PHY12": 50,
+  "C-CHEM12": 50,
+  "C-MATH12": 56,
+  "C-BIO12": 60,
+  "C-ENG12": 60,
+  "C-ICT12": 50,
+};
+
+export function courseCapacity(id: string, enrolled: number): number {
+  return COURSE_CAPACITY[id] ?? Math.max(enrolled + 6, Math.ceil((enrolled || 20) / 0.85));
+}
+
+/* An admin-set seat capacity for a class, overriding the planned default above.
+ * Written from the class page's "Adjust seats" control; read by both the class
+ * page and the institute admin's capacity-planning dashboard so they agree. */
+export interface CapacityOverride {
+  courseId: string;
+  seats: number;
+  by: string;
+  at: string; // ISO
+}
+
+export const capacityOverrides: CapacityOverride[] = [];
+
+/** Effective planned capacity for a course: an admin override if set, else the
+ *  seeded/derived default. */
+export function effectiveCapacity(
+  id: string,
+  enrolled: number,
+  overrides: CapacityOverride[],
+): number {
+  return overrides.find((o) => o.courseId === id)?.seats ?? courseCapacity(id, enrolled);
+}
+
 export const attendanceToday = [
   {
     id: "S-1001",

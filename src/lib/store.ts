@@ -36,6 +36,7 @@ import {
   coachMoves as initialCoachMoves,
   coachGrades as initialCoachGrades,
   clubSettings as initialClubSettings,
+  capacityOverrides as initialCapacityOverrides,
 } from "./mockData";
 
 export type {
@@ -77,6 +78,7 @@ export type {
   CoachGrade,
   CoachGradeLevel,
   ClubSettings,
+  CapacityOverride,
 } from "./mockData";
 
 export type Student = (typeof initialStudents)[number];
@@ -113,6 +115,7 @@ import type {
   CoachMove,
   CoachGrade,
   ClubSettings,
+  CapacityOverride,
 } from "./mockData";
 
 /* A cross-tenant enrolment created at runtime — i.e. a tenant admin enrolled an
@@ -167,6 +170,7 @@ interface State {
   coachMoves: CoachMove[];
   coachGrades: CoachGrade[];
   clubSettings: ClubSettings[];
+  capacityOverrides: CapacityOverride[];
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
@@ -213,6 +217,7 @@ function makeInitialState(): State {
     coachMoves: [...initialCoachMoves],
     coachGrades: [...initialCoachGrades],
     clubSettings: [...initialClubSettings],
+    capacityOverrides: [...initialCapacityOverrides],
   };
 }
 
