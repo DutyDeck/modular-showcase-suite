@@ -38,6 +38,7 @@ import { Route as AppComplianceRouteImport } from './routes/app.compliance'
 import { Route as AppCoachingRouteImport } from './routes/app.coaching'
 import { Route as AppChildrenRouteImport } from './routes/app.children'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
+import { Route as AppBrandingRouteImport } from './routes/app.branding'
 import { Route as AppAwardsRouteImport } from './routes/app.awards'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
 import { Route as AppAssignmentsRouteImport } from './routes/app.assignments'
@@ -202,6 +203,11 @@ const AppCalendarRoute = AppCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBrandingRoute = AppBrandingRouteImport.update({
+  id: '/branding',
+  path: '/branding',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAwardsRoute = AppAwardsRouteImport.update({
   id: '/awards',
   path: '/awards',
@@ -303,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
   '/app/awards': typeof AppAwardsRoute
+  '/app/branding': typeof AppBrandingRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/coaching': typeof AppCoachingRoute
@@ -349,6 +356,7 @@ export interface FileRoutesByTo {
   '/app/ai-insights': typeof AppAiInsightsRoute
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/awards': typeof AppAwardsRoute
+  '/app/branding': typeof AppBrandingRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/coaching': typeof AppCoachingRoute
@@ -396,6 +404,7 @@ export interface FileRoutesById {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
   '/app/awards': typeof AppAwardsRoute
+  '/app/branding': typeof AppBrandingRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
   '/app/coaching': typeof AppCoachingRoute
@@ -447,6 +456,7 @@ export interface FileRouteTypes {
     | '/app/assignments'
     | '/app/attendance'
     | '/app/awards'
+    | '/app/branding'
     | '/app/calendar'
     | '/app/children'
     | '/app/coaching'
@@ -493,6 +503,7 @@ export interface FileRouteTypes {
     | '/app/ai-insights'
     | '/app/assignments'
     | '/app/awards'
+    | '/app/branding'
     | '/app/calendar'
     | '/app/children'
     | '/app/coaching'
@@ -539,6 +550,7 @@ export interface FileRouteTypes {
     | '/app/assignments'
     | '/app/attendance'
     | '/app/awards'
+    | '/app/branding'
     | '/app/calendar'
     | '/app/children'
     | '/app/coaching'
@@ -791,6 +803,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCalendarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/branding': {
+      id: '/app/branding'
+      path: '/branding'
+      fullPath: '/app/branding'
+      preLoaderRoute: typeof AppBrandingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/awards': {
       id: '/app/awards'
       path: '/awards'
@@ -995,6 +1014,7 @@ interface AppRouteChildren {
   AppAssignmentsRoute: typeof AppAssignmentsRoute
   AppAttendanceRoute: typeof AppAttendanceRouteWithChildren
   AppAwardsRoute: typeof AppAwardsRoute
+  AppBrandingRoute: typeof AppBrandingRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppChildrenRoute: typeof AppChildrenRoute
   AppCoachingRoute: typeof AppCoachingRoute
@@ -1032,6 +1052,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssignmentsRoute: AppAssignmentsRoute,
   AppAttendanceRoute: AppAttendanceRouteWithChildren,
   AppAwardsRoute: AppAwardsRoute,
+  AppBrandingRoute: AppBrandingRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppChildrenRoute: AppChildrenRoute,
   AppCoachingRoute: AppCoachingRoute,

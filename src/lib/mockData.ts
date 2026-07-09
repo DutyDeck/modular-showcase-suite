@@ -1434,6 +1434,112 @@ export function effectiveCapacity(
   return overrides.find((o) => o.courseId === id)?.seats ?? courseCapacity(id, enrolled);
 }
 
+/* ── White-label branding (licensed) ────────────────────────────────────────
+ * A client that licenses the "White-label Branding" module can make 1StudentID
+ * feel like their own product: their logo, name, tagline, brand colour, and
+ * vision / mission / description. It's keyed by the institution (the admin's
+ * institutionName, falling back to institution) so it applies to that tenant's
+ * users only — every other tenant keeps the neutral 1StudentID look. The brand
+ * colour is applied at runtime over the theme's CSS variables (see
+ * BrandingLayer); the rest drives the sidebar lock-up and an "About" panel. */
+export interface InstituteBranding {
+  institution: string; // lookup key = institutionName || institution
+  name: string;
+  tagline?: string;
+  logoDataUrl?: string; // uploaded logo (data: URI)
+  brandColor?: string; // hex, e.g. "#047857"
+  brandTheme?: string; // gradient theme id (see lib/branding BRAND_THEMES)
+  vision?: string;
+  mission?: string;
+  description?: string;
+  /** Landing-page only (global-admin controls). */
+  showHeadline?: boolean; // show the default "One identity…" 1StudentID headline
+  showCustomHeadline?: boolean; // show a custom institutional headline instead
+  headline?: string; // the custom headline text (supports line breaks)
+  updatedBy: string;
+  updatedAt: string; // ISO
+}
+
+/** Reserved branding key for the public landing / login page (edited by the
+ *  global admin, applied pre-authentication). */
+export const PLATFORM_LANDING_KEY = "__landing__";
+
+/** The key a branding record is stored/looked-up under for a user. Keyed by the
+ *  user's *tenant* so a tenant admin's branding reaches all of that tenant's
+ *  users — admins, coaches, students and parents alike — not just the admin.
+ *  Swim accounts are a separate sub-brand of the shared tenant, so they stay on
+ *  their own scope (the college's colours never recolour the swim club). */
+export function brandingKey(
+  user: {
+    role?: Role;
+    institution?: string;
+    institutionName?: string;
+    institutionId?: string;
+    oneEduId?: string;
+    meta?: Record<string, string>;
+  } | null,
+): string {
+  if (!user) return "";
+  if (isSwimUser(user)) return user.institutionName || "";
+  return homeTenantId(user) ?? "";
+}
+
+/* Seeded so the demo can show a fully-branded tenant out of the box: sign in as
+ * the Royal Vista College principal and the whole app already wears the college's
+ * identity. Keyed by "Royal Vista College" (the principal's institutionName), so
+ * the swim club ("Royal Vista Aquatics") and every other tenant are untouched. */
+export const institutionBrandings: InstituteBranding[] = [
+  {
+    institution: "T-006", // tenant id — reaches every Royal Vista College user
+    name: "Royal Vista College",
+    tagline: "Excellence · Integrity · Community",
+    brandColor: "#047857",
+    brandTheme: "aura",
+    vision:
+      "To be the region's most trusted college — where every student is known, stretched and prepared to lead a life of purpose.",
+    mission:
+      "We develop confident, principled learners through outstanding teaching, strong pastoral care and a culture of high expectations for all.",
+    description:
+      "Royal Vista College is a co-educational secondary college serving 1,400 students across the sciences, mathematics, languages and technology, rated Outstanding at its last inspection.",
+    updatedBy: "Jacob Wilson",
+    updatedAt: "2026-06-28T10:00:00.000Z",
+  },
+  {
+    // Swim-club sub-brand — kept separate from the college so the swim coach and
+    // swim admin get their own aquatic identity (editable by the swim admin).
+    institution: "Royal Vista Aquatics",
+    name: "Royal Vista Aquatics",
+    tagline: "Dive in · Rise up",
+    brandColor: "#0891b2", // cyan — the club's water identity
+    brandTheme: "aura",
+    vision:
+      "To be the club where every swimmer — from first splash to podium — belongs and keeps progressing.",
+    mission:
+      "We build water confidence, technique and character through expert coaching and a supportive squad culture.",
+    description:
+      "Royal Vista Aquatics runs learn-to-swim, competitive squad, diving and open-water programmes across the week.",
+    updatedBy: "Jessica Davies",
+    updatedAt: "2026-06-28T10:00:00.000Z",
+  },
+  {
+    // A second branded tenant so the multi-tenant story is real: the adult,
+    // self-managed student (Emily · EduStar International, T-002) sees her own
+    // institution's brand — distinct from Royal Vista.
+    institution: "T-002",
+    name: "EduStar International",
+    tagline: "Learn beyond borders",
+    brandColor: "#7c3aed", // violet
+    brandTheme: "nebula",
+    vision: "To open a world-class education to ambitious learners everywhere.",
+    mission:
+      "We pair rigorous foundations with global exposure so students thrive at any university in the world.",
+    description:
+      "EduStar International prepares foundation-year and self-managed students for leading universities worldwide.",
+    updatedBy: "System",
+    updatedAt: "2026-06-28T10:00:00.000Z",
+  },
+];
+
 export const attendanceToday = [
   {
     id: "S-1001",
@@ -2182,6 +2288,29 @@ export const children = [
     duesUSD: 140,
   },
 ];
+
+/** The tenant id whose branding applies to a user: an admin/coach's own tenant,
+ *  or a student/parent's main-school tenant (so white-label branding reaches the
+ *  whole tenant, not just its admin). */
+export function homeTenantId(
+  user: { role?: Role; institutionId?: string; oneEduId?: string } | null,
+): string | undefined {
+  if (!user) return undefined;
+  if (user.institutionId) return user.institutionId;
+  const pick = (enr: StudentEnrollment[]) =>
+    (enr.find((e) => e.primary) ?? enr.find((e) => e.role === "Main school") ?? enr[0])
+      ?.institutionId;
+  if (user.role === "student" && user.oneEduId) {
+    const s = students.find((x) => x.id === user.oneEduId);
+    if (s) return pick(getEnrollments(s));
+  }
+  if (user.role === "parent") {
+    const first = children[0];
+    const kid = first && students.find((x) => x.id === first.id);
+    if (kid) return pick(getEnrollments(kid));
+  }
+  return undefined;
+}
 
 export const teacherClasses = [
   {

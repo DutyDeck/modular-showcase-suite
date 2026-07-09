@@ -4,6 +4,9 @@ import * as Icons from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { menuForUser, roleLabel } from "@/lib/menus";
 import { useEnabledModules } from "@/lib/modules";
+import { useCollection } from "@/lib/store";
+import { brandingKey } from "@/lib/mockData";
+import { readableOn } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/Avatar";
 import {
@@ -26,6 +29,16 @@ function Icon({ name, className }: { name: string; className?: string }) {
   return <Cmp className={className} />;
 }
 
+/** Up to two initials from a name, for a logo fallback tile. */
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export function AppShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -37,6 +50,29 @@ export function AppShell() {
   const [collapsed, setCollapsed] = useState(false);
   // Mobile drawer open/closed
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Collapsed sidebar groups (persisted) — lets the presenter tuck away whole
+  // categories they don't want to surface in a given demo.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const raw = localStorage.getItem("oneedu.sidebar.collapsedGroups");
+      return new Set<string>(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+      return new Set();
+    }
+  });
+  const toggleGroup = (g: string) =>
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(g)) next.delete(g);
+      else next.add(g);
+      try {
+        localStorage.setItem("oneedu.sidebar.collapsedGroups", JSON.stringify([...next]));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
 
   useEffect(() => {
     if (!user) navigate({ to: "/login" });
@@ -57,8 +93,12 @@ export function AppShell() {
   }, [mobileOpen]);
 
   const enabled = useEnabledModules(user?.institution ?? "");
+  const brandings = useCollection("institutionBrandings");
 
   if (!user) return null;
+
+  // Licensed white-label branding for this user's institute (if any).
+  const branding = brandings.find((b) => b.institution === brandingKey(user));
 
   const items = menuForUser(user).filter((item) => !item.moduleId || enabled.has(item.moduleId));
   const groups: Record<string, typeof items> = {};
@@ -72,13 +112,43 @@ export function AppShell() {
     return (
       <>
         <div className="h-16 flex items-center gap-3 px-4 border-b border-sidebar-border">
-          <BrandLogo size={36} className="h-9 w-9 drop-shadow" />
+          {branding ? (
+            branding.logoDataUrl ? (
+              <span className="h-9 w-9 rounded-lg bg-white ring-1 ring-black/5 overflow-hidden shrink-0 flex items-center justify-center">
+                <img
+                  src={branding.logoDataUrl}
+                  alt={branding.name}
+                  className="h-full w-full object-contain"
+                />
+              </span>
+            ) : (
+              <span
+                className="h-9 w-9 rounded-lg shrink-0 flex items-center justify-center text-sm font-bold ring-1 ring-white/20"
+                style={{
+                  background: branding.brandColor ?? "var(--sidebar-primary)",
+                  color: branding.brandColor ? readableOn(branding.brandColor) : "#fff",
+                }}
+              >
+                {initials(branding.name)}
+              </span>
+            )
+          ) : (
+            <BrandLogo size={36} className="h-9 w-9 drop-shadow" />
+          )}
           {open && (
             <div className="leading-tight flex-1 min-w-0">
               <div className="font-semibold text-sm truncate">
-                <span className="text-sky-500">1</span>StudentID
+                {branding ? (
+                  branding.name
+                ) : (
+                  <>
+                    <span className="text-sky-500">1</span>StudentID
+                  </>
+                )}
               </div>
-              <div className="text-[10px] uppercase tracking-wider opacity-60">Super App</div>
+              <div className="text-[10px] uppercase tracking-wider opacity-60 truncate">
+                {branding ? (branding.tagline ?? "Powered by 1StudentID") : "Super App"}
+              </div>
             </div>
           )}
           {mode === "mobile" && (
@@ -93,40 +163,61 @@ export function AppShell() {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
-          {Object.entries(groups).map(([group, list]) => (
-            <div key={group}>
-              {open && (
-                <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-                  {group}
-                </div>
-              )}
-              <ul className="space-y-0.5">
-                {list.map((item) => {
-                  const active = item.to === "/app" ? path === "/app" : path.startsWith(item.to);
-                  return (
-                    <li key={item.to}>
-                      <Link
-                        to={item.to}
-                        className={cn(
-                          "flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors",
-                          active
-                            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-soft"
-                            : "hover:bg-sidebar-accent/60 text-sidebar-foreground/85",
-                        )}
-                      >
-                        <Icon name={item.icon} className="h-4 w-4 shrink-0" />
-                        {open && <span className="truncate">{t(item.label, item.label)}</span>}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+          {Object.entries(groups).map(([group, list]) => {
+            const groupCollapsed = open && collapsedGroups.has(group);
+            return (
+              <div key={group}>
+                {open && (
+                  <button
+                    onClick={() => toggleGroup(group)}
+                    className="w-full flex items-center justify-between gap-2 px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition-colors"
+                    aria-expanded={!groupCollapsed}
+                  >
+                    <span className="truncate">{group}</span>
+                    <Icons.ChevronDown
+                      className={cn(
+                        "h-3.5 w-3.5 shrink-0 transition-transform",
+                        groupCollapsed && "-rotate-90",
+                      )}
+                    />
+                  </button>
+                )}
+                {!groupCollapsed && (
+                  <ul className="space-y-0.5">
+                    {list.map((item) => {
+                      const active =
+                        item.to === "/app" ? path === "/app" : path.startsWith(item.to);
+                      return (
+                        <li key={item.to}>
+                          <Link
+                            to={item.to}
+                            className={cn(
+                              "flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors",
+                              active
+                                ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-soft"
+                                : "hover:bg-sidebar-accent/60 text-sidebar-foreground/85",
+                            )}
+                          >
+                            <Icon name={item.icon} className="h-4 w-4 shrink-0" />
+                            {open && <span className="truncate">{t(item.label, item.label)}</span>}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         {mode === "desktop" && (
           <div className="border-t border-sidebar-border p-3">
+            {branding && open && (
+              <div className="mb-2 text-[10px] text-sidebar-foreground/45">
+                Powered by <span className="font-semibold">1StudentID</span>
+              </div>
+            )}
             <button
               onClick={() => setCollapsed((c) => !c)}
               className="w-full flex items-center gap-2 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground"

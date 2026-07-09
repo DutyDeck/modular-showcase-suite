@@ -32,7 +32,8 @@ export type ModuleId =
   | "tenants"
   | "users"
   | "migration"
-  | "compliance";
+  | "compliance"
+  | "branding";
 
 export interface ModuleDef {
   id: ModuleId;
@@ -209,6 +210,14 @@ export const MODULES: ModuleDef[] = [
     name: "Compliance & Audit",
     description: "Audit logs, data retention, and regulatory exports.",
     routePrefixes: ["/app/compliance"],
+    plan: "Enterprise",
+  },
+  {
+    id: "branding",
+    name: "White-label Branding",
+    description:
+      "Your logo, colours, vision & mission across the whole app — make 1StudentID feel like your own institute's product.",
+    routePrefixes: ["/app/branding"],
     plan: "Enterprise",
   },
 ];

@@ -1,14 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { toast } from "sonner";
-import {
-  PageHeader,
-  Section,
-  Button,
-  Field,
-  TextInput,
-  Select,
-} from "@/components/ui-kit";
+import { PageHeader, Section, Button, Field, Select } from "@/components/ui-kit";
 import { usePrefs, LOCALE_LABEL, CURRENCY_LABEL, type Locale, type Currency } from "@/lib/prefs";
 import { useAuth } from "@/lib/auth";
 import { useCollection } from "@/lib/store";
@@ -23,49 +16,13 @@ import {
   Check,
   X,
   ShieldAlert,
+  ArrowRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/settings")({
   head: () => ({ meta: [{ title: "Settings — 1StudentID" }] }),
   component: SettingsPage,
 });
-
-interface BrandingPrefs {
-  tenantName: string;
-  primaryColor: string;
-  domain: string;
-}
-
-const STORAGE_KEY_PREFIX = "oneedu.tenant-settings.v1";
-
-/** Each tenant has its own branding bucket in localStorage so an institute
- *  admin editing Royal Vista's branding can't clobber the platform defaults. */
-function storageKeyFor(tenantId: string | undefined) {
-  return tenantId ? `${STORAGE_KEY_PREFIX}:${tenantId}` : STORAGE_KEY_PREFIX;
-}
-
-function slugify(name: string) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 20) || "tenant";
-}
-
-function defaultsFor(name: string): BrandingPrefs {
-  return {
-    tenantName: name,
-    primaryColor: "#4f46e5",
-    domain: `${slugify(name)}.oneedu.app`,
-  };
-}
-
-function loadBranding(tenantId: string | undefined, name: string): BrandingPrefs {
-  const fallback = defaultsFor(name);
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(storageKeyFor(tenantId));
-    return raw ? { ...fallback, ...JSON.parse(raw) } : fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function SettingsPage() {
   const { locale, setLocale, currency, setCurrency, theme, setTheme } = usePrefs();
@@ -82,21 +39,8 @@ function SettingsPage() {
     return tenants[0];
   }, [isInstituteScoped, tenants, user?.institutionId]);
 
-  const scopedTenantName =
-    scopedTenant?.name ?? user?.institutionName ?? "Your institute";
-
-  const [branding, setBranding] = useState<BrandingPrefs>(() =>
-    loadBranding(scopedTenant?.id, scopedTenantName),
-  );
-
-  const saveBranding = () => {
-    try {
-      localStorage.setItem(storageKeyFor(scopedTenant?.id), JSON.stringify(branding));
-    } catch {
-      /* ignore */
-    }
-    toast.success(`Branding saved for ${scopedTenantName}`);
-  };
+  const scopedTenantName = scopedTenant?.name ?? user?.institutionName ?? "Your institute";
+  const isAdmin = user?.role === "admin";
 
   return (
     <div className="space-y-6">
@@ -113,64 +57,48 @@ function SettingsPage() {
         <div className="rounded-lg border bg-warning/10 border-warning/30 px-4 py-2.5 text-xs flex items-center gap-2">
           <ShieldAlert className="h-3.5 w-3.5 text-warning-foreground shrink-0" />
           <span>
-            You can only edit settings for{" "}
-            <span className="font-semibold">{scopedTenantName}</span>. The tenant picker
-            and platform-wide configuration are reserved for the global admin.
+            You can only edit settings for <span className="font-semibold">{scopedTenantName}</span>
+            . The tenant picker and platform-wide configuration are reserved for the global admin.
           </span>
         </div>
       )}
 
       <div className="grid lg:grid-cols-3 gap-4 lg:gap-6">
         <Section
-          title="Branding"
-          description="How your institution appears across the platform."
+          title="Branding & white-label"
+          description="Your logo, brand colour, gradient theme and story now live on a dedicated page."
           className="lg:col-span-2"
         >
-          <div className="grid sm:grid-cols-2 gap-3">
-            <Field label="Institution name" className="sm:col-span-2">
-              <TextInput
-                value={branding.tenantName}
-                onChange={(e) =>
-                  setBranding({ ...branding, tenantName: e.target.value })
-                }
-              />
-            </Field>
-            <Field label="Custom domain" hint="Subdomain or CNAME you control">
-              <TextInput
-                value={branding.domain}
-                onChange={(e) => setBranding({ ...branding, domain: e.target.value })}
-              />
-            </Field>
-            <Field label="Primary brand colour">
-              <div className="flex gap-2 items-center">
-                <input
-                  type="color"
-                  value={branding.primaryColor}
-                  onChange={(e) =>
-                    setBranding({ ...branding, primaryColor: e.target.value })
-                  }
-                  className="h-10 w-14 rounded-md border bg-background cursor-pointer"
-                />
-                <TextInput
-                  value={branding.primaryColor}
-                  onChange={(e) =>
-                    setBranding({ ...branding, primaryColor: e.target.value })
-                  }
-                />
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Palette className="h-5 w-5" />
               </div>
-            </Field>
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setBranding(defaultsFor(scopedTenantName))}
-            >
-              Reset
-            </Button>
-            <Button onClick={saveBranding}>
-              <Palette className="h-4 w-4" />
-              Save branding
-            </Button>
+              <div className="min-w-0">
+                <div className="text-sm font-medium">
+                  {isInstituteScoped
+                    ? "White-label your workspace"
+                    : "Public landing & platform branding"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Logo, brand colour, gradient theme
+                  {isInstituteScoped ? ", vision & mission." : ", headline & story."}
+                </div>
+              </div>
+            </div>
+            {isAdmin ? (
+              <Link
+                to="/app/branding"
+                className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Open Branding
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                Configured by your administrator.
+              </span>
+            )}
           </div>
         </Section>
 
@@ -221,7 +149,14 @@ function SettingsPage() {
         }
         actions={
           isInstituteScoped ? (
-            <Button variant="outline" onClick={() => toast.info("Contact the global admin to change plan", { description: "Plan changes are billed centrally." })}>
+            <Button
+              variant="outline"
+              onClick={() =>
+                toast.info("Contact the global admin to change plan", {
+                  description: "Plan changes are billed centrally.",
+                })
+              }
+            >
               Request upgrade
             </Button>
           ) : (
@@ -235,8 +170,9 @@ function SettingsPage() {
             label="Seats"
             value={
               scopedTenant
-                ? `${scopedTenant.students.toLocaleString()} / ${(
-                    Math.max(2000, Math.ceil(scopedTenant.students * 1.25 / 100) * 100)
+                ? `${scopedTenant.students.toLocaleString()} / ${Math.max(
+                    2000,
+                    Math.ceil((scopedTenant.students * 1.25) / 100) * 100,
                   ).toLocaleString()}`
                 : "500 / 2,000"
             }
@@ -284,9 +220,7 @@ function SettingsPage() {
               </div>
               <button
                 onClick={() =>
-                  toast.success(
-                    i.connected ? `${i.n} disconnected` : `${i.n} connected`,
-                  )
+                  toast.success(i.connected ? `${i.n} disconnected` : `${i.n} connected`)
                 }
                 className="text-xs px-2.5 py-1 rounded-md border hover:bg-muted shrink-0"
               >
@@ -315,9 +249,7 @@ function PlanStat({
         tone === "primary" ? "bg-primary/5 border-primary/30" : "bg-card"
       }`}
     >
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="text-lg font-semibold mt-0.5">{value}</div>
     </div>
   );

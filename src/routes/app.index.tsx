@@ -43,6 +43,7 @@ import {
   swimCourses,
   swimCourseById,
   effectiveCapacity,
+  brandingKey,
   poolById,
   SWIM_COURSE_ID,
   awardById,
@@ -1172,7 +1173,10 @@ function InstituteAdminDash() {
   const srb = useCollection("srb");
   const courses = useCollection("courses");
   const capacityOverrides = useCollection("capacityOverrides");
+  const brandings = useCollection("institutionBrandings");
   const { formatMoney } = usePrefs();
+
+  const branding = brandings.find((b) => b.institution === brandingKey(user));
 
   const tenantId = user?.institutionId ?? "";
   const tenant = tenants.find((t) => t.id === tenantId);
@@ -1225,6 +1229,39 @@ function InstituteAdminDash() {
           platform-wide configuration are managed by the global admin.
         </span>
       </div>
+
+      {branding && (branding.vision || branding.mission || branding.description) && (
+        <Section
+          title={`About ${branding.name}`}
+          description={branding.tagline}
+          actions={
+            <Link
+              to="/app/branding"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/15"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Edit branding
+            </Link>
+          }
+        >
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              { label: "Vision", text: branding.vision },
+              { label: "Mission", text: branding.mission },
+              { label: "About", text: branding.description },
+            ]
+              .filter((x) => x.text)
+              .map((x) => (
+                <div key={x.label} className="rounded-xl border bg-muted/30 p-3">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                    {x.label}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{x.text}</p>
+                </div>
+              ))}
+          </div>
+        </Section>
+      )}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           label="Students on roster"

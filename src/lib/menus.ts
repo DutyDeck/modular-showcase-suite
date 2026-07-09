@@ -222,6 +222,13 @@ const ALL: Record<string, MenuItem> = {
     group: "Platform",
     moduleId: "compliance",
   },
+  branding: {
+    label: "Branding",
+    to: "/app/branding",
+    icon: "Palette",
+    group: "Platform",
+    moduleId: "branding",
+  },
   settings: {
     label: "Settings",
     to: "/app/settings",
@@ -301,6 +308,7 @@ export const menusByRole: Record<Role, MenuItem[]> = {
     ALL.users,
     ALL.migration,
     ALL.compliance,
+    ALL.branding,
     ALL.settings,
     ALL.messages,
     ALL.profile,
@@ -485,6 +493,13 @@ export const swimAdminMenu: MenuItem[] = [
     icon: "FileLock2",
     group: "Platform",
     moduleId: "core",
+  },
+  {
+    label: "Branding",
+    to: "/app/branding",
+    icon: "Palette",
+    group: "Platform",
+    moduleId: "branding",
   },
   {
     label: "Settings",

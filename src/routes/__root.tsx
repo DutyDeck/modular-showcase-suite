@@ -136,6 +136,7 @@ import { AuthProvider } from "@/lib/auth";
 import { PrefsProvider } from "@/lib/prefs";
 import { Toaster } from "sonner";
 import { TourLayer } from "@/components/tour/TourLayer";
+import { BrandingLayer } from "@/components/BrandingLayer";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -144,6 +145,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <PrefsProvider>
         <AuthProvider>
+          <BrandingLayer />
           <Outlet />
           <TourLayer />
           <Toaster position="top-right" richColors closeButton toastOptions={{ duration: 2500 }} />

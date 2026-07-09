@@ -37,6 +37,7 @@ import {
   coachGrades as initialCoachGrades,
   clubSettings as initialClubSettings,
   capacityOverrides as initialCapacityOverrides,
+  institutionBrandings as initialInstitutionBrandings,
 } from "./mockData";
 
 export type {
@@ -79,6 +80,7 @@ export type {
   CoachGradeLevel,
   ClubSettings,
   CapacityOverride,
+  InstituteBranding,
 } from "./mockData";
 
 export type Student = (typeof initialStudents)[number];
@@ -116,6 +118,7 @@ import type {
   CoachGrade,
   ClubSettings,
   CapacityOverride,
+  InstituteBranding,
 } from "./mockData";
 
 /* A cross-tenant enrolment created at runtime — i.e. a tenant admin enrolled an
@@ -171,6 +174,7 @@ interface State {
   coachGrades: CoachGrade[];
   clubSettings: ClubSettings[];
   capacityOverrides: CapacityOverride[];
+  institutionBrandings: InstituteBranding[];
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
@@ -180,7 +184,7 @@ const STORAGE_KEY = "oneedu.store.v3";
 // deploy to clear stale names/threads. It does NOT rename STORAGE_KEY (which
 // would wipe data unconditionally); it only resets when the seed actually moves.
 const SEED_VERSION_KEY = "oneedu.store.seedver";
-const SEED_VERSION = "2026-07-group-chat";
+const SEED_VERSION = "2026-07-branding-multi";
 
 function makeInitialState(): State {
   return {
@@ -218,6 +222,7 @@ function makeInitialState(): State {
     coachGrades: [...initialCoachGrades],
     clubSettings: [...initialClubSettings],
     capacityOverrides: [...initialCapacityOverrides],
+    institutionBrandings: [...initialInstitutionBrandings],
   };
 }
 

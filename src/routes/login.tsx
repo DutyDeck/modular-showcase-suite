@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { tourApi } from "@/lib/tour";
-import { demoUsers, SWIM_COURSE_ID } from "@/lib/mockData";
+import { demoUsers, SWIM_COURSE_ID, PLATFORM_LANDING_KEY } from "@/lib/mockData";
+import { useCollection } from "@/lib/store";
 import { Avatar } from "@/components/Avatar";
 import { BrandLockup } from "@/components/BrandLogo";
 
@@ -35,6 +36,11 @@ const roleAccent: Record<string, string> = {
 function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  // Global-admin-controlled landing branding (logo, headline toggle, story).
+  const landing = useCollection("institutionBrandings").find(
+    (b) => b.institution === PLATFORM_LANDING_KEY,
+  );
+  const showHeadline = landing?.showHeadline !== false;
   const [email, setEmail] = useState("admin@demo.com");
   const [password, setPassword] = useState("demo");
   const [show, setShow] = useState(false);
@@ -99,7 +105,15 @@ function LoginPage() {
 
         <div className="relative">
           <div className="inline-flex rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-white/40">
-            <BrandLockup className="w-56" />
+            {landing?.logoDataUrl ? (
+              <img
+                src={landing.logoDataUrl}
+                alt={landing.name}
+                className="h-16 w-auto max-w-[224px] object-contain"
+              />
+            ) : (
+              <BrandLockup className="w-56" />
+            )}
           </div>
         </div>
 
@@ -108,17 +122,45 @@ function LoginPage() {
             <Sparkles className="h-3 w-3" />
             New · AI-powered insights for every classroom
           </div>
-          <h1 className="text-5xl font-bold leading-[1.05] tracking-tight">
-            One identity. <br />
-            Every classroom. <br />
-            <span className="bg-gradient-to-r from-white via-sky-100 to-fuchsia-200 bg-clip-text text-transparent">
-              Everywhere on earth.
-            </span>
-          </h1>
+          {showHeadline && (
+            <h1 className="text-5xl font-bold leading-[1.05] tracking-tight">
+              One identity. <br />
+              Every classroom. <br />
+              <span className="bg-gradient-to-r from-white via-sky-100 to-fuchsia-200 bg-clip-text text-transparent">
+                Everywhere on earth.
+              </span>
+            </h1>
+          )}
+          {landing?.showCustomHeadline && landing.headline && (
+            <h1 className="text-5xl font-bold leading-[1.05] tracking-tight whitespace-pre-line">
+              {landing.headline}
+            </h1>
+          )}
           <p className="opacity-85 text-[15px] leading-relaxed">
-            A unified SaaS combining LMS, SIS, academic ERP, CRM, payments, marketplace and AI
-            intelligence — built for tuition classes today, universities tomorrow.
+            {landing?.description ??
+              "A unified SaaS combining LMS, SIS, academic ERP, CRM, payments, marketplace and AI intelligence — built for tuition classes today, universities tomorrow."}
           </p>
+
+          {(landing?.vision || landing?.mission) && (
+            <div className="grid gap-3">
+              {landing?.vision && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider opacity-60 font-semibold">
+                    Vision
+                  </div>
+                  <p className="text-[13px] opacity-90 leading-relaxed mt-0.5">{landing.vision}</p>
+                </div>
+              )}
+              {landing?.mission && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider opacity-60 font-semibold">
+                    Mission
+                  </div>
+                  <p className="text-[13px] opacity-90 leading-relaxed mt-0.5">{landing.mission}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Feature chips */}
           <div className="grid grid-cols-3 gap-3 pt-2">
@@ -204,7 +246,15 @@ function LoginPage() {
         <div className="relative w-full max-w-md">
           <div className="lg:hidden mb-8 flex justify-center">
             <div className="inline-flex rounded-2xl bg-white p-3 shadow-lg ring-1 ring-black/5">
-              <BrandLockup className="w-44" />
+              {landing?.logoDataUrl ? (
+                <img
+                  src={landing.logoDataUrl}
+                  alt={landing.name}
+                  className="h-12 w-auto max-w-[176px] object-contain"
+                />
+              ) : (
+                <BrandLockup className="w-44" />
+              )}
             </div>
           </div>
 
