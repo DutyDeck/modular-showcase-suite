@@ -41,6 +41,12 @@ function LoginPage() {
     (b) => b.institution === PLATFORM_LANDING_KEY,
   );
   const showHeadline = landing?.showHeadline === true;
+  // Global admin controls whether — and which — demo accounts appear here
+  // (managed on Users & Roles → Demo presentation).
+  const demo = useCollection("demoSettings").find((s) => s.id === "demo");
+  const hiddenAccounts = demo?.hiddenDemoAccounts ?? [];
+  const demoList = demoUsers.filter((u) => !hiddenAccounts.includes(u.email));
+  const showDemoAccounts = (demo?.showDemoAccounts ?? true) && demoList.length > 0;
   const [email, setEmail] = useState("admin@demo.com");
   const [password, setPassword] = useState("demo");
   const [show, setShow] = useState(false);
@@ -415,66 +421,68 @@ function LoginPage() {
             </div>
           </form>
 
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
-                Demo accounts
+          {showDemoAccounts && (
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+                  Demo accounts
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  pwd: <code className="bg-muted px-1.5 py-0.5 rounded font-mono">demo</code>
+                </div>
               </div>
-              <div className="text-[10px] text-muted-foreground">
-                pwd: <code className="bg-muted px-1.5 py-0.5 rounded font-mono">demo</code>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5">
-              {demoUsers.map((u) => {
-                // Two distinct admin demo accounts (global vs institute) — call
-                // them out so the difference isn't hidden behind the same word.
-                const roleLabel =
-                  u.role === "admin"
-                    ? u.meta?.discipline === "Swimming"
-                      ? "Swim admin"
-                      : u.adminScope === "institute"
-                        ? "Institute admin"
-                        : "Global admin"
-                    : u.role === "student"
-                      ? u.selfManaged
-                        ? "Adult student"
-                        : "Student"
-                      : u.role === "teacher" && u.meta?.discipline === "Swimming"
-                        ? "Swim coach"
-                        : u.role === "parent" && u.meta?.role === "Co-parent"
-                          ? "Co-parent"
-                          : u.role;
-                return (
-                  <button
-                    key={u.id}
-                    type="button"
-                    disabled={loading}
-                    onClick={() => quickPick(u.email)}
-                    className="group relative text-left p-3 rounded-xl border bg-card hover:border-primary/50 hover:shadow-elegant transition-all overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    <div
-                      className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${roleAccent[u.role]}`}
-                    />
-                    <div className="flex items-center gap-2.5">
-                      <Avatar
-                        name={u.name}
-                        src={u.photo}
-                        size={40}
-                        className="ring-2 ring-border group-hover:ring-primary/30 transition-all"
+              <div className="grid grid-cols-2 gap-2.5">
+                {demoList.map((u) => {
+                  // Two distinct admin demo accounts (global vs institute) — call
+                  // them out so the difference isn't hidden behind the same word.
+                  const roleLabel =
+                    u.role === "admin"
+                      ? u.meta?.discipline === "Swimming"
+                        ? "Swim admin"
+                        : u.adminScope === "institute"
+                          ? "Institute admin"
+                          : "Global admin"
+                      : u.role === "student"
+                        ? u.selfManaged
+                          ? "Adult student"
+                          : "Student"
+                        : u.role === "teacher" && u.meta?.discipline === "Swimming"
+                          ? "Swim coach"
+                          : u.role === "parent" && u.meta?.role === "Co-parent"
+                            ? "Co-parent"
+                            : u.role;
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      disabled={loading}
+                      onClick={() => quickPick(u.email)}
+                      className="group relative text-left p-3 rounded-xl border bg-card hover:border-primary/50 hover:shadow-elegant transition-all overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <div
+                        className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${roleAccent[u.role]}`}
                       />
-                      <div className="leading-tight min-w-0 flex-1">
-                        <div className="text-xs font-semibold capitalize truncate flex items-center gap-1">
-                          {roleLabel}
-                          <ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
+                      <div className="flex items-center gap-2.5">
+                        <Avatar
+                          name={u.name}
+                          src={u.photo}
+                          size={40}
+                          className="ring-2 ring-border group-hover:ring-primary/30 transition-all"
+                        />
+                        <div className="leading-tight min-w-0 flex-1">
+                          <div className="text-xs font-semibold capitalize truncate flex items-center gap-1">
+                            {roleLabel}
+                            <ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
+                          </div>
+                          <div className="text-[10px] text-muted-foreground truncate">{u.name}</div>
                         </div>
-                        <div className="text-[10px] text-muted-foreground truncate">{u.name}</div>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mt-8 text-center text-[11px] text-muted-foreground">
             Don't have an account?{" "}

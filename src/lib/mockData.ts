@@ -1460,6 +1460,23 @@ export interface InstituteBranding {
   updatedAt: string; // ISO
 }
 
+/* ── Demo presentation controls (global admin) ──────────────────────────────
+ * The global admin tailors what a given client sees in a demo: which quick-login
+ * accounts appear on the sign-in page, and which sidebar features are shown
+ * (some features aren't relevant to every client). Managed on Users & Roles;
+ * read by the login screen and the app shell. A sidebar group with no visible
+ * items simply doesn't render. */
+export interface DemoSettings {
+  id: string; // "demo"
+  showDemoAccounts: boolean; // show the sign-in demo-account panel at all
+  hiddenDemoAccounts: string[]; // demo account emails to hide
+  hiddenNav: string[]; // sidebar item routes (`to`) to hide
+}
+
+export const demoSettings: DemoSettings[] = [
+  { id: "demo", showDemoAccounts: true, hiddenDemoAccounts: [], hiddenNav: [] },
+];
+
 /** Reserved branding key for the public landing / login page (edited by the
  *  global admin, applied pre-authentication). */
 export const PLATFORM_LANDING_KEY = "__landing__";

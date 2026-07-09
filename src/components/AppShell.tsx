@@ -94,13 +94,18 @@ export function AppShell() {
 
   const enabled = useEnabledModules(user?.institution ?? "");
   const brandings = useCollection("institutionBrandings");
+  const demoAll = useCollection("demoSettings");
 
   if (!user) return null;
 
   // Licensed white-label branding for this user's institute (if any).
   const branding = brandings.find((b) => b.institution === brandingKey(user));
+  // Global-admin demo control: features hidden from the sidebar (Users & Roles).
+  const hiddenNav = demoAll.find((s) => s.id === "demo")?.hiddenNav ?? [];
 
-  const items = menuForUser(user).filter((item) => !item.moduleId || enabled.has(item.moduleId));
+  const items = menuForUser(user).filter(
+    (item) => (!item.moduleId || enabled.has(item.moduleId)) && !hiddenNav.includes(item.to),
+  );
   const groups: Record<string, typeof items> = {};
   for (const item of items) {
     const g = item.group ?? "Main";

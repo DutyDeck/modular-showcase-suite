@@ -13,11 +13,18 @@ import {
   FormDialog,
   useDisclosure,
 } from "@/components/ui-kit";
-import { useCollection, addItem, type PlatformUser } from "@/lib/store";
+import {
+  useCollection,
+  addItem,
+  updateItem,
+  type PlatformUser,
+  type DemoSettings,
+} from "@/lib/store";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import { useAuth } from "@/lib/auth";
-import { isSwimAdmin } from "@/lib/mockData";
-import { ShieldCheck, Plus, Upload, Building2, ShieldAlert } from "lucide-react";
+import { isSwimAdmin, demoUsers } from "@/lib/mockData";
+import { NAV_CATALOG, type MenuItem } from "@/lib/menus";
+import { ShieldCheck, Plus, Upload, Building2, ShieldAlert, MonitorPlay } from "lucide-react";
 
 export const Route = createFileRoute("/app/users")({
   head: () => ({ meta: [{ title: "Users & Roles — 1StudentID" }] }),
@@ -34,6 +41,30 @@ const ROLES = [
   "Marketing Officer",
   "Finance Officer",
 ];
+
+/** A short persona label for a demo account (mirrors the sign-in screen). */
+function accountLabel(u: (typeof demoUsers)[number]): string {
+  if (u.role === "admin")
+    return u.meta?.discipline === "Swimming"
+      ? "Swim admin"
+      : u.adminScope === "institute"
+        ? "Institute admin"
+        : "Global admin";
+  if (u.role === "student") return u.selfManaged ? "Adult student" : "Student";
+  if (u.role === "teacher") return u.meta?.discipline === "Swimming" ? "Swim coach" : "Teacher";
+  if (u.role === "parent") return u.meta?.role === "Co-parent" ? "Co-parent" : "Parent";
+  return u.role;
+}
+
+/** Toggleable sidebar features grouped by their category. */
+const NAV_GROUPS: [string, MenuItem[]][] = (() => {
+  const m = new Map<string, MenuItem[]>();
+  for (const it of NAV_CATALOG) {
+    const g = it.group ?? "General";
+    (m.get(g) ?? m.set(g, []).get(g)!).push(it);
+  }
+  return Array.from(m.entries());
+})();
 
 const USER_IMPORT_FIELDS: ImportField[] = [
   { key: "name", label: "Name", required: true, sample: "Charlie Brown" },
@@ -59,6 +90,31 @@ function UsersPage() {
     : isInstituteScoped
       ? allUsers.filter((u) => u.institutionId === user?.institutionId)
       : allUsers;
+
+  // Demo presentation — global-admin-only controls (sign-in accounts + sidebar).
+  const isGlobal = user?.adminScope === "global";
+  const demo = useCollection("demoSettings").find((s) => s.id === "demo");
+  const patchDemo = (patch: Partial<DemoSettings>) => {
+    if (demo) updateItem("demoSettings", (s) => s.id === "demo", patch);
+    else
+      addItem("demoSettings", {
+        id: "demo",
+        showDemoAccounts: true,
+        hiddenDemoAccounts: [],
+        hiddenNav: [],
+        ...patch,
+      });
+  };
+  const toggleAccount = (email: string, show: boolean) => {
+    const hidden = demo?.hiddenDemoAccounts ?? [];
+    patchDemo({
+      hiddenDemoAccounts: show ? hidden.filter((e) => e !== email) : [...hidden, email],
+    });
+  };
+  const toggleNav = (to: string, show: boolean) => {
+    const hidden = demo?.hiddenNav ?? [];
+    patchDemo({ hiddenNav: show ? hidden.filter((x) => x !== to) : [...hidden, to] });
+  };
 
   const [form, setForm] = useState({
     name: "",
@@ -137,6 +193,104 @@ function UsersPage() {
           </div>
         ))}
       </div>
+      {isGlobal && (
+        <Section
+          title="Demo presentation"
+          description="Tailor what a client sees in a demo — which sign-in accounts appear, and which sidebar features are shown. A category with nothing left simply doesn't show."
+        >
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Sign-in demo accounts */}
+            <div>
+              <div className="flex items-center gap-1.5 text-sm font-semibold">
+                <MonitorPlay className="h-4 w-4 text-primary" />
+                Sign-in demo accounts
+              </div>
+              <label className="mt-2 flex items-start gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={demo?.showDemoAccounts ?? true}
+                  onChange={(e) => patchDemo({ showDemoAccounts: e.target.checked })}
+                  className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+                />
+                <span className="text-sm">
+                  <span className="font-medium">Show demo login accounts</span>
+                  <span className="block text-xs text-muted-foreground">
+                    The quick-login persona cards on the sign-in page.
+                  </span>
+                </span>
+              </label>
+              {(demo?.showDemoAccounts ?? true) && (
+                <div className="mt-3 grid sm:grid-cols-2 gap-1.5">
+                  {demoUsers.map((u) => {
+                    const on = !(demo?.hiddenDemoAccounts ?? []).includes(u.email);
+                    return (
+                      <label
+                        key={u.id}
+                        className="flex items-center gap-2 rounded-md border px-2.5 py-1.5 cursor-pointer hover:bg-muted/50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={on}
+                          onChange={(e) => toggleAccount(u.email, e.target.checked)}
+                          className="h-4 w-4 accent-primary shrink-0"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-xs font-medium truncate">
+                            {accountLabel(u)}
+                          </span>
+                          <span className="block text-[10px] text-muted-foreground truncate">
+                            {u.name}
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar features */}
+            <div>
+              <div className="flex items-center gap-1.5 text-sm font-semibold">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Sidebar features
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Hide features a client doesn't need. Applies to every persona's sidebar.
+              </p>
+              <div className="mt-3 space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                {NAV_GROUPS.map(([group, items]) => (
+                  <div key={group}>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                      {group}
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-1.5">
+                      {items.map((it) => {
+                        const on = !(demo?.hiddenNav ?? []).includes(it.to);
+                        return (
+                          <label
+                            key={it.to}
+                            className="flex items-center gap-2 rounded-md border px-2.5 py-1.5 cursor-pointer hover:bg-muted/50"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={on}
+                              onChange={(e) => toggleNav(it.to, e.target.checked)}
+                              className="h-4 w-4 accent-primary shrink-0"
+                            />
+                            <span className="text-xs font-medium truncate">{it.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Section>
+      )}
+
       <Section
         title={
           isInstituteScoped

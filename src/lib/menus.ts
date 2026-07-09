@@ -518,6 +518,27 @@ export const swimAdminMenu: MenuItem[] = [
   { label: "My Profile", to: "/app/profile", icon: "User", group: "Account", moduleId: "core" },
 ];
 
+/* The distinct, toggleable sidebar destinations across every menu — used by the
+ * global admin's "Demo presentation" nav toggles. Essentials (dashboard, profile,
+ * settings, users) are always shown, so they're excluded here. Deduped by route. */
+const NAV_ALWAYS_ON = new Set(["/app", "/app/profile", "/app/settings", "/app/users"]);
+
+export const NAV_CATALOG: MenuItem[] = (() => {
+  const seen = new Set<string>();
+  const out: MenuItem[] = [];
+  const add = (items: MenuItem[]) => {
+    for (const it of items) {
+      if (NAV_ALWAYS_ON.has(it.to) || seen.has(it.to)) continue;
+      seen.add(it.to);
+      out.push(it);
+    }
+  };
+  for (const m of Object.values(menusByRole)) add(m);
+  add(swimCoachMenu);
+  add(swimAdminMenu);
+  return out;
+})();
+
 /** Sidebar menu for a user — swim accounts get the curated club menu. */
 export function menuForUser(user: DemoUser | null): MenuItem[] {
   if (isSwimAdmin(user)) return swimAdminMenu;

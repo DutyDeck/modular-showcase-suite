@@ -38,6 +38,7 @@ import {
   clubSettings as initialClubSettings,
   capacityOverrides as initialCapacityOverrides,
   institutionBrandings as initialInstitutionBrandings,
+  demoSettings as initialDemoSettings,
 } from "./mockData";
 
 export type {
@@ -81,6 +82,7 @@ export type {
   ClubSettings,
   CapacityOverride,
   InstituteBranding,
+  DemoSettings,
 } from "./mockData";
 
 export type Student = (typeof initialStudents)[number];
@@ -119,6 +121,7 @@ import type {
   ClubSettings,
   CapacityOverride,
   InstituteBranding,
+  DemoSettings,
 } from "./mockData";
 
 /* A cross-tenant enrolment created at runtime — i.e. a tenant admin enrolled an
@@ -175,6 +178,7 @@ interface State {
   clubSettings: ClubSettings[];
   capacityOverrides: CapacityOverride[];
   institutionBrandings: InstituteBranding[];
+  demoSettings: DemoSettings[];
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
@@ -223,6 +227,7 @@ function makeInitialState(): State {
     clubSettings: [...initialClubSettings],
     capacityOverrides: [...initialCapacityOverrides],
     institutionBrandings: [...initialInstitutionBrandings],
+    demoSettings: [...initialDemoSettings],
   };
 }
 
