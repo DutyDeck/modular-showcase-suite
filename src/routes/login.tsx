@@ -40,7 +40,7 @@ function LoginPage() {
   const landing = useCollection("institutionBrandings").find(
     (b) => b.institution === PLATFORM_LANDING_KEY,
   );
-  const showHeadline = landing?.showHeadline !== false;
+  const showHeadline = landing?.showHeadline === true;
   const [email, setEmail] = useState("admin@demo.com");
   const [password, setPassword] = useState("demo");
   const [show, setShow] = useState(false);

@@ -43,7 +43,7 @@ function BrandingPage() {
     vision: existing?.vision ?? "",
     mission: existing?.mission ?? "",
     description: existing?.description ?? "",
-    showHeadline: existing?.showHeadline ?? true,
+    showHeadline: existing?.showHeadline ?? false,
     showCustomHeadline: existing?.showCustomHeadline ?? false,
     headline: existing?.headline ?? "",
   });
@@ -124,7 +124,7 @@ function BrandingPage() {
       vision: "",
       mission: "",
       description: "",
-      showHeadline: true,
+      showHeadline: false,
       showCustomHeadline: false,
       headline: "",
     });
