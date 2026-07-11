@@ -146,7 +146,13 @@ export const MODULES: ModuleDef[] = [
     id: "finance",
     name: "Finance & Fees",
     description: "Invoices, fee collection, and financial management.",
-    routePrefixes: ["/app/finance", "/app/invoice"],
+    routePrefixes: [
+      "/app/finance",
+      "/app/invoice",
+      "/app/billing",
+      "/app/my-courses",
+      "/app/pricing",
+    ],
     plan: "Growth",
   },
   {

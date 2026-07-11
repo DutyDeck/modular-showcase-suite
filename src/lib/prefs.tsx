@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type Theme = "light" | "dark";
 export type Locale = "en" | "si" | "ta" | "fr";
@@ -22,7 +15,9 @@ interface Prefs {
 const defaults: Prefs = {
   theme: "light",
   locale: "en",
-  currency: "USD",
+  // UK-first demo: default all money to GBP (£). Switchable per device in Settings
+  // / the header currency control.
+  currency: "GBP",
 };
 
 interface PrefsContextValue extends Prefs {
@@ -31,6 +26,9 @@ interface PrefsContextValue extends Prefs {
   setCurrency: (c: Currency) => void;
   t: (key: string, fallback?: string) => string;
   formatMoney: (usd: number) => string;
+  /** USD→display multiplier for the active currency. Multiply a stored (USD)
+   *  amount to show it; divide a user-entered amount to store it. */
+  moneyRate: number;
 }
 
 const PrefsContext = createContext<PrefsContextValue | null>(null);
@@ -196,8 +194,7 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
       setCurrencyState(c);
       save({ theme, locale, currency: c });
     };
-    const t = (key: string, fallback?: string) =>
-      DICT[locale]?.[key] ?? fallback ?? key;
+    const t = (key: string, fallback?: string) => DICT[locale]?.[key] ?? fallback ?? key;
     const formatMoney = (usd: number) => {
       const v = usd * USD_RATES[currency];
       try {
@@ -210,7 +207,17 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
         return `${currency} ${v.toFixed(0)}`;
       }
     };
-    return { theme, locale, currency, setTheme, setLocale, setCurrency, t, formatMoney };
+    return {
+      theme,
+      locale,
+      currency,
+      setTheme,
+      setLocale,
+      setCurrency,
+      t,
+      formatMoney,
+      moneyRate: USD_RATES[currency],
+    };
   }, [theme, locale, currency]);
 
   return <PrefsContext.Provider value={value}>{children}</PrefsContext.Provider>;

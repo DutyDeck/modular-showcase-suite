@@ -1,8 +1,12 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { useCollection } from "@/lib/store";
 import { usePrefs } from "@/lib/prefs";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui-kit";
+import { InvoiceBreakdown } from "@/components/InvoiceBreakdown";
+import { generateInvoice, monthRange } from "@/lib/billing";
+import { INSTITUTE_BILLING_PROFILE, SWIM_BILLING_PROFILE } from "@/lib/mockData";
 import { ArrowLeft, Printer, Download } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,9 +19,46 @@ function InvoicePage() {
   const { id } = useParams({ from: "/app/invoice/$id" });
   const navigate = useNavigate();
   const invoices = useCollection("invoices");
+  const enrollments = useCollection("billingEnrollments");
+  const bookings = useCollection("revisionBookings");
+  const feePlans = useCollection("feePlans");
+  const discounts = useCollection("discounts");
+  const revSessions = useCollection("revisionSessions");
+  const credits = useCollection("billingCredits");
+  const closures = useCollection("billingClosures");
   const { user } = useAuth();
   const { formatMoney } = usePrefs();
   const invoice = invoices.find((i) => i.id === id);
+
+  // Invoices produced by the monthly billing run carry a periodMonth + studentId,
+  // so we can rebuild the itemised breakdown the family can read line by line.
+  const swimInvoice = invoice?.courseId === "C-SWIM";
+  const draft = useMemo(() => {
+    if (!invoice?.periodMonth || !invoice.studentId) return null;
+    const scoped = enrollments.filter((e) =>
+      swimInvoice ? e.courseId.startsWith("C-SWIM") : !e.courseId.startsWith("C-SWIM"),
+    );
+    const { start, end } = monthRange(invoice.periodMonth);
+    return generateInvoice(invoice.studentId, start, end, {
+      enrollments: scoped,
+      revisionBookings: bookings,
+      feePlans,
+      discounts,
+      revisionSessions: revSessions,
+      credits,
+      closures,
+    });
+  }, [
+    invoice,
+    swimInvoice,
+    enrollments,
+    bookings,
+    feePlans,
+    discounts,
+    revSessions,
+    credits,
+    closures,
+  ]);
 
   if (!invoice) {
     return (
@@ -44,10 +85,7 @@ function InvoicePage() {
           Back
         </Button>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => toast.success("PDF download queued")}
-          >
+          <Button variant="outline" onClick={() => toast.success("PDF download queued")}>
             <Download className="h-4 w-4" />
             Download PDF
           </Button>
@@ -72,13 +110,9 @@ function InvoicePage() {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Invoice
-            </div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Invoice</div>
             <div className="text-2xl font-bold mt-1">{invoice.id}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              Issued {invoice.date}
-            </div>
+            <div className="text-xs text-muted-foreground mt-1">Issued {invoice.date}</div>
             <div
               className={`mt-3 inline-block text-xs font-semibold px-2 py-0.5 rounded-md ${
                 invoice.status === "Paid"
@@ -120,40 +154,48 @@ function InvoicePage() {
           </div>
         </section>
 
-        {/* Items */}
-        <section className="border-t border-b py-2">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="py-2 font-medium">Description</th>
-                <th className="py-2 font-medium text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-t">
-                <td className="py-3">{invoice.desc}</td>
-                <td className="py-3 text-right font-medium">
-                  {formatMoney(invoice.amount)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+        {/* Items — itemised breakdown for billing-run invoices, else a single line */}
+        {draft ? (
+          <section className="border-t border-b py-4">
+            <InvoiceBreakdown
+              invoice={draft}
+              profile={swimInvoice ? SWIM_BILLING_PROFILE : INSTITUTE_BILLING_PROFILE}
+            />
+          </section>
+        ) : (
+          <>
+            <section className="border-t border-b py-2">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+                    <th className="py-2 font-medium">Description</th>
+                    <th className="py-2 font-medium text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t">
+                    <td className="py-3">{invoice.desc}</td>
+                    <td className="py-3 text-right font-medium">{formatMoney(invoice.amount)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
 
-        {/* Totals */}
-        <section className="flex justify-end pt-4">
-          <dl className="w-full sm:w-72 space-y-1.5 text-sm">
-            <Line label="Subtotal" value={formatMoney(subtotal)} />
-            <Line label="Tax (8%)" value={formatMoney(tax)} />
-            <Line label="Total" value={formatMoney(total)} bold />
-          </dl>
-        </section>
+            {/* Totals */}
+            <section className="flex justify-end pt-4">
+              <dl className="w-full sm:w-72 space-y-1.5 text-sm">
+                <Line label="Subtotal" value={formatMoney(subtotal)} />
+                <Line label="Tax (8%)" value={formatMoney(tax)} />
+                <Line label="Total" value={formatMoney(total)} bold />
+              </dl>
+            </section>
+          </>
+        )}
 
         {/* Footer */}
         <footer className="mt-10 pt-6 border-t text-xs text-muted-foreground">
           Thank you for studying with 1StudentID. Questions? Email{" "}
-          <span className="text-foreground">finance@oneedu.app</span> or call
-          +44 20 7946 0018.
+          <span className="text-foreground">finance@oneedu.app</span> or call +44 20 7946 0018.
           <div className="mt-2">
             This is an electronically generated invoice. No signature required.
           </div>
@@ -163,15 +205,7 @@ function InvoicePage() {
   );
 }
 
-function Line({
-  label,
-  value,
-  bold,
-}: {
-  label: string;
-  value: string;
-  bold?: boolean;
-}) {
+function Line({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
     <div className="flex justify-between border-t py-2">
       <dt className={bold ? "font-semibold" : "text-muted-foreground"}>{label}</dt>

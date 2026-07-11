@@ -24,7 +24,9 @@ import { Route as AppSquadRouteImport } from './routes/app.squad'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppPricingRouteImport } from './routes/app.pricing'
 import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
+import { Route as AppMyCoursesRouteImport } from './routes/app.my-courses'
 import { Route as AppMigrationRouteImport } from './routes/app.migration'
 import { Route as AppMessagesRouteImport } from './routes/app.messages'
 import { Route as AppMarketplaceRouteImport } from './routes/app.marketplace'
@@ -39,6 +41,7 @@ import { Route as AppCoachingRouteImport } from './routes/app.coaching'
 import { Route as AppChildrenRouteImport } from './routes/app.children'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
 import { Route as AppBrandingRouteImport } from './routes/app.branding'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAwardsRouteImport } from './routes/app.awards'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
 import { Route as AppAssignmentsRouteImport } from './routes/app.assignments'
@@ -133,9 +136,19 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPricingRoute = AppPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOnboardingRoute = AppOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMyCoursesRoute = AppMyCoursesRouteImport.update({
+  id: '/my-courses',
+  path: '/my-courses',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMigrationRoute = AppMigrationRouteImport.update({
@@ -206,6 +219,11 @@ const AppCalendarRoute = AppCalendarRouteImport.update({
 const AppBrandingRoute = AppBrandingRouteImport.update({
   id: '/branding',
   path: '/branding',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAwardsRoute = AppAwardsRouteImport.update({
@@ -309,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
   '/app/awards': typeof AppAwardsRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/branding': typeof AppBrandingRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
@@ -323,7 +342,9 @@ export interface FileRoutesByFullPath {
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/migration': typeof AppMigrationRoute
+  '/app/my-courses': typeof AppMyCoursesRoute
   '/app/onboarding': typeof AppOnboardingRoute
+  '/app/pricing': typeof AppPricingRoute
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -356,6 +377,7 @@ export interface FileRoutesByTo {
   '/app/ai-insights': typeof AppAiInsightsRoute
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/awards': typeof AppAwardsRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/branding': typeof AppBrandingRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
@@ -369,7 +391,9 @@ export interface FileRoutesByTo {
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/migration': typeof AppMigrationRoute
+  '/app/my-courses': typeof AppMyCoursesRoute
   '/app/onboarding': typeof AppOnboardingRoute
+  '/app/pricing': typeof AppPricingRoute
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -404,6 +428,7 @@ export interface FileRoutesById {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
   '/app/awards': typeof AppAwardsRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/branding': typeof AppBrandingRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/children': typeof AppChildrenRoute
@@ -418,7 +443,9 @@ export interface FileRoutesById {
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/migration': typeof AppMigrationRoute
+  '/app/my-courses': typeof AppMyCoursesRoute
   '/app/onboarding': typeof AppOnboardingRoute
+  '/app/pricing': typeof AppPricingRoute
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -456,6 +483,7 @@ export interface FileRouteTypes {
     | '/app/assignments'
     | '/app/attendance'
     | '/app/awards'
+    | '/app/billing'
     | '/app/branding'
     | '/app/calendar'
     | '/app/children'
@@ -470,7 +498,9 @@ export interface FileRouteTypes {
     | '/app/marketplace'
     | '/app/messages'
     | '/app/migration'
+    | '/app/my-courses'
     | '/app/onboarding'
+    | '/app/pricing'
     | '/app/profile'
     | '/app/reports'
     | '/app/settings'
@@ -503,6 +533,7 @@ export interface FileRouteTypes {
     | '/app/ai-insights'
     | '/app/assignments'
     | '/app/awards'
+    | '/app/billing'
     | '/app/branding'
     | '/app/calendar'
     | '/app/children'
@@ -516,7 +547,9 @@ export interface FileRouteTypes {
     | '/app/marketplace'
     | '/app/messages'
     | '/app/migration'
+    | '/app/my-courses'
     | '/app/onboarding'
+    | '/app/pricing'
     | '/app/profile'
     | '/app/reports'
     | '/app/settings'
@@ -550,6 +583,7 @@ export interface FileRouteTypes {
     | '/app/assignments'
     | '/app/attendance'
     | '/app/awards'
+    | '/app/billing'
     | '/app/branding'
     | '/app/calendar'
     | '/app/children'
@@ -564,7 +598,9 @@ export interface FileRouteTypes {
     | '/app/marketplace'
     | '/app/messages'
     | '/app/migration'
+    | '/app/my-courses'
     | '/app/onboarding'
+    | '/app/pricing'
     | '/app/profile'
     | '/app/reports'
     | '/app/settings'
@@ -705,11 +741,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/pricing': {
+      id: '/app/pricing'
+      path: '/pricing'
+      fullPath: '/app/pricing'
+      preLoaderRoute: typeof AppPricingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/onboarding': {
       id: '/app/onboarding'
       path: '/onboarding'
       fullPath: '/app/onboarding'
       preLoaderRoute: typeof AppOnboardingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/my-courses': {
+      id: '/app/my-courses'
+      path: '/my-courses'
+      fullPath: '/app/my-courses'
+      preLoaderRoute: typeof AppMyCoursesRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/migration': {
@@ -808,6 +858,13 @@ declare module '@tanstack/react-router' {
       path: '/branding'
       fullPath: '/app/branding'
       preLoaderRoute: typeof AppBrandingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/awards': {
@@ -1014,6 +1071,7 @@ interface AppRouteChildren {
   AppAssignmentsRoute: typeof AppAssignmentsRoute
   AppAttendanceRoute: typeof AppAttendanceRouteWithChildren
   AppAwardsRoute: typeof AppAwardsRoute
+  AppBillingRoute: typeof AppBillingRoute
   AppBrandingRoute: typeof AppBrandingRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppChildrenRoute: typeof AppChildrenRoute
@@ -1028,7 +1086,9 @@ interface AppRouteChildren {
   AppMarketplaceRoute: typeof AppMarketplaceRoute
   AppMessagesRoute: typeof AppMessagesRoute
   AppMigrationRoute: typeof AppMigrationRoute
+  AppMyCoursesRoute: typeof AppMyCoursesRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
+  AppPricingRoute: typeof AppPricingRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -1052,6 +1112,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssignmentsRoute: AppAssignmentsRoute,
   AppAttendanceRoute: AppAttendanceRouteWithChildren,
   AppAwardsRoute: AppAwardsRoute,
+  AppBillingRoute: AppBillingRoute,
   AppBrandingRoute: AppBrandingRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppChildrenRoute: AppChildrenRoute,
@@ -1066,7 +1127,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppMarketplaceRoute: AppMarketplaceRoute,
   AppMessagesRoute: AppMessagesRoute,
   AppMigrationRoute: AppMigrationRoute,
+  AppMyCoursesRoute: AppMyCoursesRoute,
   AppOnboardingRoute: AppOnboardingRoute,
+  AppPricingRoute: AppPricingRoute,
   AppProfileRoute: AppProfileRoute,
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,

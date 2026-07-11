@@ -39,6 +39,13 @@ import {
   capacityOverrides as initialCapacityOverrides,
   institutionBrandings as initialInstitutionBrandings,
   demoSettings as initialDemoSettings,
+  feePlans as initialFeePlans,
+  discounts as initialDiscounts,
+  revisionSessions as initialRevisionSessions,
+  revisionBookings as initialRevisionBookings,
+  billingEnrollments as initialBillingEnrollments,
+  billingClosures as initialBillingClosures,
+  billingCredits as initialBillingCredits,
 } from "./mockData";
 
 export type {
@@ -83,6 +90,17 @@ export type {
   CapacityOverride,
   InstituteBranding,
   DemoSettings,
+  FeePlan,
+  BillingModel,
+  VatTreatment,
+  Discount,
+  DiscountKind,
+  RevisionSession,
+  RevisionBooking,
+  BillingEnrollment,
+  BillingProfile,
+  BillingClosure,
+  BillingCredit,
 } from "./mockData";
 
 export type Student = (typeof initialStudents)[number];
@@ -122,6 +140,13 @@ import type {
   CapacityOverride,
   InstituteBranding,
   DemoSettings,
+  FeePlan,
+  Discount,
+  RevisionSession,
+  RevisionBooking,
+  BillingEnrollment,
+  BillingClosure,
+  BillingCredit,
 } from "./mockData";
 
 /* A cross-tenant enrolment created at runtime — i.e. a tenant admin enrolled an
@@ -179,6 +204,13 @@ interface State {
   capacityOverrides: CapacityOverride[];
   institutionBrandings: InstituteBranding[];
   demoSettings: DemoSettings[];
+  feePlans: FeePlan[];
+  discounts: Discount[];
+  revisionSessions: RevisionSession[];
+  revisionBookings: RevisionBooking[];
+  billingEnrollments: BillingEnrollment[];
+  billingClosures: BillingClosure[];
+  billingCredits: BillingCredit[];
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
@@ -188,7 +220,7 @@ const STORAGE_KEY = "oneedu.store.v3";
 // deploy to clear stale names/threads. It does NOT rename STORAGE_KEY (which
 // would wipe data unconditionally); it only resets when the seed actually moves.
 const SEED_VERSION_KEY = "oneedu.store.seedver";
-const SEED_VERSION = "2026-07-branding-multi";
+const SEED_VERSION = "2026-07-billing-perchild";
 
 function makeInitialState(): State {
   return {
@@ -228,6 +260,13 @@ function makeInitialState(): State {
     capacityOverrides: [...initialCapacityOverrides],
     institutionBrandings: [...initialInstitutionBrandings],
     demoSettings: [...initialDemoSettings],
+    feePlans: [...initialFeePlans],
+    discounts: [...initialDiscounts],
+    revisionSessions: [...initialRevisionSessions],
+    revisionBookings: [...initialRevisionBookings],
+    billingEnrollments: [...initialBillingEnrollments],
+    billingClosures: [...initialBillingClosures],
+    billingCredits: [...initialBillingCredits],
   };
 }
 
@@ -331,7 +370,12 @@ export function nextId(prefix: string, key: keyof State, field = "id"): string {
   const nums = list
     .map((r) => String(r[field] ?? ""))
     .filter((s) => s.startsWith(prefix))
-    .map((s) => parseInt(s.replace(/\D/g, ""), 10))
+    // Only parse the part AFTER the prefix. Prefixes can themselves contain
+    // digits (e.g. "INV-2026-"); stripping non-digits from the whole id would
+    // fold the year into the counter and — because generated ids feed back in —
+    // compound on every call (…-0421 → …-20260422 → …e+23). Slicing the prefix
+    // off first keeps the counter a small, stable, monotonic number.
+    .map((s) => parseInt(s.slice(prefix.length).replace(/\D/g, ""), 10))
     .filter((n) => !Number.isNaN(n));
   const next = (nums.length ? Math.max(...nums) : 1000) + 1;
   return `${prefix}${next}`;

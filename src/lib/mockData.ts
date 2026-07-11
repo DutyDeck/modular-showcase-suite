@@ -1660,6 +1660,10 @@ export interface InvoiceRow {
   paidBy?: string;
   /** Human label of the class/programme this fee is for (co-parent view). */
   classLabel?: string;
+  /** Billing month ("2026-07") for invoices produced by the auto-billing run —
+   *  lets the invoice detail page rebuild the itemised breakdown and blocks the
+   *  admin from issuing the same student's invoice twice for one month. */
+  periodMonth?: string;
 }
 
 export const invoices: InvoiceRow[] = [
@@ -6140,3 +6144,448 @@ export interface ClubSettings {
 }
 
 export const clubSettings: ClubSettings[] = [{ id: "settings", coachGradingVisible: false }];
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * SESSION-BASED FEE ENGINE — course selection → auto-generated monthly invoice
+ *
+ * Real-world scenario (UK tuition institute + swim club):
+ *  · Classes recur weekly, but families are invoiced monthly — so a month with
+ *    5 Mondays must bill 5 sessions and a 4-Monday month must bill 4.
+ *  · Some courses bill per session, some as a flat annualised monthly instalment,
+ *    some as a fixed term block — a `billingModel` per course captures this.
+ *  · Students opt into ad-hoc revision / booster sessions on chosen dates; those
+ *    are counted into the same monthly invoice.
+ *  · Discounts apply per course, for a time window, for taking multiple courses,
+ *    for siblings, or as a means-tested bursary.
+ *  · VAT is per line: UK private-school / limited-company tuition is standard-
+ *    rated (20%); an individual coach's tuition can be exempt. (See analysis.)
+ *
+ * The pure calculation lives in src/lib/billing.ts; this section is the data:
+ * fee plans, discounts, revision sessions + bookings, and each student's course
+ * selection (billingEnrollments). All are store collections so the demo can add
+ * / drop courses live and watch the invoice recompute.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+export type BillingModel = "per-session" | "monthly" | "term-block";
+/** UK VAT treatment of a fee line. standard = 20%; exempt / zero = no VAT. */
+export type VatTreatment = "standard" | "exempt" | "zero";
+
+export interface FeePlan {
+  courseId: string;
+  courseName: string;
+  billingModel: BillingModel;
+  /** Weekdays the class runs — drives per-session counting across a month. */
+  weekdays: Weekday[];
+  sessionRate?: number; // per-session model (USD)
+  monthlyRate?: number; // annualised flat monthly instalment (USD)
+  termRate?: number; // whole-term block price (USD)
+  termWeeks?: number; // term length, for term-block instalment split
+  vatTreatment: VatTreatment;
+  /** Tutor name — set when an admin defines a course that has no static entry. */
+  teacher?: string;
+}
+
+/* Standard UK VAT rate applied to standard-rated tuition lines. */
+export const VAT_RATE = 0.2;
+
+export const feePlans: FeePlan[] = [
+  {
+    courseId: "C-PHY12",
+    courseName: "Advanced Physics",
+    billingModel: "per-session",
+    weekdays: ["Mon", "Wed"],
+    sessionRate: 15,
+    vatTreatment: "standard",
+  },
+  {
+    courseId: "C-CHEM12",
+    courseName: "Organic Chemistry",
+    billingModel: "per-session",
+    weekdays: ["Tue", "Thu"],
+    sessionRate: 14,
+    vatTreatment: "standard",
+  },
+  {
+    // Daily class billed as a predictable annualised monthly instalment — the
+    // 4/5-week variance is smoothed into an equal monthly figure.
+    courseId: "C-MATH12",
+    courseName: "Combined Mathematics",
+    billingModel: "monthly",
+    weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    monthlyRate: 150,
+    vatTreatment: "standard",
+  },
+  {
+    courseId: "C-BIO12",
+    courseName: "Biology — Cellular Systems",
+    billingModel: "per-session",
+    weekdays: ["Wed", "Fri"],
+    sessionRate: 14,
+    vatTreatment: "standard",
+  },
+  {
+    courseId: "C-ENG12",
+    courseName: "English Literature",
+    billingModel: "per-session",
+    weekdays: ["Tue"],
+    sessionRate: 20,
+    vatTreatment: "standard",
+  },
+  {
+    // Weekend course sold as a 12-week term block, collected in 3 instalments.
+    courseId: "C-ICT12",
+    courseName: "Information & Communication Tech",
+    billingModel: "term-block",
+    weekdays: ["Sat"],
+    termRate: 300,
+    termWeeks: 12,
+    vatTreatment: "standard",
+  },
+  {
+    // Swim coaching delivered by an individual coach — VAT exempt (UK Group 6).
+    courseId: "C-SWIM",
+    courseName: "Royal Vista Aquatics",
+    billingModel: "per-session",
+    weekdays: ["Mon", "Thu"],
+    sessionRate: 12,
+    vatTreatment: "exempt",
+  },
+];
+
+export const feePlanFor = (courseId: string): FeePlan | undefined =>
+  feePlans.find((p) => p.courseId === courseId);
+
+/* ── Discounts ───────────────────────────────────────────────────────────────
+ * Rule objects, evaluated in a fixed order (course-promo → multi-course →
+ * sibling → bursary) by the billing engine, with a max-discount cap to protect
+ * margin. See src/lib/billing.ts. */
+export type DiscountKind = "multi-course" | "sibling" | "course-promo" | "bursary";
+
+export interface Discount {
+  id: string;
+  label: string;
+  kind: DiscountKind;
+  amountType: "percent" | "fixed";
+  value: number; // percent (e.g. 10) or fixed USD amount
+  courseId?: string; // course-promo scope
+  minCourses?: number; // multi-course threshold
+  studentIds?: string[]; // bursary / targeted scope
+  validFrom?: string; // ISO date — promo window start (inclusive)
+  validTo?: string; // ISO date — promo window end (inclusive)
+  active: boolean;
+}
+
+export const discounts: Discount[] = [
+  {
+    id: "DISC-MULTI",
+    label: "Multi-subject discount",
+    kind: "multi-course",
+    amountType: "percent",
+    value: 10,
+    minCourses: 2,
+    active: true,
+  },
+  {
+    id: "DISC-SIB",
+    label: "Sibling discount",
+    kind: "sibling",
+    amountType: "percent",
+    value: 15,
+    active: true,
+  },
+  {
+    id: "DISC-BIO-SUMMER",
+    label: "Summer offer — Biology",
+    kind: "course-promo",
+    amountType: "percent",
+    value: 20,
+    courseId: "C-BIO12",
+    validFrom: "2026-07-01",
+    validTo: "2026-08-31",
+    active: true,
+  },
+  {
+    id: "DISC-BURSARY-1005",
+    label: "Means-tested bursary",
+    kind: "bursary",
+    amountType: "fixed",
+    value: 40,
+    studentIds: ["S-1005"],
+    active: true,
+  },
+];
+
+/* ── Revision / booster sessions (opt-in, dated) ─────────────────────────────
+ * Ad-hoc extra sessions a student books for specific dates; each booked (non-
+ * cancelled) session lands on that month's invoice. Seats tie into capacity. */
+export interface RevisionSession {
+  id: string;
+  courseId: string;
+  title: string;
+  date: string; // ISO date "2026-07-18"
+  start: string; // "14:00"
+  end: string; // "16:00"
+  rate: number; // USD
+  seats: number;
+  coach: string;
+}
+
+export const revisionSessions: RevisionSession[] = [
+  {
+    id: "RV-01",
+    courseId: "C-PHY12",
+    title: "Physics Paper 2 Booster",
+    date: "2026-07-18",
+    start: "14:00",
+    end: "16:00",
+    rate: 25,
+    seats: 15,
+    coach: "Dr. Charlie Brown",
+  },
+  {
+    id: "RV-02",
+    courseId: "C-CHEM12",
+    title: "Organic Chemistry Exam Clinic",
+    date: "2026-07-19",
+    start: "10:00",
+    end: "12:00",
+    rate: 22,
+    seats: 12,
+    coach: "Mrs. Erin Dawson",
+  },
+  {
+    id: "RV-03",
+    courseId: "C-PHY12",
+    title: "Mechanics Problem-Solving Lab",
+    date: "2026-07-25",
+    start: "14:00",
+    end: "16:00",
+    rate: 25,
+    seats: 15,
+    coach: "Dr. Charlie Brown",
+  },
+  {
+    id: "RV-04",
+    courseId: "C-MATH12",
+    title: "Calculus Intensive",
+    date: "2026-07-26",
+    start: "09:00",
+    end: "12:00",
+    rate: 30,
+    seats: 20,
+    coach: "Mr. David Freeman",
+  },
+  {
+    id: "RV-05",
+    courseId: "C-BIO12",
+    title: "Genetics Revision Workshop",
+    date: "2026-08-01",
+    start: "14:00",
+    end: "16:00",
+    rate: 22,
+    seats: 15,
+    coach: "Dr. Daisy Fisher",
+  },
+  {
+    id: "RV-06",
+    courseId: "C-CHEM12",
+    title: "Titration Practical Prep",
+    date: "2026-08-02",
+    start: "10:00",
+    end: "12:00",
+    rate: 22,
+    seats: 12,
+    coach: "Mrs. Erin Dawson",
+  },
+];
+
+export const revisionSessionById = (id: string): RevisionSession | undefined =>
+  revisionSessions.find((s) => s.id === id);
+
+export interface RevisionBooking {
+  id: string;
+  studentId: string;
+  sessionId: string;
+  status: "booked" | "attended" | "cancelled";
+  bookedAt: string; // ISO
+}
+
+export const revisionBookings: RevisionBooking[] = [
+  {
+    id: "RB-01",
+    studentId: "S-1001",
+    sessionId: "RV-01",
+    status: "booked",
+    bookedAt: "2026-07-05",
+  },
+  {
+    id: "RB-02",
+    studentId: "S-1001",
+    sessionId: "RV-03",
+    status: "booked",
+    bookedAt: "2026-07-05",
+  },
+  {
+    id: "RB-03",
+    studentId: "S-1002",
+    sessionId: "RV-02",
+    status: "booked",
+    bookedAt: "2026-07-06",
+  },
+  {
+    id: "RB-04",
+    studentId: "S-1004",
+    sessionId: "RV-02",
+    status: "booked",
+    bookedAt: "2026-07-08",
+  },
+];
+
+/* ── Course selection (billing enrolments) ───────────────────────────────────
+ * Which courses each student has selected — the source of the auto-generated
+ * invoice. `since` supports mid-month joiners (pro-rata: only sessions on/after
+ * that date are billed); `endedOn` stops billing after a leaver's last day. */
+export interface BillingEnrollment {
+  id: string;
+  studentId: string;
+  courseId: string;
+  since: string; // ISO date the student joined this course
+  endedOn?: string; // ISO date the student left (optional)
+}
+
+export const billingEnrollments: BillingEnrollment[] = [
+  // Oliver Smith (S-1001) — 3 academic subjects (multi-course) + swim
+  { id: "BE-01", studentId: "S-1001", courseId: "C-PHY12", since: "2026-01-15" },
+  { id: "BE-02", studentId: "S-1001", courseId: "C-CHEM12", since: "2026-01-15" },
+  { id: "BE-03", studentId: "S-1001", courseId: "C-MATH12", since: "2026-02-01" },
+  { id: "BE-04", studentId: "S-1001", courseId: "C-SWIM", since: "2026-01-15" },
+  // Olivia Smith (S-1009) — sibling of Oliver → sibling discount on her invoice
+  { id: "BE-05", studentId: "S-1009", courseId: "C-MATH12", since: "2026-01-20" },
+  // Isabella Evans (S-1002) — 2 subjects + swim
+  { id: "BE-06", studentId: "S-1002", courseId: "C-PHY12", since: "2026-01-10" },
+  { id: "BE-07", studentId: "S-1002", courseId: "C-BIO12", since: "2026-01-10" },
+  { id: "BE-08", studentId: "S-1002", courseId: "C-SWIM", since: "2026-01-10" },
+  // William Walker (S-1003) — term-block ICT
+  { id: "BE-09", studentId: "S-1003", courseId: "C-ICT12", since: "2026-03-01" },
+  // Sophie White (S-1004) — 2 subjects
+  { id: "BE-10", studentId: "S-1004", courseId: "C-ENG12", since: "2026-02-15" },
+  { id: "BE-11", studentId: "S-1004", courseId: "C-CHEM12", since: "2026-02-15" },
+  // James Roberts (S-1005) — bursary student + swim
+  { id: "BE-12", studentId: "S-1005", courseId: "C-PHY12", since: "2026-01-12" },
+  { id: "BE-13", studentId: "S-1005", courseId: "C-SWIM", since: "2026-02-01" },
+  // Alice Gibson (S-1006) — 2 subjects
+  { id: "BE-14", studentId: "S-1006", courseId: "C-BIO12", since: "2026-01-18" },
+  { id: "BE-15", studentId: "S-1006", courseId: "C-CHEM12", since: "2026-01-18" },
+  // Dylan Sharp (S-1007) — term-block ICT
+  { id: "BE-16", studentId: "S-1007", courseId: "C-ICT12", since: "2026-02-20" },
+  // Florence Stevens (S-1010) — 2 subjects + swim
+  { id: "BE-17", studentId: "S-1010", courseId: "C-PHY12", since: "2026-01-14" },
+  { id: "BE-18", studentId: "S-1010", courseId: "C-MATH12", since: "2026-01-14" },
+  { id: "BE-19", studentId: "S-1010", courseId: "C-SWIM", since: "2026-01-14" },
+  // Michael Johnson (S-1011) — mid-month joiner (pro-rata demo)
+  { id: "BE-20", studentId: "S-1011", courseId: "C-CHEM12", since: "2026-07-14" },
+  // Gareth Norton (S-1008) — mid-month leaver (billed only up to his last day)
+  {
+    id: "BE-21",
+    studentId: "S-1008",
+    courseId: "C-PHY12",
+    since: "2026-02-10",
+    endedOn: "2026-07-15",
+  },
+];
+
+/* ── Institute billing profiles (invoice header + VAT registration) ──────────
+ * The legal identity that issues invoices, and whether it is VAT-registered.
+ * The tuition company is a UK Ltd (standard-rated); the swim club trades through
+ * an individual coach (exempt) so its invoices carry no VAT number. */
+export interface BillingProfile {
+  legalName: string;
+  address: string;
+  vatNumber?: string;
+  vatRegistered: boolean;
+}
+
+export const INSTITUTE_BILLING_PROFILE: BillingProfile = {
+  legalName: "Royal Vista College Ltd",
+  address: "24 Bridge Street, Manchester M3 3EB, United Kingdom",
+  vatNumber: "GB 412 5567 88",
+  vatRegistered: true,
+};
+
+export const SWIM_BILLING_PROFILE: BillingProfile = {
+  legalName: "Royal Vista Aquatics Club",
+  address: "Dockside Leisure Park, Salford M50 3AZ, United Kingdom",
+  vatRegistered: false,
+};
+
+/* Dates (or whole weeks) the institute is closed — removed from the per-session
+ * count so a class on these days is never billed. Real timetables aren't a clean
+ * weekly repeat: there are single closure days (bank holidays, training days) AND
+ * whole "week off" breaks (half-term / mid-term). A closure with a `to` date
+ * covers the inclusive range, so one row can knock out a full week.
+ *   · 13–17 Jul 2026 — a mid-term break week (every class paused)
+ *   · 21 Jul 2026    — a Tuesday training day (Chemistry / English)
+ *   · 25 Aug 2026    — the summer bank holiday (a Monday) */
+export interface BillingClosure {
+  id: string;
+  date: string; // ISO date — start (inclusive)
+  to?: string; // ISO date — end of a multi-day break (inclusive)
+  reason: string;
+}
+
+export const billingClosures: BillingClosure[] = [
+  { id: "CL-01", date: "2026-07-13", to: "2026-07-17", reason: "Mid-term break — no classes" },
+  { id: "CL-02", date: "2026-07-21", reason: "Staff training day — centre closed" },
+  { id: "CL-03", date: "2026-08-25", reason: "Summer bank holiday" },
+];
+
+/* ── Absence credits & make-ups ──────────────────────────────────────────────
+ * When a student misses a session (illness) or a class is cancelled with no
+ * cover, the admin logs a credit against a billing month; it lands as a negative
+ * "credit" line on that month's invoice (refunding the fee and its VAT share).
+ * A make-up that IS rescheduled needs no credit — the session is simply
+ * re-attended. Credits are separate from discounts and sit outside the discount
+ * cap (they are money owed back, not a promotion). */
+export interface BillingCredit {
+  id: string;
+  studentId: string;
+  courseId?: string;
+  label: string;
+  amount: number; // USD (positive — the value credited back)
+  reason?: string;
+  appliesMonth: string; // "2026-07" — the invoice month it reduces
+  vatTreatment?: VatTreatment; // defaults to standard
+  createdBy: string;
+  at: string; // ISO
+}
+
+export const billingCredits: BillingCredit[] = [
+  {
+    id: "CR-01",
+    studentId: "S-1002",
+    courseId: "C-PHY12",
+    label: "Missed session — credit",
+    amount: 15,
+    reason: "Absent 8 Jul (illness); no make-up slot available this month",
+    appliesMonth: "2026-07",
+    createdBy: "Jacob Wilson",
+    at: "2026-07-09",
+  },
+  {
+    id: "CR-02",
+    studentId: "S-1004",
+    label: "Goodwill credit — class cancelled at short notice",
+    amount: 20,
+    reason: "Tutor absence 30 Jun with no cover",
+    appliesMonth: "2026-07",
+    createdBy: "Jacob Wilson",
+    at: "2026-07-02",
+  },
+];
+
+/** Student ids that share a guardian (for the sibling discount). */
+export function familyOf(studentId: string): string[] {
+  const me = students.find((s) => s.id === studentId);
+  if (!me) return [studentId];
+  return students.filter((s) => s.parent === me.parent).map((s) => s.id);
+}
