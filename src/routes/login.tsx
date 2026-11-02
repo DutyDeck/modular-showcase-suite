@@ -77,13 +77,18 @@ function LoginPage() {
   const hiddenAccounts = demo?.hiddenDemoAccounts ?? [];
   const demoList = demoUsers.filter((u) => !hiddenAccounts.includes(u.email));
   const showDemoAccounts = (demo?.showDemoAccounts ?? true) && demoList.length > 0;
-  const [segment, setSegment] = useState<DemoSegment>("core");
+  // Open on the University & College accounts (fall back if all are hidden).
+  const [segment, setSegment] = useState<DemoSegment>(() =>
+    demoList.some((u) => segmentOf(u) === "higher-ed") ? "higher-ed" : "core",
+  );
   // Sign-in routing: a school-issued student email (e.g. @meridian.lk) is
   // recognised and sent to that school's identity provider (Microsoft / Google).
   const profiles = useCollection("tenantProfiles");
   const tenantRows = useCollection("tenants");
   const segmentList = demoList.filter((u) => segmentOf(u) === segment);
-  const [email, setEmail] = useState("admin@demo.com");
+  const [email, setEmail] = useState(
+    () => segmentList.find((u) => u.role === "admin")?.email ?? "admin@demo.com",
+  );
   const [password, setPassword] = useState("demo");
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
