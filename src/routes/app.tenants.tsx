@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { money } from "@/lib/packs/regions";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -16,6 +17,8 @@ import {
 import { useCollection, addItem, nextId, type Tenant } from "@/lib/store";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import { useAuth } from "@/lib/auth";
+import { PACK_BY_ID } from "@/lib/packs/registry";
+import { REGIONS, INSTITUTION_TYPE_LABEL, type RegionCode } from "@/lib/packs/regions";
 import { Plus, Upload, Rocket, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/app/tenants")({
@@ -24,7 +27,31 @@ export const Route = createFileRoute("/app/tenants")({
 });
 
 const PLANS = ["Starter", "Growth", "Enterprise"];
-const COUNTRIES = ["Sri Lanka", "India", "UAE", "USA", "UK", "France", "Australia", "Singapore"];
+const COUNTRIES = [
+  "Sri Lanka",
+  "India",
+  "UAE",
+  "USA",
+  "UK",
+  "France",
+  "Australia",
+  "Singapore",
+  "Saudi Arabia",
+  "Qatar",
+  "Malaysia",
+];
+/** Country → region profile used for a newly onboarded tenant. */
+const COUNTRY_REGION: Record<string, RegionCode> = {
+  "Sri Lanka": "LK",
+  India: "IN",
+  UAE: "AE",
+  UK: "UK",
+  Australia: "AU",
+  Singapore: "SG",
+  "Saudi Arabia": "SA",
+  Qatar: "QA",
+  Malaysia: "MY",
+};
 
 const TENANT_IMPORT_FIELDS: ImportField[] = [
   { key: "name", label: "Tenant name", required: true, sample: "Horizon Academy" },
@@ -43,6 +70,7 @@ function TenantsPage() {
   const tenants = isInstituteScoped
     ? allTenants.filter((t) => t.id === user?.institutionId)
     : allTenants;
+  const profiles = useCollection("tenantProfiles");
   const navigate = useNavigate();
   const add = useDisclosure();
   const importer = useDisclosure();
@@ -70,6 +98,19 @@ function TenantsPage() {
       mrr: Number(form.mrr) || 0,
     };
     addItem("tenants", t);
+    // Every tenant gets a profile: classic experience, region defaults, no packs.
+    const region = COUNTRY_REGION[t.country] ?? "GLOBAL";
+    addItem("tenantProfiles", {
+      id: t.id,
+      tenantId: t.id,
+      type: "tuition",
+      experience: "classic",
+      region,
+      city: "",
+      packs: [],
+      codeSetId: REGIONS[region].codeSet.tuition ?? "simple",
+      idFields: REGIONS[region].idFields.slice(0, 2),
+    });
     toast.success(`Onboarded ${t.name}`);
     setForm({
       name: "",
@@ -113,8 +154,8 @@ function TenantsPage() {
         <div className="mb-4 rounded-lg border bg-warning/10 border-warning/30 px-4 py-2.5 text-xs flex items-center gap-2">
           <ShieldAlert className="h-3.5 w-3.5 text-warning-foreground shrink-0" />
           <span>
-            Onboarding new institutes, plan changes and cross-tenant analytics are
-            reserved for the global admin.
+            Onboarding new institutes, plan changes and cross-tenant analytics are reserved for the
+            global admin.
           </span>
         </div>
       )}
@@ -124,6 +165,7 @@ function TenantsPage() {
             { key: "id", label: "ID" },
             { key: "name", label: "Tenant" },
             { key: "country", label: "Country" },
+            { key: "packs", label: "Type & packs" },
             { key: "students", label: "Students" },
             { key: "plan", label: "Plan" },
             { key: "mrr", label: "MRR" },
@@ -133,11 +175,7 @@ function TenantsPage() {
           emptyText="No tenants onboarded"
           renderCell={(row, key) => {
             if (key === "mrr")
-              return (
-                <span className="font-semibold">
-                  ${row.mrr.toLocaleString()}
-                </span>
-              );
+              return <span className="font-semibold">{money(row.mrr, "USD")}</span>;
             if (key === "plan") {
               const tones: Record<string, any> = {
                 Enterprise: "default",
@@ -146,11 +184,25 @@ function TenantsPage() {
               };
               return <Badge tone={tones[row.plan]}>{row.plan}</Badge>;
             }
+            if (key === "packs") {
+              const pr = profiles.find((x) => x.tenantId === row.id);
+              if (!pr) return "—";
+              return (
+                <div className="flex flex-wrap items-center gap-1 max-w-[260px]">
+                  <span className="text-[11px] text-muted-foreground mr-1">
+                    {REGIONS[pr.region].flag} {INSTITUTION_TYPE_LABEL[pr.type]}
+                  </span>
+                  {pr.packs.map((pk) => (
+                    <Badge key={pk} tone="info">
+                      {PACK_BY_ID[pk].short}
+                    </Badge>
+                  ))}
+                </div>
+              );
+            }
             if (key === "status")
               return (
-                <Badge tone={row.status === "Active" ? "success" : "warning"}>
-                  {row.status}
-                </Badge>
+                <Badge tone={row.status === "Active" ? "success" : "warning"}>{row.status}</Badge>
               );
             return String(row[key] ?? "");
           }}
@@ -192,9 +244,7 @@ function TenantsPage() {
             type="number"
             min={0}
             value={form.students}
-            onChange={(e) =>
-              setForm({ ...form, students: Number(e.target.value) })
-            }
+            onChange={(e) => setForm({ ...form, students: Number(e.target.value) })}
           />
         </Field>
         <Field label="Initial MRR (USD)">

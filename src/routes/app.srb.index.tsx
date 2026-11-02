@@ -14,6 +14,13 @@ import {
   sessionsByCourse,
   SWIM_COURSE_ID,
 } from "@/lib/mockData";
+import {
+  isPackTenantUser,
+  learnerAsChild,
+  learnerAsStudent,
+  learnerEnrollment,
+  learnersForUser,
+} from "@/lib/packs/coreBridge";
 import { Search, Bell, ChevronRight, NotebookPen, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/srb/")({
@@ -28,6 +35,16 @@ function SrbIndexPage() {
   const srb = useCollection("srb");
   const crossEnrollments = useCollection("enrollments");
   const [query, setQuery] = useState("");
+  const learnerRows = useCollection("learners");
+  const profiles = useCollection("tenantProfiles");
+
+  // Pack (segment) tenants: the roster is the tenant's own learners — parent →
+  // their children, staff → their institution. Classic tenants keep the core roster.
+  const packUser = isPackTenantUser(user, profiles);
+  const packLearners = useMemo(
+    () => (packUser ? learnersForUser(user, learnerRows) : null),
+    [packUser, user, learnerRows],
+  );
 
   // Swim accounts only ever see swimmers on their own sessions (coach) or the
   // whole club (swim admin) — never the wider school roster or other subjects.
@@ -42,7 +59,8 @@ function SrbIndexPage() {
   // never students who belong solely to other institutes (tenant isolation).
   // (All hooks must run before the role-based early returns below.)
   const isInstituteScoped = user?.adminScope === "institute";
-  const scoped = useMemo(() => {
+  const scoped = useMemo((): Array<{ id: string; name: string; grade: string; batch: string }> => {
+    if (packLearners) return packLearners.map((l) => learnerAsStudent(l, profiles));
     if (swimSwimmerIds) return students.filter((s) => swimSwimmerIds.has(s.id));
     if (!isInstituteScoped) return students;
     return students.filter(
@@ -52,7 +70,15 @@ function SrbIndexPage() {
           (e) => e.studentId === s.id && e.institutionId === user?.institutionId,
         ),
     );
-  }, [students, crossEnrollments, isInstituteScoped, user?.institutionId, swimSwimmerIds]);
+  }, [
+    students,
+    crossEnrollments,
+    isInstituteScoped,
+    user?.institutionId,
+    swimSwimmerIds,
+    packLearners,
+    profiles,
+  ]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
@@ -67,15 +93,24 @@ function SrbIndexPage() {
 
   // Parents land directly on their first child's timeline
   if (user?.role === "parent") {
-    if (parentChildren.length === 1) {
+    const kids: PickerChild[] = packLearners
+      ? packLearners.map((l) => ({
+          ...learnerAsChild(l, profiles),
+          enrolments: [learnerEnrollment(l)],
+        }))
+      : parentChildren.map((c) => {
+          const row = students.find((x) => x.id === c.id);
+          return { ...c, enrolments: row ? getEnrollments(row) : [] };
+        });
+    if (kids.length === 1) {
       navigate({
         to: "/app/srb/$studentId",
-        params: { studentId: parentChildren[0].id },
+        params: { studentId: kids[0].id },
         replace: true,
       });
       return null;
     }
-    return <ParentChildPicker />;
+    return <ParentChildPicker kids={kids} />;
   }
 
   // Students land on their OWN timeline — resolve via the account's linked One
@@ -184,8 +219,15 @@ function swimmerLevel(studentId: string): string {
   return levels.length ? levels.join(" · ") : "Swimmer · Royal Vista Aquatics";
 }
 
-function ParentChildPicker() {
-  const students = useCollection("students");
+interface PickerChild {
+  id: string;
+  name: string;
+  grade: string;
+  nextClass: string;
+  enrolments: unknown[];
+}
+
+function ParentChildPicker({ kids }: { kids: PickerChild[] }) {
   return (
     <div>
       <PageHeader
@@ -193,9 +235,8 @@ function ParentChildPicker() {
         subtitle="Tap a child to open their record book — across every institute they attend."
       />
       <div className="grid sm:grid-cols-2 gap-4">
-        {parentChildren.map((c) => {
-          const studentRow = students.find((x) => x.id === c.id);
-          const enrolments = studentRow ? getEnrollments(studentRow) : [];
+        {kids.map((c) => {
+          const enrolments = c.enrolments;
           return (
             <Link
               key={c.id}

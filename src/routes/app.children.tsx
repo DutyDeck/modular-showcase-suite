@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { money } from "@/lib/packs/regions";
 import { useMemo } from "react";
 import { PageHeader, Section, Badge, Button } from "@/components/ui-kit";
 import { Avatar } from "@/components/Avatar";
@@ -126,7 +127,7 @@ function ChildBlock({
               <MiniStat label="GPA" value={String(child.gpa)} />
               <MiniStat
                 label="Outstanding"
-                value={`$${totalDue}`}
+                value={money(totalDue, "USD")}
                 tone={totalDue > 0 ? "warn" : undefined}
               />
               <MiniStat

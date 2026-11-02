@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { money } from "@/lib/packs/regions";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -123,7 +124,7 @@ export function CrossTenantEnrollDialog({
       ? programmes.map((p) => ({ value: p.id, label: p.label }))
       : (selected?.availableClasses.map((c) => ({
           value: c.id,
-          label: `${c.label} — $${c.fee}`,
+          label: `${c.label} — ${money(c.fee, "USD")}`,
         })) ?? []);
   const targetLabel =
     swim && programmes

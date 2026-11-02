@@ -1,14 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import {
-  PageHeader,
-  Section,
-  StatCard,
-  Badge,
-  Button,
-  useDisclosure,
-} from "@/components/ui-kit";
+import { PageHeader, Section, StatCard, Badge, Button, useDisclosure } from "@/components/ui-kit";
 import { ImportDialog, type ImportField } from "@/components/ImportDialog";
 import {
   addItem,
@@ -29,12 +22,38 @@ import {
   BookOpen,
   Receipt,
   ClipboardList,
+  HeartHandshake,
+  FileText,
+  ListChecks,
+  Wallet,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { PackContextBar, VerifyNote } from "@/components/packs/PackUI";
+import { isPackTenantUser } from "@/lib/packs/coreBridge";
+import { useTenantContext } from "@/lib/packs/registry";
+import { DEMO_TODAY, learners as seedLearners, type Learner } from "@/lib/packs/foundationData";
+import { learnerDocuments as seedDocuments } from "@/lib/packs/sis/records";
+import { logChange } from "@/lib/packs/sis/activity";
+import {
+  MIGRATION_RUNS,
+  PRIVACY,
+  ageAt,
+  sourcesFor,
+  type MigrationRunSeed,
+} from "@/lib/packs/sis/governance";
 
 export const Route = createFileRoute("/app/migration")({
   head: () => ({ meta: [{ title: "Migration & Imports — 1StudentID" }] }),
-  component: MigrationPage,
+  component: MigrationRoute,
 });
+
+/** Pack (segment) tenants migrate from their own source systems into their
+ *  own records; classic tenants and the global admin keep the original page. */
+function MigrationRoute() {
+  const { user } = useAuth();
+  const profiles = useCollection("tenantProfiles");
+  return isPackTenantUser(user, profiles) ? <PackMigration /> : <MigrationPage />;
+}
 
 interface SourceSystem {
   name: string;
@@ -44,14 +63,54 @@ interface SourceSystem {
 }
 
 const SOURCES: SourceSystem[] = [
-  { name: "Moodle", exportNote: "Site admin → Reports → Export to CSV", status: "Native", color: "from-orange-500 to-amber-500" },
-  { name: "Canvas LMS", exportNote: "Course → Settings → Course Export Package", status: "Native", color: "from-rose-500 to-pink-500" },
-  { name: "Blackboard Learn", exportNote: "Grade Center → Work Offline → Download", status: "CSV", color: "from-sky-500 to-cyan-500" },
-  { name: "Google Classroom", exportNote: "Gradebook → Download grades as CSV", status: "API", color: "from-emerald-500 to-teal-500" },
-  { name: "Schoology", exportNote: "Tools → Roster Export", status: "CSV", color: "from-indigo-500 to-violet-500" },
-  { name: "Edmodo / Microsoft Teams Edu", exportNote: "Class CSV roster export", status: "CSV", color: "from-fuchsia-500 to-purple-500" },
-  { name: "Custom / In-house SIS", exportNote: "Map any CSV columns to 1StudentID schema", status: "CSV", color: "from-slate-500 to-zinc-500" },
-  { name: "Excel / Google Sheets", exportNote: "Save as .csv (UTF-8)", status: "CSV", color: "from-lime-500 to-green-500" },
+  {
+    name: "Moodle",
+    exportNote: "Site admin → Reports → Export to CSV",
+    status: "Native",
+    color: "from-orange-500 to-amber-500",
+  },
+  {
+    name: "Canvas LMS",
+    exportNote: "Course → Settings → Course Export Package",
+    status: "Native",
+    color: "from-rose-500 to-pink-500",
+  },
+  {
+    name: "Blackboard Learn",
+    exportNote: "Grade Center → Work Offline → Download",
+    status: "CSV",
+    color: "from-sky-500 to-cyan-500",
+  },
+  {
+    name: "Google Classroom",
+    exportNote: "Gradebook → Download grades as CSV",
+    status: "API",
+    color: "from-emerald-500 to-teal-500",
+  },
+  {
+    name: "Schoology",
+    exportNote: "Tools → Roster Export",
+    status: "CSV",
+    color: "from-indigo-500 to-violet-500",
+  },
+  {
+    name: "Edmodo / Microsoft Teams Edu",
+    exportNote: "Class CSV roster export",
+    status: "CSV",
+    color: "from-fuchsia-500 to-purple-500",
+  },
+  {
+    name: "Custom / In-house SIS",
+    exportNote: "Map any CSV columns to 1StudentID schema",
+    status: "CSV",
+    color: "from-slate-500 to-zinc-500",
+  },
+  {
+    name: "Excel / Google Sheets",
+    exportNote: "Save as .csv (UTF-8)",
+    status: "CSV",
+    color: "from-lime-500 to-green-500",
+  },
 ];
 
 const STUDENT_IMPORT_FIELDS: ImportField[] = [
@@ -101,9 +160,30 @@ function MigrationPage() {
   const invoicesImport = useDisclosure();
 
   const [history, setHistory] = useState<RunRow[]>([
-    { id: "MIG-1042", entity: "Students", count: 248, source: "Moodle CSV", when: "10 min ago", status: "Completed" },
-    { id: "MIG-1041", entity: "Courses", count: 36, source: "Canvas Export", when: "1 hr ago", status: "Completed" },
-    { id: "MIG-1040", entity: "Users", count: 14, source: "Google Workspace", when: "Yesterday", status: "Partial" },
+    {
+      id: "MIG-1042",
+      entity: "Students",
+      count: 248,
+      source: "Moodle CSV",
+      when: "10 min ago",
+      status: "Completed",
+    },
+    {
+      id: "MIG-1041",
+      entity: "Courses",
+      count: 36,
+      source: "Canvas Export",
+      when: "1 hr ago",
+      status: "Completed",
+    },
+    {
+      id: "MIG-1040",
+      entity: "Users",
+      count: 14,
+      source: "Google Workspace",
+      when: "Yesterday",
+      status: "Partial",
+    },
   ]);
 
   const logRun = (entity: string, count: number, source = "CSV upload") => {
@@ -138,8 +218,7 @@ function MigrationPage() {
         <div
           className="absolute inset-0 opacity-20"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 85% 20%, white, transparent 40%)",
+            backgroundImage: "radial-gradient(circle at 85% 20%, white, transparent 40%)",
           }}
         />
         <div className="relative grid lg:grid-cols-[1.4fr_1fr] gap-6 items-center">
@@ -153,9 +232,8 @@ function MigrationPage() {
               Move your records in three steps.
             </h2>
             <p className="opacity-85 text-sm mt-2 max-w-xl">
-              Export from Moodle, Canvas, Blackboard or Google Classroom →
-              optionally map columns → import. We validate every row before it
-              touches your tenant.
+              Export from Moodle, Canvas, Blackboard or Google Classroom → optionally map columns →
+              import. We validate every row before it touches your tenant.
             </p>
           </div>
           <ol className="space-y-2 text-sm">
@@ -256,29 +334,18 @@ function MigrationPage() {
       >
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {SOURCES.map((s) => (
-            <div
-              key={s.name}
-              className="rounded-xl border bg-card overflow-hidden flex flex-col"
-            >
+            <div key={s.name} className="rounded-xl border bg-card overflow-hidden flex flex-col">
               <div className={`h-2 bg-gradient-to-r ${s.color}`} />
               <div className="p-4 flex-1 flex flex-col">
                 <div className="flex items-center justify-between gap-2">
                   <div className="font-semibold text-sm">{s.name}</div>
                   <Badge
-                    tone={
-                      s.status === "Native"
-                        ? "success"
-                        : s.status === "API"
-                          ? "info"
-                          : "muted"
-                    }
+                    tone={s.status === "Native" ? "success" : s.status === "API" ? "info" : "muted"}
                   >
                     {s.status}
                   </Badge>
                 </div>
-                <div className="text-xs text-muted-foreground mt-1.5 flex-1">
-                  {s.exportNote}
-                </div>
+                <div className="text-xs text-muted-foreground mt-1.5 flex-1">{s.exportNote}</div>
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={studentsImport.onOpen}
@@ -304,7 +371,10 @@ function MigrationPage() {
       </Section>
 
       {/* Guarantees */}
-      <Section title="Migration guarantees" description="What our toolkit does for you automatically.">
+      <Section
+        title="Migration guarantees"
+        description="What our toolkit does for you automatically."
+      >
         <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
           {[
             "Schema validation per row before commit",
@@ -314,10 +384,7 @@ function MigrationPage() {
             "Field-level encryption for PII at rest",
             "Compliance: GDPR · FERPA · PDPA · COPPA",
           ].map((g) => (
-            <li
-              key={g}
-              className="flex items-start gap-2 p-3 rounded-lg border bg-card"
-            >
+            <li key={g} className="flex items-start gap-2 p-3 rounded-lg border bg-card">
               <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
               <span>{g}</span>
             </li>
@@ -393,12 +460,7 @@ function MigrationPage() {
             gpa,
             status: row.status || "Active",
             parent: row.parent || "—",
-            risk:
-              attendance < 70 || gpa < 2.5
-                ? "high"
-                : attendance < 85
-                  ? "medium"
-                  : "low",
+            risk: attendance < 70 || gpa < 2.5 ? "high" : attendance < 85 ? "medium" : "low",
           };
         }}
         onCommit={(items) => {
@@ -451,6 +513,507 @@ function MigrationPage() {
           items.forEach((i) => addItem("invoices", i));
           logRun("Invoices", items.length);
         }}
+      />
+    </div>
+  );
+}
+
+/* ══ Pack-tenant view ═══════════════════════════════════════════════════════
+ * Source systems for the tenant's segment and region, seeded runs whose row
+ * counts come from the tenant's own learners, and CSV imports. Learner imports
+ * create real records; marks and fee balances are validated and staged.
+ * Runs started here are written to the changeLog (entity "migrationRun"). */
+
+type RunStatus = "Completed" | "Partial" | "Staged";
+
+interface PackRun {
+  id: string;
+  entity: string;
+  count: number;
+  source: string;
+  date: string;
+  status: RunStatus;
+  note?: string;
+}
+
+const RUN_ENTITY = "migrationRun";
+
+const LEARNER_FIELDS: ImportField[] = [
+  { key: "name", label: "Name", required: true, sample: "Maya Fernando" },
+  { key: "dob", label: "Date of birth", required: true, sample: "2013-04-09" },
+  { key: "gender", label: "Gender (F/M)", required: true, sample: "F" },
+  { key: "level", label: "Year / level", required: true, sample: "Year 8" },
+  { key: "group", label: "Group / form", sample: "8B" },
+  { key: "guardian", label: "Guardian", sample: "Anil Fernando" },
+  { key: "email", label: "Email", sample: "" },
+  { key: "nationality", label: "Nationality", sample: "" },
+];
+
+const RESULT_FIELDS: ImportField[] = [
+  { key: "studentid", label: "1StudentID", required: true, sample: "S-3001" },
+  { key: "subject", label: "Subject / module", required: true, sample: "Mathematics" },
+  { key: "result", label: "Result", required: true, sample: "7" },
+  { key: "session", label: "Session", sample: "Summer 2026" },
+];
+
+const BALANCE_FIELDS: ImportField[] = [
+  { key: "studentid", label: "1StudentID", required: true, sample: "S-3001" },
+  { key: "amount", label: "Opening balance", required: true, sample: "4500" },
+  { key: "currency", label: "Currency", sample: "" },
+];
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+function PackMigration() {
+  const ctx = useTenantContext();
+  const { tenantId } = ctx;
+  const allLearners = useCollection("learners");
+  const allDocs = useCollection("learnerDocuments");
+  const connections = useCollection("integrationConnections");
+  const calendars = useCollection("academicCalendars");
+  const changeLog = useCollection("changeLog");
+  const posture = PRIVACY[ctx.region.code];
+  const sources = sourcesFor(ctx.region.code, ctx.type);
+  const [source, setSource] = useState(sources[0]?.name ?? "CSV upload");
+
+  const learnersImport = useDisclosure();
+  const resultsImport = useDisclosure();
+  const balancesImport = useDisclosure();
+
+  const learners = useMemo(
+    () => allLearners.filter((l) => l.tenantId === tenantId),
+    [allLearners, tenantId],
+  );
+  const guardians = useMemo(
+    () => new Set(learners.flatMap((l) => l.guardians ?? [])).size,
+    [learners],
+  );
+  const docs = allDocs.filter((d) => d.tenantId === tenantId).length;
+  const connected = new Set(
+    connections.filter((c) => c.tenantId === tenantId && c.status !== "Error").map((c) => c.key),
+  );
+
+  const runs: PackRun[] = useMemo(() => {
+    const seedL = seedLearners.filter((l) => l.tenantId === tenantId);
+    const current = seedL.filter((l) => l.status !== "Graduated" && l.status !== "Withdrawn");
+    const countFor = (r: MigrationRunSeed) => {
+      if (r.entity === "Learners") return seedL.length;
+      if (r.entity === "Guardians") return new Set(seedL.flatMap((l) => l.guardians ?? [])).size;
+      if (r.entity === "Documents")
+        return seedDocuments.filter((d) => d.tenantId === tenantId).length;
+      return (r.perLearner ?? 1) * current.length;
+    };
+    const seeded: PackRun[] = MIGRATION_RUNS.filter((r) => r.tenantId === tenantId).map((r) => ({
+      id: r.id,
+      entity: r.entity,
+      count: countFor(r),
+      source: r.source,
+      date: r.date,
+      status: r.status,
+      note: r.note,
+    }));
+    const logged: PackRun[] = changeLog
+      .filter((c) => c.tenantId === tenantId && c.entity === RUN_ENTITY)
+      .map((c) => {
+        const m = /^(\d+) (.+)$/.exec(c.to ?? "");
+        const [src, status, ...note] = (c.reason ?? "").split(" · ");
+        return {
+          id: c.entityId,
+          entity: m?.[2] ?? c.field,
+          count: Number(m?.[1] ?? 0),
+          source: src || "CSV upload",
+          date: c.at.slice(0, 10),
+          status: (status as RunStatus) || "Completed",
+          note: note.join(" · ") || undefined,
+        };
+      });
+    return [...logged, ...seeded].sort((a, b) => b.date.localeCompare(a.date));
+  }, [changeLog, tenantId]);
+
+  const by = ctx.user?.name ?? "Institute admin";
+
+  const logRun = (entity: string, count: number, status: RunStatus, note?: string) => {
+    const id = nextId("MIG-R", "changeLog", "entityId");
+    logChange({
+      tenantId,
+      entity: RUN_ENTITY,
+      entityId: id,
+      field: "Import run",
+      to: `${count} ${entity}`,
+      by,
+      reason: [source, status, note].filter(Boolean).join(" · "),
+    });
+    return id;
+  };
+
+  const commitLearners = (rows: Record<string, string>[]) => {
+    const cal =
+      calendars.find((c) => c.tenantId === tenantId && c.isDefault)?.id ??
+      calendars.find((c) => c.tenantId === tenantId)?.id ??
+      "";
+    const seen = new Set(learners.map((l) => `${l.name.toLowerCase()}|${l.dob}`));
+    const domain = ctx.profile?.studentAccounts?.domain ?? "student.demo";
+    let created = 0;
+    let badDate = 0;
+    let dupes = 0;
+    let noGuardian = 0;
+    const ids: string[] = [];
+    for (const r of rows) {
+      const name = r.name.trim();
+      const dob = (r.dob ?? "").trim();
+      if (!ISO_DATE.test(dob)) {
+        badDate++;
+        continue;
+      }
+      const k = `${name.toLowerCase()}|${dob}`;
+      if (seen.has(k)) {
+        dupes++;
+        continue;
+      }
+      seen.add(k);
+      const minor = ageAt(dob, DEMO_TODAY) < 18;
+      const guardian = r.guardian?.trim();
+      if (minor && !guardian) noGuardian++;
+      const id = nextId("S-", "learners");
+      const learner: Learner = {
+        id,
+        tenantId,
+        name,
+        gender: /^m/i.test(r.gender ?? "") ? "M" : "F",
+        dob,
+        email:
+          r.email?.trim() ||
+          `${name
+            .toLowerCase()
+            .replace(/[^a-z ]/g, "")
+            .split(" ")
+            .filter(Boolean)
+            .join(".")}@${domain}`,
+        status: "Active",
+        level: r.level.trim(),
+        group: r.group?.trim() || undefined,
+        guardians: guardian ? [guardian] : undefined,
+        calendarId: cal,
+        nationality: r.nationality?.trim() || ctx.region.name,
+        officialIds: {},
+        startDate: DEMO_TODAY,
+      };
+      addItem("learners", learner);
+      logChange({
+        tenantId,
+        entity: "learner",
+        entityId: id,
+        studentId: id,
+        field: "Record created",
+        to: `${name} · ${learner.level}`,
+        by,
+        reason: `Migration import · ${source}`,
+      });
+      ids.push(id);
+      created++;
+    }
+    const held = [
+      badDate && `${badDate} bad date of birth`,
+      dupes && `${dupes} already on record`,
+    ].filter(Boolean);
+    const runId = logRun(
+      "Learners",
+      created,
+      held.length ? "Partial" : "Completed",
+      [held.join(", "), noGuardian && `${noGuardian} under-18 without a guardian`]
+        .filter(Boolean)
+        .join("; ") || undefined,
+    );
+    toast.success(`${runId}: ${created} learner record${created === 1 ? "" : "s"} created`, {
+      description: [
+        ids.length ? `${ids[0]}${ids.length > 1 ? ` … ${ids[ids.length - 1]}` : ""}` : "",
+        held.length ? `Held: ${held.join(", ")}` : "",
+        noGuardian ? `${noGuardian} under-18 without a guardian — add one in Student Records` : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    });
+  };
+
+  const tenantIds = new Set(learners.map((l) => l.id));
+  const commitStaged = (entity: "Results" | "Fee balances", rows: Record<string, string>[]) => {
+    const matched = rows.filter((r) => tenantIds.has(r.studentid.trim()));
+    const unknown = rows.length - matched.length;
+    let note = unknown ? `${unknown} unknown 1StudentID${unknown === 1 ? "" : "s"} held` : "";
+    if (entity === "Fee balances") {
+      const badAmount = matched.filter((r) => Number.isNaN(Number(r.amount))).length;
+      const otherCur = matched.filter(
+        (r) => r.currency && r.currency.toUpperCase() !== ctx.currency,
+      ).length;
+      note = [
+        note,
+        badAmount && `${badAmount} bad amounts`,
+        otherCur && `${otherCur} not in ${ctx.currency}`,
+      ]
+        .filter(Boolean)
+        .join("; ");
+    }
+    const runId = logRun(entity, matched.length, "Staged", note || undefined);
+    toast.success(`${runId}: ${matched.length} of ${rows.length} rows validated`, {
+      description: `Staged for ${entity === "Results" ? "the exams team" : "finance"} to confirm. Nothing was overwritten.${note ? ` ${note}.` : ""}`,
+    });
+  };
+
+  const imports = [
+    {
+      t: "Learners",
+      d: "Creates student records with a 1StudentID",
+      icon: GraduationCap,
+      tag: "Creates records",
+      action: learnersImport.onOpen,
+    },
+    {
+      t: ctx.type === "school" ? "Prior results" : "Module / unit results",
+      d: "Matched on 1StudentID, staged for review",
+      icon: ListChecks,
+      tag: "Validated preview",
+      action: resultsImport.onOpen,
+    },
+    {
+      t: "Fee opening balances",
+      d: `Balances in ${ctx.currency}, staged for finance`,
+      icon: Wallet,
+      tag: "Validated preview",
+      action: balancesImport.onOpen,
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Migration & Imports"
+        subtitle={`Bring ${ctx.tenantName}'s records over from its previous systems.`}
+      />
+      <PackContextBar />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <StatCard
+          label="Learners on record"
+          value={learners.length}
+          icon={<GraduationCap className="h-5 w-5" />}
+          accent="primary"
+        />
+        <StatCard
+          label="Guardians linked"
+          value={guardians}
+          icon={<HeartHandshake className="h-5 w-5" />}
+          accent="info"
+        />
+        <StatCard
+          label="Documents on file"
+          value={docs}
+          icon={<FileText className="h-5 w-5" />}
+          accent="success"
+        />
+        <StatCard
+          label="Migration runs"
+          value={runs.length}
+          icon={<ClipboardList className="h-5 w-5" />}
+          accent="warning"
+        />
+      </div>
+
+      <Section
+        title="Quick CSV imports"
+        description="Rows are checked before anything is saved."
+        actions={
+          <label className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground">Importing from</span>
+            <select
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              className="h-8 rounded-md border bg-background px-2 text-xs"
+            >
+              {sources.map((s) => (
+                <option key={s.name} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        }
+      >
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {imports.map(({ t, d, icon: I, tag, action }) => (
+            <button
+              key={t}
+              onClick={action}
+              className="text-left p-4 rounded-xl border bg-card hover:border-primary hover:shadow-soft transition-all"
+            >
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <I className="h-4 w-4" />
+                </div>
+                <Badge tone={tag === "Creates records" ? "success" : "info"}>{tag}</Badge>
+              </div>
+              <div className="text-sm font-semibold">{t}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{d}</div>
+              <div className="mt-3 inline-flex items-center gap-1 text-xs text-primary font-medium">
+                <Upload className="h-3 w-3" />
+                Upload CSV
+              </div>
+            </button>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        title="Source systems"
+        description={`Common for a ${ctx.type === "university" ? "university" : ctx.type === "college" ? "VET college" : "school"} in ${ctx.region.name}. Anything else: use the CSV importer.`}
+      >
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {sources.map((s) => {
+            const live = !!s.integrationKey && connected.has(s.integrationKey);
+            return (
+              <div key={s.name} className="rounded-xl border bg-card p-4 flex flex-col">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-semibold text-sm">{s.name}</div>
+                  <Badge tone={live ? "success" : s.method === "API" ? "info" : "muted"}>
+                    {live ? "Connected" : s.method}
+                  </Badge>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1.5 flex-1">{s.exportNote}</div>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => {
+                      setSource(s.name);
+                      learnersImport.onOpen();
+                    }}
+                    className="text-xs text-primary font-medium inline-flex items-center gap-1 hover:underline"
+                  >
+                    Import learners
+                    <ArrowRight className="h-3 w-3" />
+                  </button>
+                  {s.method === "API" && !live && (
+                    <Link
+                      to="/app/integrations"
+                      className="text-xs text-muted-foreground font-medium inline-flex items-center gap-1 hover:text-foreground ml-auto"
+                    >
+                      <Plug className="h-3 w-3" />
+                      Connect
+                    </Link>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section
+        title="Recent migration runs"
+        actions={
+          <Link
+            to="/app/compliance"
+            className="text-xs text-primary font-medium hover:underline inline-flex items-center gap-1"
+          >
+            Audit trail
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        }
+      >
+        <div className="overflow-x-auto -mx-4 sm:-mx-5">
+          <table className="w-full text-sm min-w-[720px]">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground border-b">
+                <th className="px-4 sm:px-5 py-2 font-medium">Run</th>
+                <th className="px-4 sm:px-5 py-2 font-medium">Data</th>
+                <th className="px-4 sm:px-5 py-2 font-medium">Rows</th>
+                <th className="px-4 sm:px-5 py-2 font-medium">Source</th>
+                <th className="px-4 sm:px-5 py-2 font-medium">Date</th>
+                <th className="px-4 sm:px-5 py-2 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {runs.map((h) => (
+                <tr key={h.id} className="border-b last:border-0 align-top">
+                  <td className="px-4 sm:px-5 py-3 font-mono text-xs">{h.id}</td>
+                  <td className="px-4 sm:px-5 py-3">
+                    {h.entity}
+                    {h.note && (
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{h.note}</div>
+                    )}
+                  </td>
+                  <td className="px-4 sm:px-5 py-3 font-semibold">{h.count}</td>
+                  <td className="px-4 sm:px-5 py-3 text-muted-foreground">{h.source}</td>
+                  <td className="px-4 sm:px-5 py-3 text-muted-foreground">{h.date}</td>
+                  <td className="px-4 sm:px-5 py-3">
+                    <Badge
+                      tone={
+                        h.status === "Completed"
+                          ? "success"
+                          : h.status === "Staged"
+                            ? "info"
+                            : "warning"
+                      }
+                    >
+                      {h.status}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
+
+      <Section title="What every import does">
+        <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+          {[
+            posture ? `Data stays in ${posture.residency}` : "Data stays in the tenant's region",
+            "Checks every row; duplicates matched on name + date of birth",
+            "Flags under-18s imported without a guardian",
+            "Official IDs are masked in previews and the audit trail",
+            "Every run and every new record is written to the audit trail",
+            "Marks and balances are staged for review, never overwritten",
+          ].map((g) => (
+            <li key={g} className="flex items-start gap-2 p-3 rounded-lg border bg-card">
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
+              <span>{g}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-3 text-[11px] text-muted-foreground flex items-center gap-2">
+          <ShieldCheck className="h-3 w-3 text-success" />
+          {posture?.headline ?? ctx.region.dataProtection} applies to imported data.
+        </div>
+        <VerifyNote />
+      </Section>
+
+      <ImportDialog<Record<string, string>>
+        open={learnersImport.open}
+        onOpenChange={learnersImport.setOpen}
+        title={`Import learners from ${source}`}
+        entityLabel="learners"
+        fields={LEARNER_FIELDS}
+        templateName="learners-template.csv"
+        transform={(row) => row}
+        onCommit={commitLearners}
+      />
+      <ImportDialog<Record<string, string>>
+        open={resultsImport.open}
+        onOpenChange={resultsImport.setOpen}
+        title={`Validate results from ${source}`}
+        entityLabel="result rows"
+        fields={RESULT_FIELDS}
+        templateName="results-template.csv"
+        transform={(row) => row}
+        onCommit={(rows) => commitStaged("Results", rows)}
+      />
+      <ImportDialog<Record<string, string>>
+        open={balancesImport.open}
+        onOpenChange={balancesImport.setOpen}
+        title={`Validate fee balances from ${source}`}
+        entityLabel="balances"
+        fields={BALANCE_FIELDS}
+        templateName="fee-balances-template.csv"
+        transform={(row) => row}
+        onCommit={(rows) => commitStaged("Fee balances", rows)}
       />
     </div>
   );

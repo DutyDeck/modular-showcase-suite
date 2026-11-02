@@ -1,8 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { money } from "@/lib/packs/regions";
 import { PageHeader, Badge } from "@/components/ui-kit";
 import { useCollection } from "@/lib/store";
 import { Star, Users, Search, Check } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { ageOn } from "@/lib/mockData";
+import { isPackTenantUser, learnersForUser } from "@/lib/packs/coreBridge";
+import { DEMO_TODAY } from "@/lib/packs/foundationData";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/marketplace")({
@@ -12,14 +17,33 @@ export const Route = createFileRoute("/app/marketplace")({
 
 function MarketplacePage() {
   const marketplaceCourses = useCollection("marketplace");
+  const { user } = useAuth();
+  const profiles = useCollection("tenantProfiles");
+  const learnerRows = useCollection("learners");
   const [q, setQ] = useState("");
   const [enrolled, setEnrolled] = useState<Record<string, boolean>>({});
-  const list = marketplaceCourses.filter(
-    (c) =>
-      c.title.toLowerCase().includes(q.toLowerCase()) ||
-      c.category.toLowerCase().includes(q.toLowerCase()) ||
-      c.provider.toLowerCase().includes(q.toLowerCase()),
-  );
+  // Institution-pack users only see courses suited to the learner's age: a
+  // student by their own age; a parent (or family-used pupil account) by each
+  // child's. Staff and classic tenants see the full catalogue.
+  const ages = useMemo(() => {
+    if (!isPackTenantUser(user, profiles)) return null;
+    if (user?.role !== "student" && user?.role !== "parent") return null;
+    const today = new Date(DEMO_TODAY + "T00:00:00Z");
+    return learnersForUser(user, learnerRows).map((l) => ({
+      name: l.name.split(" ")[0],
+      age: ageOn(l.dob, today),
+    }));
+  }, [user, profiles, learnerRows]);
+  const suitedFor = (c: { minAge: number; maxAge: number }) =>
+    ages ? ages.filter((k) => k.age >= c.minAge && k.age <= c.maxAge) : [];
+  const list = marketplaceCourses
+    .filter((c) => !ages || suitedFor(c).length > 0)
+    .filter(
+      (c) =>
+        c.title.toLowerCase().includes(q.toLowerCase()) ||
+        c.category.toLowerCase().includes(q.toLowerCase()) ||
+        c.provider.toLowerCase().includes(q.toLowerCase()),
+    );
 
   const enroll = (id: string, title: string) => {
     setEnrolled({ ...enrolled, [id]: true });
@@ -36,8 +60,7 @@ function MarketplacePage() {
         <div
           className="absolute inset-0 opacity-20"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 80% 20%, white, transparent 40%)",
+            backgroundImage: "radial-gradient(circle at 80% 20%, white, transparent 40%)",
           }}
         />
         <div className="relative max-w-2xl">
@@ -78,6 +101,15 @@ function MarketplacePage() {
             <div className="p-4">
               <h3 className="font-semibold">{c.title}</h3>
               <div className="text-xs text-muted-foreground mt-0.5">{c.provider}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">
+                Ages {c.minAge}
+                {c.maxAge >= 99 ? "+" : `–${c.maxAge}`}
+                {ages && ages.length > 1 && suitedFor(c).length > 0
+                  ? ` · for ${suitedFor(c)
+                      .map((k) => k.name)
+                      .join(" & ")}`
+                  : ""}
+              </div>
               <div className="flex items-center gap-3 mt-2 text-xs">
                 <span className="flex items-center gap-1 text-warning">
                   <Star className="h-3 w-3 fill-current" />
@@ -89,7 +121,7 @@ function MarketplacePage() {
                 </span>
               </div>
               <div className="flex items-center justify-between mt-4 pt-3 border-t">
-                <div className="text-lg font-bold">${c.price}</div>
+                <div className="text-lg font-bold">{money(c.price, "USD")}</div>
                 {enrolled[c.id] ? (
                   <span className="text-xs px-3 py-1.5 rounded-md bg-success/15 text-success font-medium inline-flex items-center gap-1">
                     <Check className="h-3 w-3" />

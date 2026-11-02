@@ -1,5 +1,6 @@
 import { isSwimUser, isSwimAdmin, type DemoUser, type Role } from "./mockData";
 import type { ModuleId } from "./modules";
+import type { Experience, PackId } from "./packs/foundationData";
 
 export interface MenuItem {
   label: string;
@@ -578,15 +579,253 @@ export const NAV_CATALOG: MenuItem[] = (() => {
   return out;
 })();
 
-/** Sidebar menu for a user — swim accounts get the curated club menu. */
-export function menuForUser(user: DemoUser | null): MenuItem[] {
+/* ────────────────────────────────────────────────────────────────────────────
+ * Institution packs — menu composition
+ *
+ * menu = core(role) + shared modules(role) + every enabled pack's items(role)
+ *        + foundation(role)
+ * …then AppShell filters by module entitlements. Packs ADD to the core
+ * platform — every tenant keeps the core modules (Record Book, Grades,
+ * Calendar, LMS, Appraisals…). "segment" tenants (school / university /
+ * college) swap a few core destinations for their richer pack-era equivalent
+ * (SEGMENT_SWAPS) so nothing appears twice. Pack items use moduleId "core"
+ * because the PACK is their entitlement (gated by ModuleGate via packForPath). */
+const item = (
+  label: string,
+  to: string,
+  icon: string,
+  group: string,
+  moduleId: ModuleId = "core",
+): MenuItem => ({ label, to, icon, group, moduleId });
+
+const SEG = {
+  dashboard: item("Dashboard", "/app", "LayoutDashboard", "Home"),
+  learners: item("Student Records", "/app/learners", "Contact", "Academics", "students"),
+  myRecord: item("My Record", "/app/learners", "Contact", "Academics", "students"),
+  children: item("My Children", "/app/learners", "Baby", "Family", "students"),
+  registers: item("Attendance", "/app/registers", "CalendarCheck", "Academics", "attendance"),
+  messages: item("Messages", "/app/messages", "MessageSquare", "Communication", "messages"),
+  profile: item("My Profile", "/app/profile", "User", "Account"),
+  settings: item("Settings", "/app/settings", "Settings", "Platform"),
+};
+
+/** Core destinations a segment tenant reaches through the pack-era equivalent
+ *  (same module, richer model). null = covered by a shared-module item:
+ *  per-learner fee accounts replace the classic fee views for families, and
+ *  admissions / module registration replace classic course selection. */
+const SEGMENT_SWAPS: Record<Role, Record<string, MenuItem | null>> = {
+  admin: {
+    "/app/students": SEG.learners,
+    "/app/attendance": SEG.registers,
+    // Fees & Sponsors (per-learner accounts, payers, reconciliation, cash
+    // flow) and the Admissions CRM replace the classic tuition-centre billing
+    // and lead pipeline for school / university / college tenants.
+    "/app/finance": null,
+    "/app/pricing": null,
+    "/app/billing": null,
+    "/app/marketing": null,
+  },
+  teacher: { "/app/students": SEG.learners, "/app/attendance": SEG.registers },
+  parent: {
+    "/app/children": SEG.children,
+    "/app/attendance": SEG.registers,
+    "/app/finance": null,
+    "/app/my-courses": null,
+  },
+  student: {
+    "/app/attendance": SEG.registers,
+    "/app/finance": null,
+    "/app/my-courses": null,
+  },
+};
+
+/** The core role menu with segment swaps applied. */
+function segmentCore(role: Role, core: MenuItem[]): MenuItem[] {
+  const swaps = SEGMENT_SWAPS[role];
+  const out = core.flatMap((m) => {
+    if (!(m.to in swaps)) return [m];
+    const next = swaps[m.to];
+    return next ? [next] : [];
+  });
+  // Students see their own SIS record right after the dashboard.
+  if (role === "student") out.splice(1, 0, SEG.myRecord);
+  return out;
+}
+
+/** Foundations — every institute admin configures region, calendars, codes, ids. */
+const foundationItems: MenuItem[] = [
+  item("Institution Profile", "/app/institution", "Building", "Platform"),
+];
+
+/** Shared modules introduced with the packs (each gated by its own module). */
+const sharedModuleItems: Record<Role, MenuItem[]> = {
+  admin: [
+    item("Admissions", "/app/admissions", "DoorOpen", "Admissions", "admissions"),
+    item("Timetable & Rooms", "/app/timetable", "CalendarRange", "Academics", "timetable"),
+    item("Fees & Sponsors", "/app/fee-accounts", "Wallet", "Finance", "finance"),
+    item("Staff Vetting", "/app/vetting", "ShieldCheck", "Compliance", "vetting"),
+    item("Regulator Returns", "/app/returns", "FileSpreadsheet", "Compliance", "returns"),
+    item("Integrations", "/app/integrations", "Plug", "Platform", "integrations"),
+    item("Group & Campuses", "/app/group", "Network", "Platform", "groups"),
+    item("Requests & Approvals", "/app/requests", "Inbox", "Academics", "requests"),
+    item("IT Administration", "/app/it", "MonitorCog", "Platform", "itadmin"),
+  ],
+  teacher: [
+    item("My Timetable", "/app/timetable", "CalendarRange", "Academics", "timetable"),
+    item("Approvals", "/app/requests", "Inbox", "Academics", "requests"),
+    item("IT Help", "/app/it", "LifeBuoy", "Account", "itadmin"),
+  ],
+  parent: [
+    item("Timetable", "/app/timetable", "CalendarRange", "Family", "timetable"),
+    item("Fees & Payments", "/app/fee-accounts", "Wallet", "Family", "finance"),
+    item("Requests", "/app/requests", "Inbox", "Family", "requests"),
+    item("IT Help", "/app/it", "LifeBuoy", "Account", "itadmin"),
+  ],
+  student: [
+    item("My Timetable", "/app/timetable", "CalendarRange", "Academics", "timetable"),
+    item("Fees & Funding", "/app/fee-accounts", "Wallet", "Finance", "finance"),
+    item("My Requests", "/app/requests", "Inbox", "Academics", "requests"),
+    item("IT Help", "/app/it", "LifeBuoy", "Account", "itadmin"),
+  ],
+};
+
+/** Pack-specific items by role. The swim pack keeps its curated menus. */
+export const PACK_MENUS: Record<PackId, Partial<Record<Role, MenuItem[]>>> = {
+  swim: {
+    admin: [item("Swim Club", "/app/courses/C-SWIM", "Waves", "Swim Club")],
+  },
+  "intl-school": {
+    admin: [
+      item("Classes & Enrolment", "/app/school/classes", "Users", "School"),
+      item("Curricula & Houses", "/app/school/curricula", "Layers", "School"),
+      item("Exam Entries", "/app/school/exams", "ClipboardList", "School"),
+      item("Parent Meetings", "/app/school/meetings", "Handshake", "School"),
+      item("School Life", "/app/school/life", "Bus", "School"),
+    ],
+    teacher: [
+      item("My Forms & Sets", "/app/school/classes", "Users", "School"),
+      item("Exam Entries & Predictions", "/app/school/exams", "ClipboardList", "School"),
+      item("Parent Meetings", "/app/school/meetings", "Handshake", "School"),
+      item("Houses & School Life", "/app/school/life", "Bus", "School"),
+    ],
+    parent: [
+      item("Parent Meetings", "/app/school/meetings", "Handshake", "School"),
+      item("Trips & Activities", "/app/school/life", "Bus", "School"),
+      item("Exam Entries", "/app/school/exams", "ClipboardList", "School"),
+    ],
+  },
+  "higher-ed": {
+    admin: [
+      item("Programmes & Modules", "/app/he/programmes", "Library", "Higher Education"),
+      item("Module Registration", "/app/he/registration", "ListChecks", "Higher Education"),
+      item("Assessment & Boards", "/app/he/assessment", "Scale", "Higher Education"),
+      item("Transcripts & Awards", "/app/he/transcripts", "ScrollText", "Higher Education"),
+      item("Exam Timetable", "/app/he/exams", "CalendarClock", "Higher Education"),
+      item("Alumni", "/app/alumni", "GraduationCap", "Higher Education"),
+    ],
+    teacher: [
+      item("My Modules & Marking", "/app/he/assessment", "Scale", "Higher Education"),
+      item("Programmes & Modules", "/app/he/programmes", "Library", "Higher Education"),
+      item("Exams & Invigilation", "/app/he/exams", "CalendarClock", "Higher Education"),
+    ],
+    student: [
+      item("My Modules", "/app/he/registration", "ListChecks", "Higher Education"),
+      item("Results & Transcript", "/app/he/transcripts", "ScrollText", "Higher Education"),
+      item("Extenuating Circumstances", "/app/he/assessment", "LifeBuoy", "Higher Education"),
+      item("My Exams", "/app/he/exams", "CalendarClock", "Higher Education"),
+      item("Alumni", "/app/alumni", "GraduationCap", "Higher Education"),
+    ],
+  },
+  college: {
+    admin: [
+      item("Qualifications & Units", "/app/college/qualifications", "Award", "College"),
+      item("Apprenticeships & Placements", "/app/college/work-based", "HardHat", "College"),
+    ],
+    teacher: [item("Units & Assessment", "/app/college/qualifications", "Award", "College")],
+    student: [item("My Qualification", "/app/college/qualifications", "Award", "College")],
+  },
+};
+
+export interface MenuContext {
+  experience: Experience;
+  packs: Set<PackId>;
+  /** Pupil account used by the family (primary years) — adds family items. */
+  familyOperated?: boolean;
+  /** Graduated student — keeps an alumni menu (record, transcript, alumni). */
+  graduated?: boolean;
+}
+
+function dedupe(items: MenuItem[]): MenuItem[] {
+  const seen = new Set<string>();
+  return items.filter((i) => {
+    if (seen.has(i.to)) return false;
+    seen.add(i.to);
+    return true;
+  });
+}
+
+const PACK_ORDER: PackId[] = ["intl-school", "higher-ed", "college", "swim"];
+
+/** Sidebar menu for a user — composed from experience, packs and modules. */
+export function menuForUser(user: DemoUser | null, ctx?: MenuContext): MenuItem[] {
+  // A swim-club account's product IS the Swim Pack — with the pack off, only
+  // the account pages remain (ModuleGate shows the "pack not enabled" screen).
+  if (isSwimUser(user) && ctx && !ctx.packs.has("swim")) {
+    return isSwimAdmin(user) ? [SEG.settings, SEG.profile] : [SEG.profile];
+  }
   if (isSwimAdmin(user)) return swimAdminMenu;
   if (isSwimUser(user)) return swimCoachMenu;
-  const menu = menusByRole[user?.role ?? "student"];
+  const role = user?.role ?? "student";
+  const packs = ctx?.packs ?? new Set<PackId>();
+  const packItems = PACK_ORDER.filter((p) => packs.has(p)).flatMap(
+    (p) => PACK_MENUS[p][role] ?? [],
+  );
+  const instituteAdmin = role === "admin" && user?.adminScope === "institute";
+  const shared = sharedModuleItems[role];
+  const foundation = instituteAdmin ? foundationItems : [];
+
+  let menu = menusByRole[role];
   // Appraising teachers is an adult responsibility — hide it from minor students
   // (only 18+ self-managed students may rate; for a minor the parent does it).
-  if (user?.role === "student" && !user.selfManaged) {
-    return menu.filter((m) => m.to !== "/app/appraisals");
+  if (role === "student" && !user?.selfManaged) {
+    menu = menu.filter((m) => m.to !== "/app/appraisals");
   }
-  return menu;
+
+  if (ctx?.experience === "segment" && role === "student" && ctx.graduated) {
+    // Graduates keep their 1StudentID: record, transcript, fees and the alumni
+    // network — not the teaching pages of a course they've finished.
+    const keep = new Set([
+      "/app",
+      "/app/learners",
+      "/app/srb",
+      "/app/he/transcripts",
+      "/app/alumni",
+      "/app/fee-accounts",
+      "/app/requests",
+      "/app/messages",
+      "/app/it",
+      "/app/profile",
+    ]);
+    return dedupe([...segmentCore(role, menu), ...shared, ...packItems]).filter((m) =>
+      keep.has(m.to),
+    );
+  }
+
+  if (ctx?.experience === "segment") {
+    // A family-operated pupil account is used by the parent: it keeps the
+    // pupil's own pages and adds the family pages (trips, meetings, fees).
+    const family =
+      role === "student" && ctx.familyOperated
+        ? [
+            ...sharedModuleItems.parent,
+            ...PACK_ORDER.filter((p) => packs.has(p)).flatMap((p) => PACK_MENUS[p].parent ?? []),
+          ]
+        : [];
+    return dedupe([...segmentCore(role, menu), ...shared, ...packItems, ...family, ...foundation]);
+  }
+  // The global admin manages packs from Settings, not from tenant menus.
+  if (role === "admin" && !instituteAdmin) return menu;
+  // Classic tenants: pack items and the new shared modules append. Shared
+  // modules are off by default for classic tenants (ModulesPanel turns them on).
+  return dedupe([...menu, ...(role === "admin" ? shared : []), ...packItems, ...foundation]);
 }

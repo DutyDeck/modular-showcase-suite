@@ -47,6 +47,35 @@ import {
   billingClosures as initialBillingClosures,
   billingCredits as initialBillingCredits,
 } from "./mockData";
+import {
+  tenantProfiles as initialTenantProfiles,
+  academicCalendars as initialAcademicCalendars,
+  learners as initialLearners,
+  tenantGroups as initialTenantGroups,
+  intakes as initialIntakes,
+} from "./packs/foundationData";
+import * as school from "./packs/schoolData";
+import * as he from "./packs/heData";
+import * as ops from "./packs/opsData";
+import * as biz from "./packs/bizData";
+import { learnerSrb } from "./packs/coreBridge";
+// SIS completion (documents, CRM, reconciliation, exams, results, requests,
+// lecturer tools, IT admin) — one file per area under ./packs/sis.
+import * as sis_shared from "./packs/sis/shared";
+import * as sis_records from "./packs/sis/records";
+import * as sis_crm from "./packs/sis/crm";
+import * as sis_finance from "./packs/sis/finance";
+import * as sis_exams from "./packs/sis/exams";
+import * as sis_results from "./packs/sis/results";
+import * as sis_requests from "./packs/sis/requests";
+import * as sis_teaching from "./packs/sis/teaching";
+import * as sis_itadmin from "./packs/sis/itadmin";
+import * as sis_alumni from "./packs/sis/alumni";
+import * as sis_classes from "./packs/sis/classes";
+import * as sis_lms from "./packs/sis/lmsContent";
+import * as sis_coursework from "./packs/sis/coursework";
+import * as sis_community from "./packs/sis/community";
+import * as sis_conversations from "./packs/sis/conversations";
 
 export type {
   SrbEntry,
@@ -102,6 +131,36 @@ export type {
   BillingClosure,
   BillingCredit,
 } from "./mockData";
+
+/* ── Institution packs & foundations (see src/lib/packs) ── */
+export type {
+  TenantProfile,
+  AcademicCalendar,
+  AcademicTerm,
+  Learner,
+  TenantGroup,
+  PackId,
+  Intake,
+  IntakeStatus,
+} from "./packs/foundationData";
+export type * from "./packs/schoolData";
+export type * from "./packs/heData";
+export type * from "./packs/opsData";
+export type * from "./packs/bizData";
+export type * from "./packs/sis/shared";
+export type * from "./packs/sis/records";
+export type * from "./packs/sis/crm";
+export type * from "./packs/sis/finance";
+export type * from "./packs/sis/exams";
+export type * from "./packs/sis/results";
+export type * from "./packs/sis/requests";
+export type * from "./packs/sis/teaching";
+export type * from "./packs/sis/itadmin";
+export type * from "./packs/sis/alumni";
+export type * from "./packs/sis/classes";
+export type * from "./packs/sis/lmsContent";
+export type * from "./packs/sis/coursework";
+export type * from "./packs/sis/learning";
 
 export type Student = (typeof initialStudents)[number];
 export type Course = (typeof initialCourses)[number];
@@ -211,6 +270,70 @@ interface State {
   billingEnrollments: BillingEnrollment[];
   billingClosures: BillingClosure[];
   billingCredits: BillingCredit[];
+  // Institution packs & foundations
+  tenantProfiles: typeof initialTenantProfiles;
+  academicCalendars: typeof initialAcademicCalendars;
+  learners: typeof initialLearners;
+  tenantGroups: typeof initialTenantGroups;
+  intakes: typeof initialIntakes;
+  curricula: typeof school.curricula;
+  tutorGroups: typeof school.tutorGroups;
+  houses: typeof school.houses;
+  housePoints: typeof school.housePoints;
+  examEntries: typeof school.examEntries;
+  ptmEvents: typeof school.ptmEvents;
+  ptmBookings: typeof school.ptmBookings;
+  schoolServices: typeof school.schoolServices;
+  serviceEnrolments: typeof school.serviceEnrolments;
+  programmes: typeof he.programmes;
+  heModules: typeof he.heModules;
+  moduleRegistrations: typeof he.moduleRegistrations;
+  moduleMarks: typeof he.moduleMarks;
+  ecClaims: typeof he.ecClaims;
+  boardDecisions: typeof he.boardDecisions;
+  qualifications: typeof he.qualifications;
+  unitAchievements: typeof he.unitAchievements;
+  apprenticeships: typeof he.apprenticeships;
+  placements: typeof he.placements;
+  applications: typeof ops.applications;
+  rooms: typeof ops.rooms;
+  timetableSlots: typeof ops.timetableSlots;
+  coverRequests: typeof ops.coverRequests;
+  registerMarks: typeof ops.registerMarks;
+  vettingRecords: typeof ops.vettingRecords;
+  feeAccounts: typeof biz.feeAccounts;
+  bankSlips: typeof biz.bankSlips;
+  returnSubmissions: typeof biz.returnSubmissions;
+  integrationConnections: typeof biz.integrationConnections;
+  outbox: typeof sis_shared.outbox;
+  changeLog: typeof sis_shared.changeLog;
+  learnerDocuments: typeof sis_records.learnerDocuments;
+  priorQualifications: typeof sis_records.priorQualifications;
+  employmentRecords: typeof sis_records.employmentRecords;
+  alumniRecords: typeof sis_alumni.alumniRecords;
+  subjectClasses: typeof sis_classes.subjectClasses;
+  learningItems: typeof sis_lms.learningItems;
+  coursework: typeof sis_coursework.coursework;
+  submissions: typeof sis_coursework.submissions;
+  progressReports: typeof sis_coursework.progressReports;
+  counsellorTargets: typeof sis_crm.counsellorTargets;
+  counsellorRotas: typeof sis_crm.counsellorRotas;
+  bankStatementLines: typeof sis_finance.bankStatementLines;
+  reminderRules: typeof sis_finance.reminderRules;
+  paymentReminders: typeof sis_finance.paymentReminders;
+  examSittings: typeof sis_exams.examSittings;
+  invigilatorProfiles: typeof sis_exams.invigilatorProfiles;
+  gradingSchemes: typeof sis_results.gradingSchemes;
+  markBatches: typeof sis_results.markBatches;
+  gradeAppeals: typeof sis_results.gradeAppeals;
+  certificateIssues: typeof sis_results.certificateIssues;
+  studentRequests: typeof sis_requests.studentRequests;
+  qrSessions: typeof sis_teaching.qrSessions;
+  classChanges: typeof sis_teaching.classChanges;
+  teachingAssignments: typeof sis_teaching.teachingAssignments;
+  staffTeachingProfiles: typeof sis_teaching.staffTeachingProfiles;
+  accountActions: typeof sis_itadmin.accountActions;
+  supportTickets: typeof sis_itadmin.supportTickets;
 }
 
 const STORAGE_KEY = "oneedu.store.v3";
@@ -220,7 +343,7 @@ const STORAGE_KEY = "oneedu.store.v3";
 // deploy to clear stale names/threads. It does NOT rename STORAGE_KEY (which
 // would wipe data unconditionally); it only resets when the seed actually moves.
 const SEED_VERSION_KEY = "oneedu.store.seedver";
-const SEED_VERSION = "2026-07-billing-perchild";
+const SEED_VERSION = "2026-11-age-appropriate-2";
 
 function makeInitialState(): State {
   return {
@@ -234,16 +357,16 @@ function makeInitialState(): State {
     attendance: [...initialAttendance],
     marketplace: [...initialMarketplace],
     messages: [...initialMessages],
-    srb: [...initialSrb, ...initialSwimSrb],
+    srb: [...initialSrb, ...initialSwimSrb, ...learnerSrb],
     enrollments: [],
-    teacherRatings: [...initialTeacherRatings],
+    teacherRatings: [...initialTeacherRatings, ...sis_community.seedTeacherRatings],
     trainingEnrollments: [...initialTrainingEnrollments],
     sessionAttendance: [...initialSessionAttendance],
     incidents: [...initialIncidents],
     coachAttendance: [...initialCoachAttendance],
     sessionRosters: [...initialSessionRosters],
-    chat: [...initialChat],
-    chatGroups: [...initialChatGroups],
+    chat: [...initialChat, ...sis_conversations.seedChat],
+    chatGroups: [...initialChatGroups, ...sis_conversations.seedChatGroups],
     swimmerMoves: [...initialSwimmerMoves],
     levelAssessments: [...initialLevelAssessments],
     raceTimes: [...initialRaceTimes],
@@ -267,6 +390,69 @@ function makeInitialState(): State {
     billingEnrollments: [...initialBillingEnrollments],
     billingClosures: [...initialBillingClosures],
     billingCredits: [...initialBillingCredits],
+    tenantProfiles: structuredClone(initialTenantProfiles),
+    academicCalendars: structuredClone(initialAcademicCalendars),
+    learners: structuredClone(initialLearners),
+    tenantGroups: structuredClone(initialTenantGroups),
+    intakes: structuredClone(initialIntakes),
+    curricula: structuredClone(school.curricula),
+    tutorGroups: structuredClone(school.tutorGroups),
+    houses: structuredClone(school.houses),
+    housePoints: structuredClone(school.housePoints),
+    examEntries: structuredClone(school.examEntries),
+    ptmEvents: structuredClone(school.ptmEvents),
+    ptmBookings: structuredClone(school.ptmBookings),
+    schoolServices: structuredClone(school.schoolServices),
+    serviceEnrolments: structuredClone(school.serviceEnrolments),
+    programmes: structuredClone(he.programmes),
+    heModules: structuredClone(he.heModules),
+    moduleRegistrations: structuredClone(he.moduleRegistrations),
+    moduleMarks: structuredClone(he.moduleMarks),
+    ecClaims: structuredClone(he.ecClaims),
+    boardDecisions: structuredClone(he.boardDecisions),
+    qualifications: structuredClone(he.qualifications),
+    unitAchievements: structuredClone(he.unitAchievements),
+    apprenticeships: structuredClone(he.apprenticeships),
+    placements: structuredClone(he.placements),
+    applications: structuredClone(ops.applications),
+    rooms: structuredClone(ops.rooms),
+    timetableSlots: structuredClone(ops.timetableSlots),
+    coverRequests: structuredClone(ops.coverRequests),
+    registerMarks: structuredClone(ops.registerMarks),
+    vettingRecords: structuredClone(ops.vettingRecords),
+    feeAccounts: structuredClone(biz.feeAccounts),
+    bankSlips: structuredClone(biz.bankSlips),
+    returnSubmissions: structuredClone(biz.returnSubmissions),
+    integrationConnections: structuredClone(biz.integrationConnections),
+    outbox: structuredClone([...sis_shared.outbox, ...sis_itadmin.seedOutbox]),
+    changeLog: structuredClone([...sis_shared.changeLog, ...sis_records.seedChangeLog]),
+    learnerDocuments: structuredClone(sis_records.learnerDocuments),
+    priorQualifications: structuredClone(sis_records.priorQualifications),
+    employmentRecords: structuredClone(sis_records.employmentRecords),
+    alumniRecords: structuredClone(sis_alumni.alumniRecords),
+    subjectClasses: structuredClone(sis_classes.subjectClasses),
+    learningItems: structuredClone(sis_lms.learningItems),
+    coursework: structuredClone(sis_coursework.coursework),
+    submissions: structuredClone(sis_coursework.submissions),
+    progressReports: structuredClone(sis_coursework.progressReports),
+    counsellorTargets: structuredClone(sis_crm.counsellorTargets),
+    counsellorRotas: structuredClone(sis_crm.counsellorRotas),
+    bankStatementLines: structuredClone(sis_finance.bankStatementLines),
+    reminderRules: structuredClone(sis_finance.reminderRules),
+    paymentReminders: structuredClone(sis_finance.paymentReminders),
+    examSittings: structuredClone(sis_exams.examSittings),
+    invigilatorProfiles: structuredClone(sis_exams.invigilatorProfiles),
+    gradingSchemes: structuredClone(sis_results.gradingSchemes),
+    markBatches: structuredClone(sis_results.markBatches),
+    gradeAppeals: structuredClone(sis_results.gradeAppeals),
+    certificateIssues: structuredClone(sis_results.certificateIssues),
+    studentRequests: structuredClone(sis_requests.studentRequests),
+    qrSessions: structuredClone(sis_teaching.qrSessions),
+    classChanges: structuredClone(sis_teaching.classChanges),
+    teachingAssignments: structuredClone(sis_teaching.teachingAssignments),
+    staffTeachingProfiles: structuredClone(sis_teaching.staffTeachingProfiles),
+    accountActions: structuredClone(sis_itadmin.accountActions),
+    supportTickets: structuredClone(sis_itadmin.supportTickets),
   };
 }
 

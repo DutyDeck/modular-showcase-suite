@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import { money } from "@/lib/packs/regions";
 import { useMemo } from "react";
 import { useAuth } from "@/lib/auth";
 import { useCollection } from "@/lib/store";
@@ -12,6 +13,7 @@ import {
   awardProgressFor,
   isAwardComplete,
 } from "@/lib/mockData";
+import { learnerAsStudent, learnerEnrollment, learnersForUser } from "@/lib/packs/coreBridge";
 import { Avatar } from "@/components/Avatar";
 import { Badge, Button, PageHeader, Section, useDisclosure } from "@/components/ui-kit";
 import { SrbTimeline, SrbComposer } from "@/components/Srb";
@@ -46,8 +48,23 @@ function SrbStudentPage() {
   const srb = useCollection("srb");
   const sessionAtt = useCollection("sessionAttendance");
   const composer = useDisclosure();
+  const learnerRows = useCollection("learners");
+  const profiles = useCollection("tenantProfiles");
+  // A pack-tenant learner (school / university / college) resolves through the
+  // core bridge — same Record Book, the learner's own institution.
+  // Only people linked to the learner see the book: the global admin, or a
+  // user the bridge resolves (own child, self, or staff of that institution).
+  const learner = useMemo(() => {
+    const l = learnerRows.find((x) => x.id === studentId);
+    if (!l || user?.adminScope === "global") return l;
+    return learnersForUser(user, learnerRows).some((x) => x.id === l.id) ? l : undefined;
+  }, [learnerRows, studentId, user]);
+  const blockedLearner = !learner && learnerRows.some((x) => x.id === studentId);
 
   const student = useMemo(() => {
+    if (blockedLearner) return null;
+    if (learner)
+      return { ...learnerAsStudent(learner, profiles), duesUSD: undefined, nextClass: undefined };
     const s = students.find((x) => x.id === studentId);
     if (s) {
       const c = parentChildren.find((c) => c.id === studentId);
@@ -75,10 +92,13 @@ function SrbStudentPage() {
         nextClass: c.nextClass,
       };
     return null;
-  }, [students, studentId]);
+  }, [students, studentId, learner, blockedLearner, profiles]);
 
   // An institute admin only sees record-book entries from their own institute.
-  const scopeInst = user?.adminScope === "institute" ? user.institutionId : undefined;
+  const scopeInst =
+    user?.adminScope === "institute" || (learner && user?.role === "teacher")
+      ? user?.institutionId
+      : undefined;
   // Swim accounts only see swim-club records for the swimmer, never other subjects.
   const swim = isSwimUser(user);
   const scopeCourse = swim ? SWIM_COURSE_ID : undefined;
@@ -106,6 +126,7 @@ function SrbStudentPage() {
 
   const enrolments = useMemo(() => {
     if (!student) return [];
+    if (learner) return [learnerEnrollment(learner)];
     const all = getEnrollments({
       id: student.id,
       grade: student.grade,
@@ -117,7 +138,7 @@ function SrbStudentPage() {
       return all.filter((e) => e.institutionId === user.institutionId);
     }
     return all;
-  }, [student, user?.adminScope, user?.institutionId]);
+  }, [student, learner, user?.adminScope, user?.institutionId]);
 
   if (!student) {
     return (
@@ -246,7 +267,7 @@ function SrbStudentPage() {
                 <HeroStat
                   icon={<Wallet className="h-4 w-4" />}
                   label="Outstanding"
-                  value={student.duesUSD ? `$${student.duesUSD}` : "—"}
+                  value={student.duesUSD ? money(student.duesUSD, "USD") : "—"}
                 />
               </>
             )}
@@ -345,8 +366,10 @@ function SrbStudentPage() {
         defaultStudentId={student.id}
         defaultStudentName={student.name}
         courseId={scopeCourse}
-        institutionId={swim ? user?.institutionId : undefined}
-        institutionName={swim ? user?.institutionName : undefined}
+        institutionId={swim ? user?.institutionId : learner?.tenantId}
+        institutionName={
+          swim ? user?.institutionName : learner ? enrolments[0]?.institution : undefined
+        }
         allowRating={swim && isStaff}
       />
 

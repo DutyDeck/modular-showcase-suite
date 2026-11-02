@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { genderFor, photoOverride } from "@/lib/people";
+import { isMinorName } from "@/lib/minors";
+import { useCollection } from "@/lib/store";
 
 interface AvatarProps {
   name: string;
@@ -33,13 +35,13 @@ const PALETTE: Array<{ from: string; to: string }> = [
 // Kept as separate gendered pools so a derived portrait always matches the
 // person's gender (see genderFor in lib/people).
 const MEN_PORTRAITS: string[] = [
-  3, 5, 8, 12, 15, 18, 21, 24, 27, 30, 32, 36, 39, 42, 45, 48, 51, 53, 56,
-  59, 62, 65, 68, 71, 74, 76, 79, 82, 85, 89, 91, 94, 96, 99,
+  3, 5, 8, 12, 15, 18, 21, 24, 27, 30, 32, 36, 39, 42, 45, 48, 51, 53, 56, 59, 62, 65, 68, 71, 74,
+  76, 79, 82, 85, 89, 91, 94, 96, 99,
 ].map((n) => `https://randomuser.me/api/portraits/men/${n}.jpg`);
 
 const WOMEN_PORTRAITS: string[] = [
-  1, 4, 7, 8, 11, 14, 15, 18, 21, 23, 25, 28, 33, 36, 39, 42, 44, 47, 50,
-  52, 55, 58, 62, 65, 68, 71, 74, 77, 79, 82, 85, 88, 92, 95, 97,
+  1, 4, 7, 8, 11, 14, 15, 18, 21, 23, 25, 28, 33, 36, 39, 42, 44, 47, 50, 52, 55, 58, 62, 65, 68,
+  71, 74, 77, 79, 82, 85, 88, 92, 95, 97,
 ].map((n) => `https://randomuser.me/api/portraits/women/${n}.jpg`);
 
 function hash(s: string): number {
@@ -51,7 +53,11 @@ function hash(s: string): number {
 }
 
 function initials(name: string): string {
-  const parts = name.replace(/\([^)]*\)/g, "").trim().split(/\s+/).filter(Boolean);
+  const parts = name
+    .replace(/\([^)]*\)/g, "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
   if (parts.length === 0) return "?";
   const skip = new Set(["dr", "dr.", "mr", "mr.", "mrs", "mrs.", "ms", "ms.", "prof", "prof."]);
   const meaningful = parts.filter((p) => !skip.has(p.toLowerCase()));
@@ -83,8 +89,11 @@ export function Avatar({
   shape = "circle",
 }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
+  const learners = useCollection("learners");
   const hashKey = seed ?? name;
-  const photo = src === undefined ? portraitFor(hashKey, name) : src;
+  // Children never get a stock (adult) portrait — initials only.
+  const minor = isMinorName(name, learners);
+  const photo = minor ? null : src === undefined ? portraitFor(hashKey, name) : src;
   const showPhoto = !!photo && !imgError;
 
   const c =

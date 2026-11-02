@@ -13,8 +13,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppVettingRouteImport } from './routes/app.vetting'
 import { Route as AppUsersRouteImport } from './routes/app.users'
 import { Route as AppTrainingRouteImport } from './routes/app.training'
+import { Route as AppTimetableRouteImport } from './routes/app.timetable'
 import { Route as AppTenantsRouteImport } from './routes/app.tenants'
 import { Route as AppTeacherClassesRouteImport } from './routes/app.teacher-classes'
 import { Route as AppSwimReportsRouteImport } from './routes/app.swim-reports'
@@ -22,7 +24,10 @@ import { Route as AppStudentsRouteImport } from './routes/app.students'
 import { Route as AppSrbRouteImport } from './routes/app.srb'
 import { Route as AppSquadRouteImport } from './routes/app.squad'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppReturnsRouteImport } from './routes/app.returns'
+import { Route as AppRequestsRouteImport } from './routes/app.requests'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
+import { Route as AppRegistersRouteImport } from './routes/app.registers'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppPricingRouteImport } from './routes/app.pricing'
 import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
@@ -32,9 +37,15 @@ import { Route as AppMessagesRouteImport } from './routes/app.messages'
 import { Route as AppMarketplaceRouteImport } from './routes/app.marketplace'
 import { Route as AppMarketingRouteImport } from './routes/app.marketing'
 import { Route as AppLmsRouteImport } from './routes/app.lms'
+import { Route as AppLearnersRouteImport } from './routes/app.learners'
+import { Route as AppItRouteImport } from './routes/app.it'
+import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
+import { Route as AppInstitutionRouteImport } from './routes/app.institution'
+import { Route as AppGroupRouteImport } from './routes/app.group'
 import { Route as AppGradingRouteImport } from './routes/app.grading'
 import { Route as AppGradesRouteImport } from './routes/app.grades'
 import { Route as AppFinanceRouteImport } from './routes/app.finance'
+import { Route as AppFeeAccountsRouteImport } from './routes/app.fee-accounts'
 import { Route as AppCoursesRouteImport } from './routes/app.courses'
 import { Route as AppComplianceRouteImport } from './routes/app.compliance'
 import { Route as AppCoachingRouteImport } from './routes/app.coaching'
@@ -46,7 +57,9 @@ import { Route as AppAwardsRouteImport } from './routes/app.awards'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
 import { Route as AppAssignmentsRouteImport } from './routes/app.assignments'
 import { Route as AppAppraisalsRouteImport } from './routes/app.appraisals'
+import { Route as AppAlumniRouteImport } from './routes/app.alumni'
 import { Route as AppAiInsightsRouteImport } from './routes/app.ai-insights'
+import { Route as AppAdmissionsRouteImport } from './routes/app.admissions'
 import { Route as AppTrainingIndexRouteImport } from './routes/app.training.index'
 import { Route as AppSrbIndexRouteImport } from './routes/app.srb.index'
 import { Route as AppCoursesIndexRouteImport } from './routes/app.courses.index'
@@ -55,8 +68,20 @@ import { Route as AppAppraisalsIndexRouteImport } from './routes/app.appraisals.
 import { Route as AppTrainingCourseIdRouteImport } from './routes/app.training.$courseId'
 import { Route as AppSrbStudentIdRouteImport } from './routes/app.srb.$studentId'
 import { Route as AppSessionsSessionIdRouteImport } from './routes/app.sessions.$sessionId'
+import { Route as AppSchoolMeetingsRouteImport } from './routes/app.school.meetings'
+import { Route as AppSchoolLifeRouteImport } from './routes/app.school.life'
+import { Route as AppSchoolExamsRouteImport } from './routes/app.school.exams'
+import { Route as AppSchoolCurriculaRouteImport } from './routes/app.school.curricula'
+import { Route as AppSchoolClassesRouteImport } from './routes/app.school.classes'
 import { Route as AppInvoiceIdRouteImport } from './routes/app.invoice.$id'
+import { Route as AppHeTranscriptsRouteImport } from './routes/app.he.transcripts'
+import { Route as AppHeRegistrationRouteImport } from './routes/app.he.registration'
+import { Route as AppHeProgrammesRouteImport } from './routes/app.he.programmes'
+import { Route as AppHeExamsRouteImport } from './routes/app.he.exams'
+import { Route as AppHeAssessmentRouteImport } from './routes/app.he.assessment'
 import { Route as AppCoursesCourseIdRouteImport } from './routes/app.courses.$courseId'
+import { Route as AppCollegeWorkBasedRouteImport } from './routes/app.college.work-based'
+import { Route as AppCollegeQualificationsRouteImport } from './routes/app.college.qualifications'
 import { Route as AppCertificateProgressIdRouteImport } from './routes/app.certificate.$progressId'
 import { Route as AppAttendanceTakeRouteImport } from './routes/app.attendance.take'
 import { Route as AppAppraisalsTeacherIdRouteImport } from './routes/app.appraisals.$teacherId'
@@ -81,6 +106,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppVettingRoute = AppVettingRouteImport.update({
+  id: '/vetting',
+  path: '/vetting',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -89,6 +119,11 @@ const AppUsersRoute = AppUsersRouteImport.update({
 const AppTrainingRoute = AppTrainingRouteImport.update({
   id: '/training',
   path: '/training',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTimetableRoute = AppTimetableRouteImport.update({
+  id: '/timetable',
+  path: '/timetable',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTenantsRoute = AppTenantsRouteImport.update({
@@ -126,9 +161,24 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReturnsRoute = AppReturnsRouteImport.update({
+  id: '/returns',
+  path: '/returns',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRequestsRoute = AppRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppReportsRoute = AppReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRegistersRoute = AppRegistersRouteImport.update({
+  id: '/registers',
+  path: '/registers',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProfileRoute = AppProfileRouteImport.update({
@@ -176,6 +226,31 @@ const AppLmsRoute = AppLmsRouteImport.update({
   path: '/lms',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLearnersRoute = AppLearnersRouteImport.update({
+  id: '/learners',
+  path: '/learners',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppItRoute = AppItRouteImport.update({
+  id: '/it',
+  path: '/it',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInstitutionRoute = AppInstitutionRouteImport.update({
+  id: '/institution',
+  path: '/institution',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGroupRoute = AppGroupRouteImport.update({
+  id: '/group',
+  path: '/group',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGradingRoute = AppGradingRouteImport.update({
   id: '/grading',
   path: '/grading',
@@ -189,6 +264,11 @@ const AppGradesRoute = AppGradesRouteImport.update({
 const AppFinanceRoute = AppFinanceRouteImport.update({
   id: '/finance',
   path: '/finance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFeeAccountsRoute = AppFeeAccountsRouteImport.update({
+  id: '/fee-accounts',
+  path: '/fee-accounts',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCoursesRoute = AppCoursesRouteImport.update({
@@ -246,9 +326,19 @@ const AppAppraisalsRoute = AppAppraisalsRouteImport.update({
   path: '/appraisals',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAlumniRoute = AppAlumniRouteImport.update({
+  id: '/alumni',
+  path: '/alumni',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAiInsightsRoute = AppAiInsightsRouteImport.update({
   id: '/ai-insights',
   path: '/ai-insights',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdmissionsRoute = AppAdmissionsRouteImport.update({
+  id: '/admissions',
+  path: '/admissions',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTrainingIndexRoute = AppTrainingIndexRouteImport.update({
@@ -291,9 +381,59 @@ const AppSessionsSessionIdRoute = AppSessionsSessionIdRouteImport.update({
   path: '/sessions/$sessionId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSchoolMeetingsRoute = AppSchoolMeetingsRouteImport.update({
+  id: '/school/meetings',
+  path: '/school/meetings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSchoolLifeRoute = AppSchoolLifeRouteImport.update({
+  id: '/school/life',
+  path: '/school/life',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSchoolExamsRoute = AppSchoolExamsRouteImport.update({
+  id: '/school/exams',
+  path: '/school/exams',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSchoolCurriculaRoute = AppSchoolCurriculaRouteImport.update({
+  id: '/school/curricula',
+  path: '/school/curricula',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSchoolClassesRoute = AppSchoolClassesRouteImport.update({
+  id: '/school/classes',
+  path: '/school/classes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInvoiceIdRoute = AppInvoiceIdRouteImport.update({
   id: '/invoice/$id',
   path: '/invoice/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHeTranscriptsRoute = AppHeTranscriptsRouteImport.update({
+  id: '/he/transcripts',
+  path: '/he/transcripts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHeRegistrationRoute = AppHeRegistrationRouteImport.update({
+  id: '/he/registration',
+  path: '/he/registration',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHeProgrammesRoute = AppHeProgrammesRouteImport.update({
+  id: '/he/programmes',
+  path: '/he/programmes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHeExamsRoute = AppHeExamsRouteImport.update({
+  id: '/he/exams',
+  path: '/he/exams',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHeAssessmentRoute = AppHeAssessmentRouteImport.update({
+  id: '/he/assessment',
+  path: '/he/assessment',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCoursesCourseIdRoute = AppCoursesCourseIdRouteImport.update({
@@ -301,6 +441,17 @@ const AppCoursesCourseIdRoute = AppCoursesCourseIdRouteImport.update({
   path: '/$courseId',
   getParentRoute: () => AppCoursesRoute,
 } as any)
+const AppCollegeWorkBasedRoute = AppCollegeWorkBasedRouteImport.update({
+  id: '/college/work-based',
+  path: '/college/work-based',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCollegeQualificationsRoute =
+  AppCollegeQualificationsRouteImport.update({
+    id: '/college/qualifications',
+    path: '/college/qualifications',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppCertificateProgressIdRoute =
   AppCertificateProgressIdRouteImport.update({
     id: '/certificate/$progressId',
@@ -322,7 +473,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/app/admissions': typeof AppAdmissionsRoute
   '/app/ai-insights': typeof AppAiInsightsRoute
+  '/app/alumni': typeof AppAlumniRoute
   '/app/appraisals': typeof AppAppraisalsRouteWithChildren
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
@@ -334,9 +487,15 @@ export interface FileRoutesByFullPath {
   '/app/coaching': typeof AppCoachingRoute
   '/app/compliance': typeof AppComplianceRoute
   '/app/courses': typeof AppCoursesRouteWithChildren
+  '/app/fee-accounts': typeof AppFeeAccountsRoute
   '/app/finance': typeof AppFinanceRoute
   '/app/grades': typeof AppGradesRoute
   '/app/grading': typeof AppGradingRoute
+  '/app/group': typeof AppGroupRoute
+  '/app/institution': typeof AppInstitutionRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/it': typeof AppItRoute
+  '/app/learners': typeof AppLearnersRoute
   '/app/lms': typeof AppLmsRoute
   '/app/marketing': typeof AppMarketingRoute
   '/app/marketplace': typeof AppMarketplaceRoute
@@ -346,7 +505,10 @@ export interface FileRoutesByFullPath {
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/pricing': typeof AppPricingRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/registers': typeof AppRegistersRoute
   '/app/reports': typeof AppReportsRoute
+  '/app/requests': typeof AppRequestsRoute
+  '/app/returns': typeof AppReturnsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/squad': typeof AppSquadRoute
   '/app/srb': typeof AppSrbRouteWithChildren
@@ -354,14 +516,28 @@ export interface FileRoutesByFullPath {
   '/app/swim-reports': typeof AppSwimReportsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
+  '/app/timetable': typeof AppTimetableRoute
   '/app/training': typeof AppTrainingRouteWithChildren
   '/app/users': typeof AppUsersRoute
+  '/app/vetting': typeof AppVettingRoute
   '/app/': typeof AppIndexRoute
   '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
   '/app/certificate/$progressId': typeof AppCertificateProgressIdRoute
+  '/app/college/qualifications': typeof AppCollegeQualificationsRoute
+  '/app/college/work-based': typeof AppCollegeWorkBasedRoute
   '/app/courses/$courseId': typeof AppCoursesCourseIdRoute
+  '/app/he/assessment': typeof AppHeAssessmentRoute
+  '/app/he/exams': typeof AppHeExamsRoute
+  '/app/he/programmes': typeof AppHeProgrammesRoute
+  '/app/he/registration': typeof AppHeRegistrationRoute
+  '/app/he/transcripts': typeof AppHeTranscriptsRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
+  '/app/school/classes': typeof AppSchoolClassesRoute
+  '/app/school/curricula': typeof AppSchoolCurriculaRoute
+  '/app/school/exams': typeof AppSchoolExamsRoute
+  '/app/school/life': typeof AppSchoolLifeRoute
+  '/app/school/meetings': typeof AppSchoolMeetingsRoute
   '/app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/app/srb/$studentId': typeof AppSrbStudentIdRoute
   '/app/training/$courseId': typeof AppTrainingCourseIdRoute
@@ -374,7 +550,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/app/admissions': typeof AppAdmissionsRoute
   '/app/ai-insights': typeof AppAiInsightsRoute
+  '/app/alumni': typeof AppAlumniRoute
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/awards': typeof AppAwardsRoute
   '/app/billing': typeof AppBillingRoute
@@ -383,9 +561,15 @@ export interface FileRoutesByTo {
   '/app/children': typeof AppChildrenRoute
   '/app/coaching': typeof AppCoachingRoute
   '/app/compliance': typeof AppComplianceRoute
+  '/app/fee-accounts': typeof AppFeeAccountsRoute
   '/app/finance': typeof AppFinanceRoute
   '/app/grades': typeof AppGradesRoute
   '/app/grading': typeof AppGradingRoute
+  '/app/group': typeof AppGroupRoute
+  '/app/institution': typeof AppInstitutionRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/it': typeof AppItRoute
+  '/app/learners': typeof AppLearnersRoute
   '/app/lms': typeof AppLmsRoute
   '/app/marketing': typeof AppMarketingRoute
   '/app/marketplace': typeof AppMarketplaceRoute
@@ -395,20 +579,37 @@ export interface FileRoutesByTo {
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/pricing': typeof AppPricingRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/registers': typeof AppRegistersRoute
   '/app/reports': typeof AppReportsRoute
+  '/app/requests': typeof AppRequestsRoute
+  '/app/returns': typeof AppReturnsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/squad': typeof AppSquadRoute
   '/app/students': typeof AppStudentsRoute
   '/app/swim-reports': typeof AppSwimReportsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
+  '/app/timetable': typeof AppTimetableRoute
   '/app/users': typeof AppUsersRoute
+  '/app/vetting': typeof AppVettingRoute
   '/app': typeof AppIndexRoute
   '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
   '/app/certificate/$progressId': typeof AppCertificateProgressIdRoute
+  '/app/college/qualifications': typeof AppCollegeQualificationsRoute
+  '/app/college/work-based': typeof AppCollegeWorkBasedRoute
   '/app/courses/$courseId': typeof AppCoursesCourseIdRoute
+  '/app/he/assessment': typeof AppHeAssessmentRoute
+  '/app/he/exams': typeof AppHeExamsRoute
+  '/app/he/programmes': typeof AppHeProgrammesRoute
+  '/app/he/registration': typeof AppHeRegistrationRoute
+  '/app/he/transcripts': typeof AppHeTranscriptsRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
+  '/app/school/classes': typeof AppSchoolClassesRoute
+  '/app/school/curricula': typeof AppSchoolCurriculaRoute
+  '/app/school/exams': typeof AppSchoolExamsRoute
+  '/app/school/life': typeof AppSchoolLifeRoute
+  '/app/school/meetings': typeof AppSchoolMeetingsRoute
   '/app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/app/srb/$studentId': typeof AppSrbStudentIdRoute
   '/app/training/$courseId': typeof AppTrainingCourseIdRoute
@@ -423,7 +624,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/app/admissions': typeof AppAdmissionsRoute
   '/app/ai-insights': typeof AppAiInsightsRoute
+  '/app/alumni': typeof AppAlumniRoute
   '/app/appraisals': typeof AppAppraisalsRouteWithChildren
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRouteWithChildren
@@ -435,9 +638,15 @@ export interface FileRoutesById {
   '/app/coaching': typeof AppCoachingRoute
   '/app/compliance': typeof AppComplianceRoute
   '/app/courses': typeof AppCoursesRouteWithChildren
+  '/app/fee-accounts': typeof AppFeeAccountsRoute
   '/app/finance': typeof AppFinanceRoute
   '/app/grades': typeof AppGradesRoute
   '/app/grading': typeof AppGradingRoute
+  '/app/group': typeof AppGroupRoute
+  '/app/institution': typeof AppInstitutionRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/it': typeof AppItRoute
+  '/app/learners': typeof AppLearnersRoute
   '/app/lms': typeof AppLmsRoute
   '/app/marketing': typeof AppMarketingRoute
   '/app/marketplace': typeof AppMarketplaceRoute
@@ -447,7 +656,10 @@ export interface FileRoutesById {
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/pricing': typeof AppPricingRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/registers': typeof AppRegistersRoute
   '/app/reports': typeof AppReportsRoute
+  '/app/requests': typeof AppRequestsRoute
+  '/app/returns': typeof AppReturnsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/squad': typeof AppSquadRoute
   '/app/srb': typeof AppSrbRouteWithChildren
@@ -455,14 +667,28 @@ export interface FileRoutesById {
   '/app/swim-reports': typeof AppSwimReportsRoute
   '/app/teacher-classes': typeof AppTeacherClassesRoute
   '/app/tenants': typeof AppTenantsRoute
+  '/app/timetable': typeof AppTimetableRoute
   '/app/training': typeof AppTrainingRouteWithChildren
   '/app/users': typeof AppUsersRoute
+  '/app/vetting': typeof AppVettingRoute
   '/app/': typeof AppIndexRoute
   '/app/appraisals/$teacherId': typeof AppAppraisalsTeacherIdRoute
   '/app/attendance/take': typeof AppAttendanceTakeRoute
   '/app/certificate/$progressId': typeof AppCertificateProgressIdRoute
+  '/app/college/qualifications': typeof AppCollegeQualificationsRoute
+  '/app/college/work-based': typeof AppCollegeWorkBasedRoute
   '/app/courses/$courseId': typeof AppCoursesCourseIdRoute
+  '/app/he/assessment': typeof AppHeAssessmentRoute
+  '/app/he/exams': typeof AppHeExamsRoute
+  '/app/he/programmes': typeof AppHeProgrammesRoute
+  '/app/he/registration': typeof AppHeRegistrationRoute
+  '/app/he/transcripts': typeof AppHeTranscriptsRoute
   '/app/invoice/$id': typeof AppInvoiceIdRoute
+  '/app/school/classes': typeof AppSchoolClassesRoute
+  '/app/school/curricula': typeof AppSchoolCurriculaRoute
+  '/app/school/exams': typeof AppSchoolExamsRoute
+  '/app/school/life': typeof AppSchoolLifeRoute
+  '/app/school/meetings': typeof AppSchoolMeetingsRoute
   '/app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/app/srb/$studentId': typeof AppSrbStudentIdRoute
   '/app/training/$courseId': typeof AppTrainingCourseIdRoute
@@ -478,7 +704,9 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/login'
+    | '/app/admissions'
     | '/app/ai-insights'
+    | '/app/alumni'
     | '/app/appraisals'
     | '/app/assignments'
     | '/app/attendance'
@@ -490,9 +718,15 @@ export interface FileRouteTypes {
     | '/app/coaching'
     | '/app/compliance'
     | '/app/courses'
+    | '/app/fee-accounts'
     | '/app/finance'
     | '/app/grades'
     | '/app/grading'
+    | '/app/group'
+    | '/app/institution'
+    | '/app/integrations'
+    | '/app/it'
+    | '/app/learners'
     | '/app/lms'
     | '/app/marketing'
     | '/app/marketplace'
@@ -502,7 +736,10 @@ export interface FileRouteTypes {
     | '/app/onboarding'
     | '/app/pricing'
     | '/app/profile'
+    | '/app/registers'
     | '/app/reports'
+    | '/app/requests'
+    | '/app/returns'
     | '/app/settings'
     | '/app/squad'
     | '/app/srb'
@@ -510,14 +747,28 @@ export interface FileRouteTypes {
     | '/app/swim-reports'
     | '/app/teacher-classes'
     | '/app/tenants'
+    | '/app/timetable'
     | '/app/training'
     | '/app/users'
+    | '/app/vetting'
     | '/app/'
     | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
     | '/app/certificate/$progressId'
+    | '/app/college/qualifications'
+    | '/app/college/work-based'
     | '/app/courses/$courseId'
+    | '/app/he/assessment'
+    | '/app/he/exams'
+    | '/app/he/programmes'
+    | '/app/he/registration'
+    | '/app/he/transcripts'
     | '/app/invoice/$id'
+    | '/app/school/classes'
+    | '/app/school/curricula'
+    | '/app/school/exams'
+    | '/app/school/life'
+    | '/app/school/meetings'
     | '/app/sessions/$sessionId'
     | '/app/srb/$studentId'
     | '/app/training/$courseId'
@@ -530,7 +781,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/app/admissions'
     | '/app/ai-insights'
+    | '/app/alumni'
     | '/app/assignments'
     | '/app/awards'
     | '/app/billing'
@@ -539,9 +792,15 @@ export interface FileRouteTypes {
     | '/app/children'
     | '/app/coaching'
     | '/app/compliance'
+    | '/app/fee-accounts'
     | '/app/finance'
     | '/app/grades'
     | '/app/grading'
+    | '/app/group'
+    | '/app/institution'
+    | '/app/integrations'
+    | '/app/it'
+    | '/app/learners'
     | '/app/lms'
     | '/app/marketing'
     | '/app/marketplace'
@@ -551,20 +810,37 @@ export interface FileRouteTypes {
     | '/app/onboarding'
     | '/app/pricing'
     | '/app/profile'
+    | '/app/registers'
     | '/app/reports'
+    | '/app/requests'
+    | '/app/returns'
     | '/app/settings'
     | '/app/squad'
     | '/app/students'
     | '/app/swim-reports'
     | '/app/teacher-classes'
     | '/app/tenants'
+    | '/app/timetable'
     | '/app/users'
+    | '/app/vetting'
     | '/app'
     | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
     | '/app/certificate/$progressId'
+    | '/app/college/qualifications'
+    | '/app/college/work-based'
     | '/app/courses/$courseId'
+    | '/app/he/assessment'
+    | '/app/he/exams'
+    | '/app/he/programmes'
+    | '/app/he/registration'
+    | '/app/he/transcripts'
     | '/app/invoice/$id'
+    | '/app/school/classes'
+    | '/app/school/curricula'
+    | '/app/school/exams'
+    | '/app/school/life'
+    | '/app/school/meetings'
     | '/app/sessions/$sessionId'
     | '/app/srb/$studentId'
     | '/app/training/$courseId'
@@ -578,7 +854,9 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/login'
+    | '/app/admissions'
     | '/app/ai-insights'
+    | '/app/alumni'
     | '/app/appraisals'
     | '/app/assignments'
     | '/app/attendance'
@@ -590,9 +868,15 @@ export interface FileRouteTypes {
     | '/app/coaching'
     | '/app/compliance'
     | '/app/courses'
+    | '/app/fee-accounts'
     | '/app/finance'
     | '/app/grades'
     | '/app/grading'
+    | '/app/group'
+    | '/app/institution'
+    | '/app/integrations'
+    | '/app/it'
+    | '/app/learners'
     | '/app/lms'
     | '/app/marketing'
     | '/app/marketplace'
@@ -602,7 +886,10 @@ export interface FileRouteTypes {
     | '/app/onboarding'
     | '/app/pricing'
     | '/app/profile'
+    | '/app/registers'
     | '/app/reports'
+    | '/app/requests'
+    | '/app/returns'
     | '/app/settings'
     | '/app/squad'
     | '/app/srb'
@@ -610,14 +897,28 @@ export interface FileRouteTypes {
     | '/app/swim-reports'
     | '/app/teacher-classes'
     | '/app/tenants'
+    | '/app/timetable'
     | '/app/training'
     | '/app/users'
+    | '/app/vetting'
     | '/app/'
     | '/app/appraisals/$teacherId'
     | '/app/attendance/take'
     | '/app/certificate/$progressId'
+    | '/app/college/qualifications'
+    | '/app/college/work-based'
     | '/app/courses/$courseId'
+    | '/app/he/assessment'
+    | '/app/he/exams'
+    | '/app/he/programmes'
+    | '/app/he/registration'
+    | '/app/he/transcripts'
     | '/app/invoice/$id'
+    | '/app/school/classes'
+    | '/app/school/curricula'
+    | '/app/school/exams'
+    | '/app/school/life'
+    | '/app/school/meetings'
     | '/app/sessions/$sessionId'
     | '/app/srb/$studentId'
     | '/app/training/$courseId'
@@ -664,6 +965,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/vetting': {
+      id: '/app/vetting'
+      path: '/vetting'
+      fullPath: '/app/vetting'
+      preLoaderRoute: typeof AppVettingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/users': {
       id: '/app/users'
       path: '/users'
@@ -676,6 +984,13 @@ declare module '@tanstack/react-router' {
       path: '/training'
       fullPath: '/app/training'
       preLoaderRoute: typeof AppTrainingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/timetable': {
+      id: '/app/timetable'
+      path: '/timetable'
+      fullPath: '/app/timetable'
+      preLoaderRoute: typeof AppTimetableRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/tenants': {
@@ -727,11 +1042,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/returns': {
+      id: '/app/returns'
+      path: '/returns'
+      fullPath: '/app/returns'
+      preLoaderRoute: typeof AppReturnsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/requests': {
+      id: '/app/requests'
+      path: '/requests'
+      fullPath: '/app/requests'
+      preLoaderRoute: typeof AppRequestsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/reports': {
       id: '/app/reports'
       path: '/reports'
       fullPath: '/app/reports'
       preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/registers': {
+      id: '/app/registers'
+      path: '/registers'
+      fullPath: '/app/registers'
+      preLoaderRoute: typeof AppRegistersRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/profile': {
@@ -797,6 +1133,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLmsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/learners': {
+      id: '/app/learners'
+      path: '/learners'
+      fullPath: '/app/learners'
+      preLoaderRoute: typeof AppLearnersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/it': {
+      id: '/app/it'
+      path: '/it'
+      fullPath: '/app/it'
+      preLoaderRoute: typeof AppItRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/integrations': {
+      id: '/app/integrations'
+      path: '/integrations'
+      fullPath: '/app/integrations'
+      preLoaderRoute: typeof AppIntegrationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/institution': {
+      id: '/app/institution'
+      path: '/institution'
+      fullPath: '/app/institution'
+      preLoaderRoute: typeof AppInstitutionRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/group': {
+      id: '/app/group'
+      path: '/group'
+      fullPath: '/app/group'
+      preLoaderRoute: typeof AppGroupRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/grading': {
       id: '/app/grading'
       path: '/grading'
@@ -816,6 +1187,13 @@ declare module '@tanstack/react-router' {
       path: '/finance'
       fullPath: '/app/finance'
       preLoaderRoute: typeof AppFinanceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fee-accounts': {
+      id: '/app/fee-accounts'
+      path: '/fee-accounts'
+      fullPath: '/app/fee-accounts'
+      preLoaderRoute: typeof AppFeeAccountsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/courses': {
@@ -895,11 +1273,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAppraisalsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/alumni': {
+      id: '/app/alumni'
+      path: '/alumni'
+      fullPath: '/app/alumni'
+      preLoaderRoute: typeof AppAlumniRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/ai-insights': {
       id: '/app/ai-insights'
       path: '/ai-insights'
       fullPath: '/app/ai-insights'
       preLoaderRoute: typeof AppAiInsightsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/admissions': {
+      id: '/app/admissions'
+      path: '/admissions'
+      fullPath: '/app/admissions'
+      preLoaderRoute: typeof AppAdmissionsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/training/': {
@@ -958,11 +1350,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSessionsSessionIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/school/meetings': {
+      id: '/app/school/meetings'
+      path: '/school/meetings'
+      fullPath: '/app/school/meetings'
+      preLoaderRoute: typeof AppSchoolMeetingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/school/life': {
+      id: '/app/school/life'
+      path: '/school/life'
+      fullPath: '/app/school/life'
+      preLoaderRoute: typeof AppSchoolLifeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/school/exams': {
+      id: '/app/school/exams'
+      path: '/school/exams'
+      fullPath: '/app/school/exams'
+      preLoaderRoute: typeof AppSchoolExamsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/school/curricula': {
+      id: '/app/school/curricula'
+      path: '/school/curricula'
+      fullPath: '/app/school/curricula'
+      preLoaderRoute: typeof AppSchoolCurriculaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/school/classes': {
+      id: '/app/school/classes'
+      path: '/school/classes'
+      fullPath: '/app/school/classes'
+      preLoaderRoute: typeof AppSchoolClassesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/invoice/$id': {
       id: '/app/invoice/$id'
       path: '/invoice/$id'
       fullPath: '/app/invoice/$id'
       preLoaderRoute: typeof AppInvoiceIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/he/transcripts': {
+      id: '/app/he/transcripts'
+      path: '/he/transcripts'
+      fullPath: '/app/he/transcripts'
+      preLoaderRoute: typeof AppHeTranscriptsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/he/registration': {
+      id: '/app/he/registration'
+      path: '/he/registration'
+      fullPath: '/app/he/registration'
+      preLoaderRoute: typeof AppHeRegistrationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/he/programmes': {
+      id: '/app/he/programmes'
+      path: '/he/programmes'
+      fullPath: '/app/he/programmes'
+      preLoaderRoute: typeof AppHeProgrammesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/he/exams': {
+      id: '/app/he/exams'
+      path: '/he/exams'
+      fullPath: '/app/he/exams'
+      preLoaderRoute: typeof AppHeExamsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/he/assessment': {
+      id: '/app/he/assessment'
+      path: '/he/assessment'
+      fullPath: '/app/he/assessment'
+      preLoaderRoute: typeof AppHeAssessmentRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/courses/$courseId': {
@@ -971,6 +1433,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/courses/$courseId'
       preLoaderRoute: typeof AppCoursesCourseIdRouteImport
       parentRoute: typeof AppCoursesRoute
+    }
+    '/app/college/work-based': {
+      id: '/app/college/work-based'
+      path: '/college/work-based'
+      fullPath: '/app/college/work-based'
+      preLoaderRoute: typeof AppCollegeWorkBasedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/college/qualifications': {
+      id: '/app/college/qualifications'
+      path: '/college/qualifications'
+      fullPath: '/app/college/qualifications'
+      preLoaderRoute: typeof AppCollegeQualificationsRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/certificate/$progressId': {
       id: '/app/certificate/$progressId'
@@ -1066,7 +1542,9 @@ const AppTrainingRouteWithChildren = AppTrainingRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppAdmissionsRoute: typeof AppAdmissionsRoute
   AppAiInsightsRoute: typeof AppAiInsightsRoute
+  AppAlumniRoute: typeof AppAlumniRoute
   AppAppraisalsRoute: typeof AppAppraisalsRouteWithChildren
   AppAssignmentsRoute: typeof AppAssignmentsRoute
   AppAttendanceRoute: typeof AppAttendanceRouteWithChildren
@@ -1078,9 +1556,15 @@ interface AppRouteChildren {
   AppCoachingRoute: typeof AppCoachingRoute
   AppComplianceRoute: typeof AppComplianceRoute
   AppCoursesRoute: typeof AppCoursesRouteWithChildren
+  AppFeeAccountsRoute: typeof AppFeeAccountsRoute
   AppFinanceRoute: typeof AppFinanceRoute
   AppGradesRoute: typeof AppGradesRoute
   AppGradingRoute: typeof AppGradingRoute
+  AppGroupRoute: typeof AppGroupRoute
+  AppInstitutionRoute: typeof AppInstitutionRoute
+  AppIntegrationsRoute: typeof AppIntegrationsRoute
+  AppItRoute: typeof AppItRoute
+  AppLearnersRoute: typeof AppLearnersRoute
   AppLmsRoute: typeof AppLmsRoute
   AppMarketingRoute: typeof AppMarketingRoute
   AppMarketplaceRoute: typeof AppMarketplaceRoute
@@ -1090,7 +1574,10 @@ interface AppRouteChildren {
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppPricingRoute: typeof AppPricingRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppRegistersRoute: typeof AppRegistersRoute
   AppReportsRoute: typeof AppReportsRoute
+  AppRequestsRoute: typeof AppRequestsRoute
+  AppReturnsRoute: typeof AppReturnsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSquadRoute: typeof AppSquadRoute
   AppSrbRoute: typeof AppSrbRouteWithChildren
@@ -1098,16 +1585,32 @@ interface AppRouteChildren {
   AppSwimReportsRoute: typeof AppSwimReportsRoute
   AppTeacherClassesRoute: typeof AppTeacherClassesRoute
   AppTenantsRoute: typeof AppTenantsRoute
+  AppTimetableRoute: typeof AppTimetableRoute
   AppTrainingRoute: typeof AppTrainingRouteWithChildren
   AppUsersRoute: typeof AppUsersRoute
+  AppVettingRoute: typeof AppVettingRoute
   AppIndexRoute: typeof AppIndexRoute
   AppCertificateProgressIdRoute: typeof AppCertificateProgressIdRoute
+  AppCollegeQualificationsRoute: typeof AppCollegeQualificationsRoute
+  AppCollegeWorkBasedRoute: typeof AppCollegeWorkBasedRoute
+  AppHeAssessmentRoute: typeof AppHeAssessmentRoute
+  AppHeExamsRoute: typeof AppHeExamsRoute
+  AppHeProgrammesRoute: typeof AppHeProgrammesRoute
+  AppHeRegistrationRoute: typeof AppHeRegistrationRoute
+  AppHeTranscriptsRoute: typeof AppHeTranscriptsRoute
   AppInvoiceIdRoute: typeof AppInvoiceIdRoute
+  AppSchoolClassesRoute: typeof AppSchoolClassesRoute
+  AppSchoolCurriculaRoute: typeof AppSchoolCurriculaRoute
+  AppSchoolExamsRoute: typeof AppSchoolExamsRoute
+  AppSchoolLifeRoute: typeof AppSchoolLifeRoute
+  AppSchoolMeetingsRoute: typeof AppSchoolMeetingsRoute
   AppSessionsSessionIdRoute: typeof AppSessionsSessionIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdmissionsRoute: AppAdmissionsRoute,
   AppAiInsightsRoute: AppAiInsightsRoute,
+  AppAlumniRoute: AppAlumniRoute,
   AppAppraisalsRoute: AppAppraisalsRouteWithChildren,
   AppAssignmentsRoute: AppAssignmentsRoute,
   AppAttendanceRoute: AppAttendanceRouteWithChildren,
@@ -1119,9 +1622,15 @@ const AppRouteChildren: AppRouteChildren = {
   AppCoachingRoute: AppCoachingRoute,
   AppComplianceRoute: AppComplianceRoute,
   AppCoursesRoute: AppCoursesRouteWithChildren,
+  AppFeeAccountsRoute: AppFeeAccountsRoute,
   AppFinanceRoute: AppFinanceRoute,
   AppGradesRoute: AppGradesRoute,
   AppGradingRoute: AppGradingRoute,
+  AppGroupRoute: AppGroupRoute,
+  AppInstitutionRoute: AppInstitutionRoute,
+  AppIntegrationsRoute: AppIntegrationsRoute,
+  AppItRoute: AppItRoute,
+  AppLearnersRoute: AppLearnersRoute,
   AppLmsRoute: AppLmsRoute,
   AppMarketingRoute: AppMarketingRoute,
   AppMarketplaceRoute: AppMarketplaceRoute,
@@ -1131,7 +1640,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppOnboardingRoute: AppOnboardingRoute,
   AppPricingRoute: AppPricingRoute,
   AppProfileRoute: AppProfileRoute,
+  AppRegistersRoute: AppRegistersRoute,
   AppReportsRoute: AppReportsRoute,
+  AppRequestsRoute: AppRequestsRoute,
+  AppReturnsRoute: AppReturnsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSquadRoute: AppSquadRoute,
   AppSrbRoute: AppSrbRouteWithChildren,
@@ -1139,11 +1651,25 @@ const AppRouteChildren: AppRouteChildren = {
   AppSwimReportsRoute: AppSwimReportsRoute,
   AppTeacherClassesRoute: AppTeacherClassesRoute,
   AppTenantsRoute: AppTenantsRoute,
+  AppTimetableRoute: AppTimetableRoute,
   AppTrainingRoute: AppTrainingRouteWithChildren,
   AppUsersRoute: AppUsersRoute,
+  AppVettingRoute: AppVettingRoute,
   AppIndexRoute: AppIndexRoute,
   AppCertificateProgressIdRoute: AppCertificateProgressIdRoute,
+  AppCollegeQualificationsRoute: AppCollegeQualificationsRoute,
+  AppCollegeWorkBasedRoute: AppCollegeWorkBasedRoute,
+  AppHeAssessmentRoute: AppHeAssessmentRoute,
+  AppHeExamsRoute: AppHeExamsRoute,
+  AppHeProgrammesRoute: AppHeProgrammesRoute,
+  AppHeRegistrationRoute: AppHeRegistrationRoute,
+  AppHeTranscriptsRoute: AppHeTranscriptsRoute,
   AppInvoiceIdRoute: AppInvoiceIdRoute,
+  AppSchoolClassesRoute: AppSchoolClassesRoute,
+  AppSchoolCurriculaRoute: AppSchoolCurriculaRoute,
+  AppSchoolExamsRoute: AppSchoolExamsRoute,
+  AppSchoolLifeRoute: AppSchoolLifeRoute,
+  AppSchoolMeetingsRoute: AppSchoolMeetingsRoute,
   AppSessionsSessionIdRoute: AppSessionsSessionIdRoute,
 }
 

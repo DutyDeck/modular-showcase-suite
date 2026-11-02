@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { money } from "@/lib/packs/regions";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -216,7 +217,10 @@ function MarketingPage() {
         />
         <StatCard
           label="Pipeline Value"
-          value={`$${leads.reduce((a, l) => a + l.value, 0)}`}
+          value={money(
+            leads.reduce((a, l) => a + l.value, 0),
+            "USD",
+          )}
           icon={<Target className="h-5 w-5" />}
           accent="warning"
         />
@@ -237,7 +241,8 @@ function MarketingPage() {
           rows={leads}
           emptyText="No leads yet"
           renderCell={(row, key) => {
-            if (key === "value") return <span className="font-semibold">${row.value}</span>;
+            if (key === "value")
+              return <span className="font-semibold">{money(row.value, "USD")}</span>;
             if (key === "_contact") {
               if (!row.phone && !row.email)
                 return <span className="text-xs text-muted-foreground">—</span>;

@@ -28,12 +28,32 @@ import {
   Upload,
   ChevronRight,
   Waves,
+  MapPin,
+  Heart,
 } from "lucide-react";
+import { Avatar } from "@/components/Avatar";
+import { isPackTenantUser } from "@/lib/packs/coreBridge";
+import type { TeachingGroup } from "@/lib/packs/sis/learning";
+import { groupSubtitle, bandLabel, whenLabel } from "@/lib/packs/sis/lmsContent";
+import { DEMO_TODAY } from "@/lib/packs/foundationData";
+import {
+  usePackLearning,
+  AddLearningDialog,
+  type PackLearning,
+} from "@/components/packs/LearningUI";
 
 export const Route = createFileRoute("/app/courses/")({
   head: () => ({ meta: [{ title: "Courses — 1StudentID" }] }),
   component: CoursesPage,
 });
+
+function CoursesPage() {
+  const { user } = useAuth();
+  const profiles = useCollection("tenantProfiles");
+  // Pack tenants see their own institution's teaching; classic + swim unchanged.
+  if (!isSwimUser(user) && isPackTenantUser(user, profiles)) return <PackCoursesView />;
+  return <ClassicCoursesPage />;
+}
 
 const CATEGORIES = [
   "Science",
@@ -55,7 +75,7 @@ const COURSE_IMPORT_FIELDS: ImportField[] = [
   { key: "price", label: "Price", sample: "120" },
 ];
 
-function CoursesPage() {
+function ClassicCoursesPage() {
   const { user } = useAuth();
   const swim = isSwimUser(user);
   const enabledModules = useEnabledModules(user?.institution ?? "");
@@ -346,5 +366,339 @@ function CoursesPage() {
         onCommit={(items) => items.forEach((c) => addItem("courses", c))}
       />
     </div>
+  );
+}
+
+/* ───────────────────── Pack tenants: the institution's own teaching ───────────────────── */
+
+const BAND_ORDER = [
+  "early",
+  "primary",
+  "lower-secondary",
+  "upper-secondary",
+  "sixth-form",
+  "higher-ed",
+  "vocational",
+];
+
+const BAND_HEADER: Record<string, string> = {
+  early: "bg-gradient-to-br from-pink-400 to-amber-400",
+  primary: "bg-gradient-to-br from-emerald-500 to-teal-500",
+  "lower-secondary": "bg-gradient-to-br from-sky-500 to-indigo-500",
+  "upper-secondary": "bg-gradient-brand",
+  "sixth-form": "bg-gradient-to-br from-violet-600 to-indigo-700",
+  "higher-ed": "bg-gradient-to-br from-indigo-600 to-slate-700",
+  vocational: "bg-gradient-to-br from-orange-500 to-amber-600",
+};
+
+const learnerNoun = (g: TeachingGroup) =>
+  g.band === "early"
+    ? "children"
+    : g.band === "higher-ed"
+      ? "students"
+      : g.band === "vocational"
+        ? "learners"
+        : "pupils";
+
+function sortGroups(a: TeachingGroup, b: TeachingGroup) {
+  return (
+    BAND_ORDER.indexOf(a.band) - BAND_ORDER.indexOf(b.band) ||
+    a.level.localeCompare(b.level, undefined, { numeric: true }) ||
+    a.title.localeCompare(b.title)
+  );
+}
+
+function PackCoursesView() {
+  const L = usePackLearning();
+  const { user, ctx } = L;
+  const add = useDisclosure();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("");
+  const role = user?.role;
+  const uni = ctx.type === "university";
+  const college = ctx.type === "college";
+  const noun = uni ? "modules" : college ? "courses" : "classes";
+
+  const programmes = useMemo(
+    () => L.programmes.filter((p) => p.tenantId === ctx.tenantId),
+    [L.programmes, ctx.tenantId],
+  );
+
+  const filterOptions = useMemo(() => {
+    const opts = [{ value: "", label: uni ? "All programmes" : "All year groups and courses" }];
+    const levels = Array.from(
+      new Set(
+        [...L.tenantGroups]
+          .filter((g) => g.kind === "class")
+          .sort(sortGroups)
+          .map((g) => g.level),
+      ),
+    );
+    levels.forEach((lv) => opts.push({ value: `lvl:${lv}`, label: lv }));
+    programmes.forEach((p) =>
+      opts.push({ value: `prg:${p.id}`, label: `${p.award} ${p.name} (${p.code})` }),
+    );
+    if (L.tenantGroups.some((g) => g.kind === "qualification"))
+      opts.push({ value: "kind:qualification", label: "Vocational qualifications" });
+    return opts;
+  }, [L.tenantGroups, programmes, uni]);
+
+  const matchesFilter = (g: TeachingGroup) => {
+    if (!filter) return true;
+    const [k, v] = [filter.slice(0, 4), filter.slice(4)];
+    if (k === "lvl:") return g.kind === "class" && g.level === v;
+    if (k === "prg:") {
+      const p = programmes.find((x) => x.id === v);
+      return (
+        g.kind === "module" &&
+        !!p?.stages.some((s) => [...s.coreModuleIds, ...s.optionalModuleIds].includes(g.id))
+      );
+    }
+    if (filter === "kind:qualification") return g.kind === "qualification";
+    return true;
+  };
+  const matchesQuery = (g: TeachingGroup) =>
+    !query ||
+    `${g.title} ${g.code} ${L.teacherFor(g)} ${g.level}`
+      .toLowerCase()
+      .includes(query.toLowerCase());
+
+  const shown = [...L.visible].filter((g) => matchesFilter(g) && matchesQuery(g)).sort(sortGroups);
+  const editable = L.visible.filter((g) => L.canEdit(g));
+
+  const first = user?.name.split(" ")[0] ?? "";
+  const title =
+    role === "admin"
+      ? uni
+        ? "Modules"
+        : college
+          ? "Courses"
+          : "Classes"
+      : role === "teacher"
+        ? uni
+          ? "Modules I lead"
+          : "Classes I teach"
+        : role === "parent"
+          ? "Your children's classes"
+          : `My ${noun}`;
+  const subtitle = ctx.familyOperated
+    ? `${first}'s ${noun} this term. Shared with the family.`
+    : role === "admin"
+      ? `All ${noun} at ${ctx.tenantName}. Open one for lessons, resources and people.`
+      : "Open one for lessons, live classes and resources.";
+
+  return (
+    <div>
+      <PageHeader
+        title={title}
+        subtitle={subtitle}
+        actions={
+          editable.length ? (
+            <Button onClick={add.onOpen}>
+              <Plus className="h-4 w-4" />
+              Add lesson or resource
+            </Button>
+          ) : undefined
+        }
+      />
+
+      {(role === "admin" || L.visible.length > 8) && (
+        <div className="flex flex-col sm:flex-row gap-2 mb-5">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search ${noun} by name, code, teacher…`}
+              className="h-10 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          {role === "admin" && filterOptions.length > 1 && (
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="h-10 rounded-md border bg-background px-3 text-sm"
+            >
+              {filterOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
+      {ctx.graduated ? (
+        <EmptyCourses
+          title="Your course has ended"
+          body="Congratulations! Your results and transcript stay in your record."
+        />
+      ) : role === "parent" ? (
+        <div className="space-y-8">
+          {L.family.map((child) => {
+            const mine = shown.filter((g) => g.studentIds.includes(child.id));
+            return (
+              <section key={child.id}>
+                <div className="flex items-center gap-3 mb-3">
+                  <Avatar name={child.name} size={36} />
+                  <div>
+                    <div className="font-semibold">{child.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {child.level}
+                      {child.group ? ` · ${child.group}` : ""}
+                    </div>
+                  </div>
+                </div>
+                {mine.length ? (
+                  <CardGrid groups={mine} L={L} childId={child.id} />
+                ) : (
+                  <EmptyCourses
+                    title="No classes yet"
+                    body="Classes appear once timetables are set."
+                  />
+                )}
+              </section>
+            );
+          })}
+          {!L.family.length && (
+            <EmptyCourses
+              title="No children linked"
+              body="Ask the school office to link your children."
+            />
+          )}
+        </div>
+      ) : shown.length ? (
+        <CardGrid groups={shown} L={L} childId={role === "student" ? user?.oneEduId : undefined} />
+      ) : (
+        <EmptyCourses
+          title={query || filter ? `No ${noun} match your filters` : `No ${noun} yet`}
+          body={
+            role === "teacher"
+              ? "Classes you teach appear here once the timetable lists you."
+              : "Try clearing the search."
+          }
+        />
+      )}
+
+      {editable.length > 0 && (
+        <AddLearningDialog
+          open={add.open}
+          onOpenChange={add.setOpen}
+          groups={editable.sort(sortGroups)}
+          learners={L.learners}
+        />
+      )}
+    </div>
+  );
+}
+
+function EmptyCourses({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-xl border bg-card p-10 text-center">
+      <BookOpen className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+      <div className="text-sm font-medium">{title}</div>
+      <div className="text-xs text-muted-foreground mt-1">{body}</div>
+    </div>
+  );
+}
+
+function CardGrid({
+  groups,
+  L,
+  childId,
+}: {
+  groups: TeachingGroup[];
+  L: PackLearning;
+  childId?: string;
+}) {
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+      {groups.map((g) => (
+        <GroupCard key={g.id} g={g} L={L} childId={childId} />
+      ))}
+    </div>
+  );
+}
+
+function GroupCard({ g, L, childId }: { g: TeachingGroup; L: PackLearning; childId?: string }) {
+  const items = L.itemsFor(g);
+  const journal = g.band === "early";
+  const next = items
+    .filter(
+      (i) =>
+        (i.kind === "Lesson" || i.kind === "Live class" || (journal && i.kind === "Activity")) &&
+        (i.date ?? "") >= DEMO_TODAY,
+    )
+    .sort((a, b) => `${a.date}${a.start}`.localeCompare(`${b.date}${b.start}`))[0];
+  const observations = items.filter(
+    (i) => i.kind === "Observation" && (!childId || i.studentId === childId),
+  ).length;
+  const teacher = L.teacherFor(g);
+  const room = L.roomFor(g);
+  const n = g.studentIds.length;
+  const family = !L.isStaff;
+
+  return (
+    <Link
+      to="/app/courses/$courseId"
+      params={{ courseId: g.id }}
+      className="group rounded-xl border bg-card overflow-hidden shadow-soft hover:shadow-elegant hover:border-primary/40 transition-all flex flex-col"
+    >
+      <div className={`h-20 relative ${BAND_HEADER[g.band] ?? "bg-gradient-brand"}`}>
+        <div className="absolute top-3 right-3">
+          <Badge tone="default">{bandLabel(g.band)}</Badge>
+        </div>
+        {journal && <Heart className="absolute bottom-2 right-3 h-6 w-6 text-white/85" />}
+        <div className="absolute bottom-2 left-4 text-white/90 text-xs font-mono">{g.code}</div>
+      </div>
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="font-semibold">{journal ? "Learning journal" : g.title}</h3>
+        <div className="text-xs text-muted-foreground mt-0.5">{groupSubtitle(g)}</div>
+        <div className="text-xs mt-2">
+          <span className="text-muted-foreground">{journal ? "Key worker" : "Teacher"}:</span>{" "}
+          {teacher}
+        </div>
+        <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground flex-wrap">
+          <span className="flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            {family ? `${n} in the ${journal ? "group" : "class"}` : `${n} ${learnerNoun(g)}`}
+          </span>
+          <span className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {L.schedule(g)}
+          </span>
+          {room && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {room}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t">
+          <div className="text-xs min-w-0 truncate">
+            {journal ? (
+              <span>
+                <span className="font-semibold">{observations}</span>{" "}
+                <span className="text-muted-foreground">
+                  observation{observations === 1 ? "" : "s"} shared
+                </span>
+              </span>
+            ) : next ? (
+              <span title={next.title}>
+                <span className="text-muted-foreground">Next:</span> {whenLabel(next.date)}
+                {next.start ? ` ${next.start}` : ""} · {next.title}
+              </span>
+            ) : (
+              <span className="text-muted-foreground">{items.length} items</span>
+            )}
+          </div>
+          <span className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-md bg-primary/10 text-primary font-medium group-hover:bg-primary/15 shrink-0">
+            Open
+            <ChevronRight className="h-3.5 w-3.5" />
+          </span>
+        </div>
+      </div>
+    </Link>
   );
 }

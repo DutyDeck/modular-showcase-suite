@@ -24,6 +24,21 @@ import {
 } from "@/lib/mockData";
 import { roleLabel } from "@/lib/menus";
 import { Avatar } from "@/components/Avatar";
+import { isPackTenantUser } from "@/lib/packs/coreBridge";
+import { useTenantContext } from "@/lib/packs/registry";
+import { TENANT_STAFF } from "@/lib/packs/opsData";
+import {
+  ageBandFor,
+  buildTeachingGroups,
+  groupsForUser,
+  type TeachingGroup,
+} from "@/lib/packs/sis/learning";
+import {
+  isPackGroupId,
+  membersForTeachingGroup,
+  officeContactFor,
+  packDirectory,
+} from "@/lib/packs/sis/conversations";
 import {
   Send,
   MessageSquare,
@@ -160,13 +175,111 @@ interface ThreadRow {
   group?: ChatGroup;
 }
 
+/* ── Pack tenants: the institution's own people ─────────────────────────── */
+
+const PACK_SUBTITLE: Record<string, string> = {
+  student: "your teachers, classmates and student services.",
+  parent: "your children's teachers and the school office.",
+  teacher: "families, students and colleagues.",
+  admin: "staff, families and students.",
+};
+
+interface PackChat {
+  /** Name this account messages as (the guardian on a family-used account). */
+  me: string;
+  fromRole: string;
+  family: boolean;
+  guardianName?: string;
+  tenantName: string;
+  directory: ChatContact[];
+  /** Everyone at the institution (staff, office, learners, families). */
+  people: Map<string, string>;
+  /** Teaching groups this user may open a group chat for. */
+  myGroups: TeachingGroup[];
+  canCreateGroups: boolean;
+}
+
+function usePackChat(enabled: boolean): PackChat | null {
+  const ctx = useTenantContext();
+  const learners = useCollection("learners");
+  const subjectClasses = useCollection("subjectClasses");
+  const heModules = useCollection("heModules");
+  const moduleRegistrations = useCollection("moduleRegistrations");
+  const qualifications = useCollection("qualifications");
+  return useMemo(() => {
+    const user = ctx.user;
+    if (!enabled || !user) return null;
+    const tenantId = ctx.tenantId;
+    const family = ctx.familyOperated;
+    const me = ctx.actingAs;
+    const role = family ? "parent" : user.role;
+    // Family-used pupil account: the pupil plus early-years siblings (who have
+    // no login of their own). Parent: every child. Student: themself.
+    const actingFor = learners
+      .filter(
+        (l) =>
+          l.tenantId === tenantId &&
+          (family
+            ? l.id === user.oneEduId ||
+              (l.guardians?.includes(me) && ageBandFor(l.level) === "early")
+            : role === "parent"
+              ? l.guardians?.includes(me)
+              : l.id === user.oneEduId),
+      )
+      .map((l) => l.id);
+    const groups = buildTeachingGroups({
+      subjectClasses,
+      heModules,
+      moduleRegistrations,
+      qualifications,
+      learners,
+    });
+    const directory = packDirectory({
+      me,
+      role,
+      tenantId,
+      tenantName: ctx.tenantName,
+      learners,
+      groups,
+      actingFor,
+      family,
+    });
+    const people = new Map<string, string>();
+    for (const s of TENANT_STAFF[tenantId] ?? []) people.set(s.name, s.role);
+    const office = officeContactFor(tenantId, ctx.tenantName);
+    people.set(office.name, office.role);
+    for (const l of learners.filter((x) => x.tenantId === tenantId)) {
+      if (!people.has(l.name)) people.set(l.name, `Student · ${l.group ?? l.level}`);
+      for (const g of l.guardians ?? [])
+        if (!people.has(g)) people.set(g, `Parent · ${l.name.split(" ")[0]}`);
+    }
+    for (const c of directory) people.set(c.name, c.role);
+    const canCreateGroups = !family && (user.role === "teacher" || user.role === "admin");
+    return {
+      me,
+      fromRole: family ? "Parent" : roleLabel[user.role],
+      family,
+      guardianName: ctx.guardianName,
+      tenantName: ctx.tenantName,
+      directory,
+      people,
+      myGroups: canCreateGroups ? groupsForUser(user, groups, learners) : [],
+      canCreateGroups,
+    };
+  }, [enabled, ctx, learners, subjectClasses, heModules, moduleRegistrations, qualifications]);
+}
+
 function MessagesPage() {
   const { user } = useAuth();
   const chat = useCollection("chat");
   const groups = useCollection("chatGroups");
-  const me = user?.name ?? "";
+  const profiles = useCollection("tenantProfiles");
+  const packChat = usePackChat(isPackTenantUser(user, profiles));
+  const pack = !!packChat;
+  const me = packChat?.me ?? user?.name ?? "";
   const swim = isSwimUser(user);
   const admin = isSwimAdmin(user);
+  const [packGroupOpen, setPackGroupOpen] = useState(false);
 
   const [draft, setDraft] = useState("");
   const [target, setTarget] = useState<Target | null>(null);
@@ -179,13 +292,15 @@ function MessagesPage() {
 
   // Resolve a display role for a participant by name.
   const roleOf = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, string>(packChat?.people ?? []);
     for (const m of chat) if (!m.groupId && !map.has(m.fromName)) map.set(m.fromName, m.fromRole);
-    for (const u of demoUsers) if (!map.has(u.name)) map.set(u.name, roleLabel[u.role]);
+    if (!packChat)
+      for (const u of demoUsers) if (!map.has(u.name)) map.set(u.name, roleLabel[u.role]);
     return (name: string) => map.get(name) ?? "Contact";
-  }, [chat]);
+  }, [chat, packChat]);
 
-  // 1-to-1 threads (swim accounts only see club threads).
+  // 1-to-1 threads (swim accounts only see club threads; pack accounts only
+  // see people from their own institution).
   const dmThreads = useMemo<ThreadRow[]>(() => {
     const mine = chat.filter(
       (m) => !m.groupId && (m.a === me || m.b === me) && (!swim || m.context === "swim"),
@@ -194,6 +309,7 @@ function MessagesPage() {
     for (const m of mine) {
       const other = m.a === me ? m.b : m.a;
       if (other === me) continue;
+      if (packChat && !packChat.people.has(other)) continue;
       (byCounterpart.get(other) ?? byCounterpart.set(other, []).get(other)!).push(m);
     }
     const list: ThreadRow[] = [];
@@ -212,12 +328,13 @@ function MessagesPage() {
       });
     }
     return list;
-  }, [chat, me, swim, roleOf]);
+  }, [chat, me, swim, roleOf, packChat]);
 
   // Group threads I'm a member of (or created).
   const groupThreads = useMemo<ThreadRow[]>(() => {
     return groups
       .filter((g) => g.members.includes(me) || g.createdBy === me)
+      .filter((g) => !pack || isPackGroupId(g.id))
       .map((g) => {
         const msgs = chat
           .filter((m) => m.groupId === g.id)
@@ -236,7 +353,7 @@ function MessagesPage() {
           group: g,
         };
       });
-  }, [groups, chat, me]);
+  }, [groups, chat, me, pack]);
 
   const sortedThreads = useMemo<ThreadRow[]>(() => {
     const stamp = (t: ThreadRow) =>
@@ -282,7 +399,7 @@ function MessagesPage() {
     const base = {
       id: nextId("CH-", "chat"),
       fromName: me,
-      fromRole: roleLabel[user.role],
+      fromRole: packChat?.fromRole ?? roleLabel[user.role],
       text,
       at: new Date().toISOString(),
       ...(attachment ? { attachment } : {}),
@@ -291,7 +408,9 @@ function MessagesPage() {
     let row: ChatMessage;
     if (active.kind === "group" && active.group) {
       const gid = active.group.id;
-      row = { ...base, a: gid, b: gid, groupId: gid, context: "swim" };
+      row = pack
+        ? { ...base, a: gid, b: gid, groupId: gid }
+        : { ...base, a: gid, b: gid, groupId: gid, context: "swim" };
     } else {
       const [a, b] = chatPair(me, active.targetName);
       row = { ...base, a, b, ...(swim ? { context: "swim" as const } : {}) };
@@ -339,7 +458,11 @@ function MessagesPage() {
         subtitle={
           swim
             ? "WhatsApp-style club chat — message any coach or family, start session groups, share photos & documents."
-            : "In-app, email, SMS, WhatsApp and video meetings."
+            : packChat
+              ? packChat.family
+                ? `${packChat.tenantName} · family account — you message as ${packChat.me}.`
+                : `${packChat.tenantName} · ${PACK_SUBTITLE[user?.role ?? "student"]}`
+              : "In-app, email, SMS, WhatsApp and video meetings."
         }
       />
 
@@ -363,6 +486,15 @@ function MessagesPage() {
                   onClick={() => setNewGroupOpen(true)}
                   title="New group"
                   data-tour="new-group-btn"
+                  className="h-8 w-8 grid place-items-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground"
+                >
+                  <UsersRound className="h-4 w-4" />
+                </button>
+              )}
+              {packChat?.canCreateGroups && (
+                <button
+                  onClick={() => setPackGroupOpen(true)}
+                  title="New class group"
                   className="h-8 w-8 grid place-items-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground"
                 >
                   <UsersRound className="h-4 w-4" />
@@ -522,7 +654,9 @@ function MessagesPage() {
                   <div className="h-full grid place-items-center text-center text-xs text-muted-foreground">
                     <div className="max-w-xs rounded-xl bg-card/80 border px-4 py-3">
                       {active.kind === "group"
-                        ? "This group is ready. Post an update — everyone connected to the session will see it."
+                        ? pack
+                          ? "This group is ready. Post an update — everyone in the group will see it."
+                          : "This group is ready. Post an update — everyone connected to the session will see it."
                         : `Say hello to ${active.title}. Messages are shared with them and persist across logins.`}
                     </div>
                   </div>
@@ -657,6 +791,7 @@ function MessagesPage() {
         me={me}
         swim={swim}
         dmThreads={dmThreads}
+        contacts={packChat?.directory}
         onPick={(name) => {
           setNewChatOpen(false);
           openThread({ kind: "dm", name });
@@ -671,7 +806,139 @@ function MessagesPage() {
           openThread({ kind: "group", id });
         }}
       />
+      {packChat?.canCreateGroups && (
+        <PackGroupDialog
+          open={packGroupOpen}
+          onOpenChange={setPackGroupOpen}
+          me={me}
+          groups={packChat.myGroups}
+          onCreate={(id) => {
+            setPackGroupOpen(false);
+            openThread({ kind: "group", id });
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+/* ── New class / module group (pack tenants) ────────────────────────────── */
+
+function PackGroupDialog({
+  open,
+  onOpenChange,
+  me,
+  groups,
+  onCreate,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  me: string;
+  groups: TeachingGroup[];
+  onCreate: (id: string) => void;
+}) {
+  const learners = useCollection("learners");
+  const [groupId, setGroupId] = useState("");
+  const picked = groups.find((g) => g.id === groupId);
+  const adults = picked && (picked.band === "higher-ed" || picked.band === "vocational");
+  const members = picked
+    ? Array.from(new Set([...membersForTeachingGroup(picked, learners), me]))
+    : [];
+
+  const create = () => {
+    if (!picked) return;
+    const group: ChatGroup = {
+      id: nextId("PGRP-", "chatGroups"),
+      name: adults ? `${picked.code} ${picked.title}` : `${picked.title} Parents`,
+      courseId: picked.id,
+      members,
+      createdBy: me,
+      createdAt: new Date().toISOString(),
+    };
+    addItem("chatGroups", group);
+    toast.success(`Group "${group.name}" created · ${members.length} members`);
+    setGroupId("");
+    onCreate(group.id);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>New class group</DialogTitle>
+          <DialogDescription>
+            Pick a class or module. Families (school) or students (university and college) are added
+            for you.
+          </DialogDescription>
+        </DialogHeader>
+        {groups.length === 0 ? (
+          <div className="py-8 text-center text-sm text-muted-foreground">
+            No classes or modules found for you.
+          </div>
+        ) : (
+          <div className="max-h-64 overflow-y-auto rounded-lg border divide-y">
+            {groups.map((g) => {
+              const on = g.id === groupId;
+              return (
+                <button
+                  key={g.id}
+                  onClick={() => setGroupId(g.id)}
+                  className={`w-full text-left px-3 py-2.5 flex items-center gap-3 hover:bg-muted ${
+                    on ? "bg-emerald-500/10" : ""
+                  }`}
+                >
+                  <span className="h-9 w-9 shrink-0 grid place-items-center rounded-full bg-emerald-500/15 text-emerald-600">
+                    <Users className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium truncate">
+                      {g.kind === "class" ? g.title : `${g.code} ${g.title}`}
+                    </span>
+                    <span className="block text-xs text-muted-foreground truncate">
+                      {g.level} · {g.studentIds.length} learner(s)
+                    </span>
+                  </span>
+                  {on && <CheckCheck className="h-4 w-4 text-emerald-600 shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {picked && (
+          <div className="mt-3">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+              Members · {members.length}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {members.map((m) => (
+                <span
+                  key={m}
+                  className="inline-flex items-center gap-1.5 rounded-full border bg-muted/40 pl-1 pr-2.5 py-0.5 text-xs"
+                >
+                  <Avatar name={m} size={20} />
+                  {m}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="flex justify-end gap-2 pt-4">
+          <button
+            onClick={() => onOpenChange(false)}
+            className="h-9 px-4 rounded-md border text-sm hover:bg-muted inline-flex items-center gap-1.5"
+          >
+            <X className="h-4 w-4" /> Cancel
+          </button>
+          <button
+            onClick={create}
+            disabled={!picked}
+            className="h-9 px-4 rounded-md bg-emerald-600 text-white text-sm inline-flex items-center gap-1.5 disabled:opacity-50 hover:bg-emerald-700"
+          >
+            <Plus className="h-4 w-4" /> Create group
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -723,6 +990,7 @@ function NewChatDialog({
   me,
   swim,
   dmThreads,
+  contacts,
   onPick,
 }: {
   open: boolean;
@@ -730,13 +998,17 @@ function NewChatDialog({
   me: string;
   swim: boolean;
   dmThreads: ThreadRow[];
+  /** Pack tenants: the institution's own directory. */
+  contacts?: ChatContact[];
   onPick: (name: string) => void;
 }) {
   const [q, setQ] = useState("");
 
   const directory = useMemo<ChatContact[]>(() => {
     const map = new Map<string, string>();
-    if (swim) {
+    if (contacts) {
+      for (const c of contacts) map.set(c.name, c.role);
+    } else if (swim) {
       for (const c of swimContactDirectory()) map.set(c.name, c.role);
     } else {
       for (const u of demoUsers) map.set(u.name, roleLabel[u.role]);
@@ -746,7 +1018,7 @@ function NewChatDialog({
     return Array.from(map, ([name, role]) => ({ name, role })).sort((a, b) =>
       a.name.localeCompare(b.name),
     );
-  }, [swim, dmThreads, me]);
+  }, [swim, dmThreads, me, contacts]);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();

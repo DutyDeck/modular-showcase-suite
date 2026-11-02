@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import { money } from "@/lib/packs/regions";
 import { useMemo, useState } from "react";
 import {
   PageHeader,
@@ -50,7 +51,21 @@ import {
   Wallet,
   ClipboardList,
   SlidersHorizontal,
+  Plus,
+  Heart,
+  Lock,
 } from "lucide-react";
+import { isPackTenantUser } from "@/lib/packs/coreBridge";
+import type { TeachingGroup } from "@/lib/packs/sis/learning";
+import { bandLabel, groupSubtitle, type LearningItem } from "@/lib/packs/sis/lmsContent";
+import { DEMO_TODAY } from "@/lib/packs/foundationData";
+import { Tabs } from "@/components/packs/PackUI";
+import {
+  usePackLearning,
+  AddLearningDialog,
+  ItemRow,
+  type PackLearning,
+} from "@/components/packs/LearningUI";
 
 export const Route = createFileRoute("/app/courses/$courseId")({
   head: ({ params }) => ({ meta: [{ title: `Class — ${params.courseId}` }] }),
@@ -63,7 +78,11 @@ const TODAY_WEEKDAY = (["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as Week
 
 function CourseDetailPage() {
   const { courseId } = useParams({ from: "/app/courses/$courseId" });
+  const { user } = useAuth();
+  const profiles = useCollection("tenantProfiles");
   if (swimCourseById[courseId]) return <SwimCourseView courseId={courseId} />;
+  // Pack tenants: a "course" is a teaching group (class / module / qualification).
+  if (isPackTenantUser(user, profiles)) return <PackCourseView courseId={courseId} />;
   return <GenericCourseView courseId={courseId} />;
 }
 
@@ -599,7 +618,7 @@ function GenericCourseView({ courseId }: { courseId: string }) {
             <HeroStat
               icon={<DollarSign className="h-4 w-4" />}
               label="Fee"
-              value={course.price ? `$${course.price}` : "—"}
+              value={course.price ? money(course.price, "USD") : "—"}
             />
           </div>
         </div>
@@ -894,7 +913,7 @@ function CapTile({
   );
 }
 
-const usd = (n: number) => "$" + n.toLocaleString();
+const usd = (n: number) => money(n, "USD");
 
 function HeroStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
@@ -904,6 +923,359 @@ function HeroStat({ icon, label, value }: { icon: React.ReactNode; label: string
         {label}
       </div>
       <div className="text-base font-bold mt-0.5 text-white truncate">{value}</div>
+    </div>
+  );
+}
+
+/* ───────────────────── Pack tenants: one teaching group ───────────────────── */
+
+const byWhen = (a: LearningItem, b: LearningItem) =>
+  `${a.date ?? ""}${a.start ?? ""}`.localeCompare(`${b.date ?? ""}${b.start ?? ""}`);
+
+function groupByTopic(items: LearningItem[]): [string, LearningItem[]][] {
+  const m = new Map<string, LearningItem[]>();
+  for (const it of items) {
+    const k = it.topic || "General";
+    m.set(k, [...(m.get(k) ?? []), it]);
+  }
+  return Array.from(m.entries());
+}
+
+type PackTab = "overview" | "resources" | "people";
+
+function PackCourseView({ courseId }: { courseId: string }) {
+  const L = usePackLearning();
+  const { user } = L;
+  const add = useDisclosure();
+  const [tab, setTab] = useState<PackTab>("overview");
+  const g = L.all.find((x) => x.id === courseId);
+  if (!g) return <GenericCourseView courseId={courseId} />;
+
+  const allowed = L.isStaff
+    ? g.tenantId === user?.institutionId
+    : L.visible.some((v) => v.id === g.id);
+  if (!allowed) {
+    return (
+      <div className="text-center py-16">
+        <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+        <div className="text-lg font-semibold">You don't have access to this class</div>
+        <Link to="/app/courses" className="inline-flex mt-4 text-sm text-primary hover:underline">
+          Back to classes
+        </Link>
+      </div>
+    );
+  }
+
+  const items = L.itemsFor(g);
+  const journal = g.band === "early";
+  const teacher = L.teacherFor(g);
+  const room = L.roomFor(g);
+  const editable = L.canEdit(g);
+  const kidsHere = L.family.filter((f) => g.studentIds.includes(f.id));
+  const people = L.learners.filter((l) => g.studentIds.includes(l.id));
+  const backLabel =
+    L.ctx.type === "university" ? "modules" : L.ctx.type === "college" ? "courses" : "classes";
+
+  const title = journal
+    ? kidsHere.length === 1
+      ? `${kidsHere[0].name.split(" ")[0]}'s learning journal`
+      : `Learning journal — ${g.code}`
+    : g.title;
+
+  return (
+    <div className="space-y-5">
+      <Link
+        to="/app/courses"
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        All {backLabel}
+      </Link>
+      <PageHeader
+        title={title}
+        subtitle={`${g.code} · ${groupSubtitle(g)}`}
+        actions={
+          <>
+            <Link
+              to="/app/lms"
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-md border text-sm font-medium hover:bg-muted"
+            >
+              <BookOpen className="h-4 w-4" />
+              Learning
+            </Link>
+            {editable && (
+              <Button onClick={add.onOpen}>
+                <Plus className="h-4 w-4" />
+                {journal ? "Add to journal" : "Add lesson or resource"}
+              </Button>
+            )}
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-xl border bg-card p-4 flex items-center gap-3">
+          <Avatar name={teacher} size={40} />
+          <div className="min-w-0">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              {journal ? "Key worker" : g.band === "vocational" ? "Trainer" : "Teacher"}
+            </div>
+            <div className="text-sm font-medium truncate">{teacher}</div>
+          </div>
+        </div>
+        <InfoTile icon={<Clock className="h-4 w-4" />} label="When" value={L.schedule(g)} />
+        <InfoTile icon={<MapPin className="h-4 w-4" />} label="Where" value={room ?? "—"} />
+        <InfoTile
+          icon={<Users className="h-4 w-4" />}
+          label={L.isStaff ? "Learners" : journal ? "In the group" : "In the class"}
+          value={String(g.studentIds.length)}
+        />
+      </div>
+
+      <Tabs<PackTab>
+        tabs={[
+          { id: "overview", label: journal ? "Journal" : "Overview" },
+          {
+            id: "resources",
+            label: journal ? "For home" : "Resources",
+            count: items.filter((i) => i.kind === "Resource" || i.kind === "Recording").length,
+          },
+          { id: "people", label: "People" },
+        ]}
+        value={tab}
+        onChange={setTab}
+      />
+
+      {tab === "overview" &&
+        (journal ? (
+          <JournalOverview g={g} items={items} L={L} />
+        ) : (
+          <GroupOverview g={g} items={items} />
+        ))}
+
+      {tab === "resources" && (
+        <Section
+          title={journal ? "To try at home" : "Resources by topic"}
+          description={
+            journal ? "Songs, sounds and ideas from this week." : "Notes, sheets and recordings."
+          }
+        >
+          {groupByTopic(
+            items.filter((i) => i.kind === "Resource" || i.kind === "Recording").sort(byWhen),
+          ).map(([topic, list]) => (
+            <div key={topic} className="mb-4 last:mb-0">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                {topic}
+              </div>
+              <div className="divide-y">
+                {list.map((it) => (
+                  <ItemRow key={it.id} item={it} group={g} />
+                ))}
+              </div>
+            </div>
+          ))}
+          {!items.some((i) => i.kind === "Resource" || i.kind === "Recording") && (
+            <div className="text-sm text-muted-foreground">Nothing shared yet.</div>
+          )}
+        </Section>
+      )}
+
+      {tab === "people" && (
+        <Section title="People">
+          <div className="flex items-center gap-3 pb-3 border-b">
+            <Avatar name={teacher} size={36} />
+            <div>
+              <div className="text-sm font-medium">{teacher}</div>
+              <div className="text-xs text-muted-foreground">
+                {journal ? "Key worker" : g.kind === "module" ? "Module leader" : "Teacher"}
+              </div>
+            </div>
+          </div>
+          {L.isStaff ? (
+            <ul className="divide-y">
+              {people.map((p) => (
+                <li key={p.id} className="py-2.5 flex items-center gap-3">
+                  <Avatar name={p.name} size={32} />
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium">{p.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {p.id} · {p.level}
+                      {p.group ? ` · ${p.group}` : ""}
+                    </div>
+                  </div>
+                </li>
+              ))}
+              {!people.length && (
+                <li className="py-3 text-sm text-muted-foreground">No learners yet.</li>
+              )}
+            </ul>
+          ) : (
+            <div className="pt-3 space-y-3">
+              {kidsHere.map((k) => (
+                <div key={k.id} className="flex items-center gap-3">
+                  <Avatar name={k.name} size={32} />
+                  <div className="text-sm font-medium">{k.name}</div>
+                </div>
+              ))}
+              <div className="text-sm text-muted-foreground">
+                {Math.max(g.studentIds.length - kidsHere.length, 0)} classmate
+                {g.studentIds.length - kidsHere.length === 1 ? "" : "s"}
+              </div>
+            </div>
+          )}
+        </Section>
+      )}
+
+      {editable && (
+        <AddLearningDialog
+          open={add.open}
+          onOpenChange={add.setOpen}
+          groups={[g]}
+          defaultGroupId={g.id}
+          learners={L.learners}
+        />
+      )}
+    </div>
+  );
+}
+
+function InfoTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-xl border bg-card p-4 flex items-center gap-3 min-w-0">
+      <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+        <div className="text-sm font-medium truncate" title={value}>
+          {value}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GroupOverview({ g, items }: { g: TeachingGroup; items: LearningItem[] }) {
+  const timed = items.filter((i) => i.kind === "Lesson" || i.kind === "Live class");
+  const upcoming = timed.filter((i) => (i.date ?? "") >= DEMO_TODAY).sort(byWhen);
+  const recent = items
+    .filter((i) => (i.kind === "Lesson" || i.kind === "Recording") && (i.date ?? "") < DEMO_TODAY)
+    .sort(byWhen)
+    .reverse()
+    .slice(0, 4);
+  const todo = items
+    .filter((i) => i.kind === "Quiz" || i.kind === "Activity")
+    .sort((a, b) => (a.due ?? a.date ?? "").localeCompare(b.due ?? b.date ?? ""));
+  const unit = upcoming.find((i) => i.kind === "Lesson")?.topic ?? items[0]?.topic;
+  const young = g.band === "primary";
+
+  return (
+    <div className="grid lg:grid-cols-3 gap-4 lg:gap-6">
+      <div className="lg:col-span-2 space-y-4">
+        {unit && (
+          <div className="rounded-xl border bg-card p-4">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              {young ? "This week we are learning" : "Current topic"}
+            </div>
+            <div className="text-lg font-semibold mt-0.5">{unit}</div>
+            <div className="text-xs text-muted-foreground mt-1">{bandLabel(g.band)}</div>
+          </div>
+        )}
+        <Section title={young ? "Coming up in class" : "Upcoming lessons and live classes"}>
+          <div className="divide-y -my-2">
+            {upcoming.map((it) => (
+              <ItemRow key={it.id} item={it} group={g} />
+            ))}
+            {!upcoming.length && (
+              <div className="py-2 text-sm text-muted-foreground">Nothing scheduled yet.</div>
+            )}
+          </div>
+        </Section>
+        {recent.length > 0 && (
+          <Section title={young ? "Last few lessons" : "Recent lessons and recordings"}>
+            <div className="divide-y -my-2">
+              {recent.map((it) => (
+                <ItemRow key={it.id} item={it} group={g} />
+              ))}
+            </div>
+          </Section>
+        )}
+      </div>
+      <Section
+        title={
+          young
+            ? "Home learning and practice"
+            : g.band === "higher-ed"
+              ? "Coursework and quizzes"
+              : g.band === "vocational"
+                ? "Tasks and knowledge checks"
+                : "Homework and quizzes"
+        }
+      >
+        <div className="divide-y -my-2">
+          {todo.map((it) => (
+            <ItemRow key={it.id} item={it} group={g} />
+          ))}
+          {!todo.length && <div className="py-2 text-sm text-muted-foreground">All done.</div>}
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function JournalOverview({
+  g,
+  items,
+  L,
+}: {
+  g: TeachingGroup;
+  items: LearningItem[];
+  L: PackLearning;
+}) {
+  const nameOf = (id?: string) => L.learners.find((l) => l.id === id)?.name ?? "";
+  const observations = items
+    .filter((i) => i.kind === "Observation")
+    .sort(byWhen)
+    .reverse();
+  const activities = items
+    .filter((i) => i.kind === "Activity")
+    .sort(byWhen)
+    .reverse();
+  const multi = new Set(observations.map((o) => o.studentId)).size > 1;
+
+  return (
+    <div className="grid lg:grid-cols-3 gap-4 lg:gap-6">
+      <Section
+        className="lg:col-span-2"
+        title={
+          <span className="inline-flex items-center gap-1.5">
+            <Heart className="h-4 w-4 text-pink-500" />
+            Observations
+          </span>
+        }
+        description="Moments your key worker noticed, shared with the family."
+      >
+        <div className="divide-y -my-2">
+          {observations.map((it) => (
+            <ItemRow
+              key={it.id}
+              item={it}
+              group={g}
+              childName={multi ? nameOf(it.studentId) : undefined}
+            />
+          ))}
+          {!observations.length && (
+            <div className="py-2 text-sm text-muted-foreground">No observations yet.</div>
+          )}
+        </div>
+      </Section>
+      <Section title="What we did this week" description="Play-based activities for the group.">
+        <div className="divide-y -my-2">
+          {activities.map((it) => (
+            <ItemRow key={it.id} item={it} group={g} />
+          ))}
+        </div>
+      </Section>
     </div>
   );
 }

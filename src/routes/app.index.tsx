@@ -1,4 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { money } from "@/lib/packs/regions";
+import { useTenantContext } from "@/lib/packs/registry";
+import { PackDashboard } from "@/components/packs/PackDashboard";
 import { useAuth } from "@/lib/auth";
 import { PageHeader, StatCard, Section, Badge } from "@/components/ui-kit";
 import { AreaTrend, BarTrend } from "@/components/Charts";
@@ -69,7 +72,9 @@ function firstName(fullName: string): string {
 
 function Dashboard() {
   const { user } = useAuth();
+  const tenantCtx = useTenantContext();
   if (!user) return null;
+  const segment = tenantCtx.profile?.experience === "segment" && !tenantCtx.isGlobalAdmin;
 
   return (
     <div className="space-y-6" data-tour="dashboard">
@@ -97,7 +102,9 @@ function Dashboard() {
         </div>
       </div>
 
-      {isSwimAdmin(user) ? (
+      {segment ? (
+        <PackDashboard />
+      ) : isSwimAdmin(user) ? (
         <SwimAdminDash />
       ) : (
         <>
@@ -644,7 +651,7 @@ function StudentDash() {
         />
         <StatCard
           label="Outstanding"
-          value={`$${due?.amount ?? 0}`}
+          value={money(due?.amount ?? 0, "USD")}
           hint="Due Jun 1"
           icon={<Wallet className="h-5 w-5" />}
           accent="info"
@@ -739,7 +746,7 @@ function ParentDash() {
         />
         <StatCard
           label="Total Dues"
-          value={`$${totalDues}`}
+          value={money(totalDues, "USD")}
           hint="Across all institutes"
           icon={<Wallet className="h-5 w-5" />}
           accent="warning"
@@ -764,7 +771,7 @@ function ParentDash() {
                   <div className="text-[11px] text-muted-foreground">GPA</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">${c.duesUSD}</div>
+                  <div className="text-2xl font-bold">{money(c.duesUSD, "USD")}</div>
                   <div className="text-[11px] text-muted-foreground">Dues</div>
                 </div>
               </div>
@@ -1125,7 +1132,7 @@ function GlobalAdminDash() {
             data={revenueTrend.map((r) => ({ m: r.m, v: r.v }))}
             xKey="m"
             yKey="v"
-            yFormatter={(v) => `$${v}K`}
+            yFormatter={(v) => `${money(v, "USD")}K`}
           />
         </Section>
         <Section title="Attendance Trend" description="Weekly average %">

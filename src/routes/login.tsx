@@ -18,6 +18,7 @@ import { useAuth } from "@/lib/auth";
 import { tourApi } from "@/lib/tour";
 import { demoUsers, SWIM_COURSE_ID, PLATFORM_LANDING_KEY } from "@/lib/mockData";
 import { useCollection } from "@/lib/store";
+import { PROVIDER_LABEL, tenantForStudentDomain } from "@/lib/packs/foundationData";
 import { Avatar } from "@/components/Avatar";
 import { BrandLockup } from "@/components/BrandLogo";
 
@@ -25,6 +26,35 @@ export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — 1StudentID" }] }),
   component: LoginPage,
 });
+
+/* Demo accounts are grouped by the pack they showcase (meta.pack / swim flag). */
+type DemoSegment = "core" | "swim" | "intl-school" | "higher-ed";
+const DEMO_SEGMENTS: { id: DemoSegment; label: string }[] = [
+  { id: "core", label: "Core platform" },
+  { id: "swim", label: "Swim Club" },
+  { id: "intl-school", label: "Intl School" },
+  { id: "higher-ed", label: "University & College" },
+];
+function segmentOf(u: { meta?: Record<string, string> }): DemoSegment {
+  if (u.meta?.discipline === "Swimming") return "swim";
+  if (u.meta?.pack === "intl-school") return "intl-school";
+  if (u.meta?.pack === "higher-ed" || u.meta?.pack === "college") return "higher-ed";
+  return "core";
+}
+const PACK_ROLE_LABEL: Record<string, Partial<Record<string, string>>> = {
+  "intl-school": {
+    admin: "School principal",
+    teacher: "School teacher",
+    parent: "School parent",
+    student: "Primary pupil · family-used Microsoft 365",
+  },
+  "higher-ed": {
+    admin: "University registrar",
+    teacher: "Lecturer",
+    student: "University student",
+  },
+  college: { admin: "College registrar" },
+};
 
 const roleAccent: Record<string, string> = {
   student: "from-sky-500 to-indigo-500",
@@ -47,6 +77,12 @@ function LoginPage() {
   const hiddenAccounts = demo?.hiddenDemoAccounts ?? [];
   const demoList = demoUsers.filter((u) => !hiddenAccounts.includes(u.email));
   const showDemoAccounts = (demo?.showDemoAccounts ?? true) && demoList.length > 0;
+  const [segment, setSegment] = useState<DemoSegment>("core");
+  // Sign-in routing: a school-issued student email (e.g. @meridian.lk) is
+  // recognised and sent to that school's identity provider (Microsoft / Google).
+  const profiles = useCollection("tenantProfiles");
+  const tenantRows = useCollection("tenants");
+  const segmentList = demoList.filter((u) => segmentOf(u) === segment);
   const [email, setEmail] = useState("admin@demo.com");
   const [password, setPassword] = useState("demo");
   const [show, setShow] = useState(false);
@@ -299,6 +335,19 @@ function LoginPage() {
                 className="mt-1.5 w-full h-11 rounded-lg border bg-card px-3.5 text-sm outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all shadow-soft"
                 required
               />
+              {(() => {
+                const p = tenantForStudentDomain(email, profiles);
+                const sa = p?.studentAccounts;
+                if (!p || !sa || sa.provider === "native") return null;
+                const name = tenantRows.find((t) => t.id === p.tenantId)?.name ?? "This school";
+                return (
+                  <div className="mt-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-[11px] text-muted-foreground">
+                    <span className="font-medium text-foreground">{name}</span> signs students in
+                    with {PROVIDER_LABEL[sa.provider]} — you&apos;ll continue with your school
+                    account. (Demo password: demo)
+                  </div>
+                );
+              })()}
             </div>
             <div>
               <div className="flex items-center justify-between">
@@ -431,12 +480,37 @@ function LoginPage() {
                   pwd: <code className="bg-muted px-1.5 py-0.5 rounded font-mono">demo</code>
                 </div>
               </div>
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {DEMO_SEGMENTS.filter((sg) => demoList.some((u) => segmentOf(u) === sg.id)).map(
+                  (sg) => (
+                    <button
+                      key={sg.id}
+                      type="button"
+                      onClick={() => setSegment(sg.id)}
+                      className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                        segment === sg.id
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card hover:bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {sg.label}
+                    </button>
+                  ),
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-2.5">
-                {demoList.map((u) => {
+                {segmentList.map((u) => {
                   // Two distinct admin demo accounts (global vs institute) — call
                   // them out so the difference isn't hidden behind the same word.
-                  const roleLabel =
-                    u.role === "admin"
+                  const packLabel =
+                    u.meta?.grade === "Graduate"
+                      ? "Graduate · alumni"
+                      : u.meta?.pack
+                        ? PACK_ROLE_LABEL[u.meta.pack]?.[u.role]
+                        : undefined;
+                  const roleLabel = packLabel
+                    ? packLabel
+                    : u.role === "admin"
                       ? u.meta?.discipline === "Swimming"
                         ? "Swim admin"
                         : u.adminScope === "institute"

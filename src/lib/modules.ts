@@ -1,4 +1,6 @@
 import { useSyncExternalStore } from "react";
+import { tenants as seedTenants } from "./mockData";
+import { tenantProfiles as seedProfiles } from "./packs/foundationData";
 
 /**
  * Module catalog — the single source of truth for which "purchasable" capabilities
@@ -33,7 +35,16 @@ export type ModuleId =
   | "users"
   | "migration"
   | "compliance"
-  | "branding";
+  | "branding"
+  // Shared modules introduced with the institution packs
+  | "admissions"
+  | "timetable"
+  | "vetting"
+  | "returns"
+  | "integrations"
+  | "groups"
+  | "requests"
+  | "itadmin";
 
 export interface ModuleDef {
   id: ModuleId;
@@ -47,6 +58,8 @@ export interface ModuleDef {
   dependsOn?: ModuleId[];
   /** Suggested plan tier for demo storytelling. */
   plan?: "Starter" | "Growth" | "Enterprise";
+  /** Off by default for "classic" (tuition / club) tenants; on for segment tenants. */
+  segmentDefault?: boolean;
 }
 
 export const MODULES: ModuleDef[] = [
@@ -62,7 +75,7 @@ export const MODULES: ModuleDef[] = [
     id: "students",
     name: "Student Information",
     description: "Student roster, profiles, and admissions data.",
-    routePrefixes: ["/app/students"],
+    routePrefixes: ["/app/students", "/app/learners"],
     plan: "Starter",
   },
   {
@@ -76,7 +89,7 @@ export const MODULES: ModuleDef[] = [
     id: "attendance",
     name: "Attendance",
     description: "Daily attendance capture, reports, and trends.",
-    routePrefixes: ["/app/attendance"],
+    routePrefixes: ["/app/attendance", "/app/registers"],
     plan: "Starter",
   },
   {
@@ -152,6 +165,7 @@ export const MODULES: ModuleDef[] = [
       "/app/billing",
       "/app/my-courses",
       "/app/pricing",
+      "/app/fee-accounts",
     ],
     plan: "Growth",
   },
@@ -226,6 +240,78 @@ export const MODULES: ModuleDef[] = [
     routePrefixes: ["/app/branding"],
     plan: "Enterprise",
   },
+  {
+    id: "admissions",
+    name: "Admissions",
+    description:
+      "Enquiry → application → assessment / interview → offer → deposit → enrolled, with waitlists. Enrolment creates the permanent 1StudentID.",
+    routePrefixes: ["/app/admissions"],
+    plan: "Growth",
+    segmentDefault: true,
+  },
+  {
+    id: "timetable",
+    name: "Timetable & Rooms",
+    description:
+      "Period / lecture timetable, rooms, clash checks and cover for absent staff. Import from existing timetabling tools.",
+    routePrefixes: ["/app/timetable"],
+    plan: "Growth",
+    segmentDefault: true,
+  },
+  {
+    id: "vetting",
+    name: "Staff Vetting Register",
+    description:
+      "Statutory staff checks per region — UK Single Central Record, AU Working With Children Checks, UAE good conduct, LK police reports.",
+    routePrefixes: ["/app/vetting"],
+    plan: "Growth",
+    segmentDefault: true,
+  },
+  {
+    id: "returns",
+    name: "Regulator Returns",
+    description:
+      "Validate, generate and track statutory data returns for the tenant's country and institution type.",
+    routePrefixes: ["/app/returns"],
+    plan: "Enterprise",
+    segmentDefault: true,
+  },
+  {
+    id: "integrations",
+    name: "Integrations",
+    description:
+      "SAML / Shibboleth SSO, LTI 1.3 (Moodle, Canvas, Blackboard), student-record and school MIS connectors.",
+    routePrefixes: ["/app/integrations"],
+    plan: "Enterprise",
+    segmentDefault: true,
+  },
+  {
+    id: "groups",
+    name: "Groups & Campuses",
+    description:
+      "Cross-campus view for school groups and multi-campus universities: consolidated KPIs across tenants.",
+    routePrefixes: ["/app/group"],
+    plan: "Enterprise",
+    segmentDefault: true,
+  },
+  {
+    id: "requests",
+    name: "Requests & Approvals",
+    description:
+      "Students (and parents) submit progression, transfer, interruption, withdrawal, deferral, project and leave requests; multi-step approval updates the record and fee schedule automatically.",
+    routePrefixes: ["/app/requests"],
+    plan: "Growth",
+    segmentDefault: true,
+  },
+  {
+    id: "itadmin",
+    name: "IT Administration",
+    description:
+      "Account lifecycle (provision on enrolment, one-click revoke for leavers), IT support desk, system health and the notifications outbox.",
+    routePrefixes: ["/app/it"],
+    plan: "Growth",
+    segmentDefault: true,
+  },
 ];
 
 export const MODULE_BY_ID: Record<string, ModuleDef> = Object.fromEntries(
@@ -234,7 +320,21 @@ export const MODULE_BY_ID: Record<string, ModuleDef> = Object.fromEntries(
 
 const STORAGE_KEY = "oneedu.tenant.modules.v1";
 
-const DEFAULT_ENABLED: ModuleId[] = MODULES.map((m) => m.id);
+/** Classic tenants: everything except the segment-only modules. */
+const DEFAULT_ENABLED: ModuleId[] = MODULES.filter((m) => !m.segmentDefault).map((m) => m.id);
+/** Segment tenants (school / university / college experience): everything. */
+const SEGMENT_DEFAULT: ModuleId[] = MODULES.map((m) => m.id);
+
+/** Tenant names whose experience is "segment" — keyed like entitlements. */
+const SEGMENT_TENANT_NAMES = new Set(
+  seedTenants
+    .filter((t) => seedProfiles.find((p) => p.tenantId === t.id)?.experience === "segment")
+    .map((t) => t.name),
+);
+
+function defaultFor(key: string): ModuleId[] {
+  return SEGMENT_TENANT_NAMES.has(key) ? SEGMENT_DEFAULT : DEFAULT_ENABLED;
+}
 
 type Entitlements = Record<string, ModuleId[]>;
 
@@ -273,7 +373,7 @@ function tenantKey(institution: string) {
 
 export function getEnabledModules(institution: string): Set<ModuleId> {
   const key = tenantKey(institution);
-  const list = state[key] ?? DEFAULT_ENABLED;
+  const list = state[key] ?? defaultFor(key);
   return new Set(list);
 }
 
@@ -307,7 +407,8 @@ export function resetTenant(institution: string) {
 
 export function useEnabledModules(institution: string): Set<ModuleId> {
   const all = useSyncExternalStore(subscribe, snapshot, snapshot);
-  const list = all[tenantKey(institution)] ?? DEFAULT_ENABLED;
+  const key = tenantKey(institution);
+  const list = all[key] ?? defaultFor(key);
   return new Set(list);
 }
 

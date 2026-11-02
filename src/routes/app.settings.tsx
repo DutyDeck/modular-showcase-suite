@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { money } from "@/lib/packs/regions";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { PageHeader, Section, Button, Field, Select } from "@/components/ui-kit";
@@ -6,6 +7,7 @@ import { usePrefs, LOCALE_LABEL, CURRENCY_LABEL, type Locale, type Currency } fr
 import { useAuth } from "@/lib/auth";
 import { useCollection } from "@/lib/store";
 import { ModulesPanel } from "@/components/ModulesPanel";
+import { PacksPanel } from "@/components/PacksPanel";
 import {
   Building2,
   Palette,
@@ -138,6 +140,7 @@ function SettingsPage() {
         </Section>
       </div>
 
+      {user?.role === "admin" && <PacksPanel />}
       {user?.role === "admin" && <ModulesPanel />}
 
       <Section
@@ -178,10 +181,7 @@ function SettingsPage() {
             }
           />
           <PlanStat label="Storage" value="48 GB / 1 TB" />
-          <PlanStat
-            label="MRR"
-            value={scopedTenant ? `$${scopedTenant.mrr.toLocaleString()}` : "—"}
-          />
+          <PlanStat label="MRR" value={scopedTenant ? money(scopedTenant.mrr, "USD") : "—"} />
         </div>
       </Section>
 

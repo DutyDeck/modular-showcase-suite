@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { FX_PER_USD, setDisplayCurrency } from "./displayCurrency";
 
 export type Theme = "light" | "dark";
 export type Locale = "en" | "si" | "ta" | "fr";
@@ -128,13 +129,13 @@ export const CURRENCY_LABEL: Record<Currency, string> = {
   GBP: "GBP · £",
 };
 
-// Rough static rates (USD = 1.00). Realistic enough for a demo.
+// Rough static rates (USD = 1.00) — the one shared demo FX table.
 const USD_RATES: Record<Currency, number> = {
-  USD: 1,
-  LKR: 305,
-  INR: 84,
-  EUR: 0.92,
-  GBP: 0.79,
+  USD: FX_PER_USD.USD,
+  LKR: FX_PER_USD.LKR,
+  INR: FX_PER_USD.INR,
+  EUR: FX_PER_USD.EUR,
+  GBP: FX_PER_USD.GBP,
 };
 
 const CURRENCY_LOCALE: Record<Currency, string> = {
@@ -191,6 +192,7 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
       save({ theme, locale: l, currency });
     };
     const setCurrency = (c: Currency) => {
+      setDisplayCurrency(c);
       setCurrencyState(c);
       save({ theme, locale, currency: c });
     };
@@ -220,7 +222,18 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
     };
   }, [theme, locale, currency]);
 
-  return <PrefsContext.Provider value={value}>{children}</PrefsContext.Provider>;
+  // Every amount in the app (classic formatMoney and pack money()) shows in
+  // this one currency; re-key the tree so plain money() calls re-render too.
+  setDisplayCurrency(currency);
+  return (
+    <PrefsContext.Provider value={value}>
+      <CurrencyScope key={currency}>{children}</CurrencyScope>
+    </PrefsContext.Provider>
+  );
+}
+
+function CurrencyScope({ children }: { children: ReactNode }) {
+  return <>{children}</>;
 }
 
 export function usePrefs() {

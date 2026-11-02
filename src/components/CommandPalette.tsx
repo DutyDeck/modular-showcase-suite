@@ -11,7 +11,8 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { useAuth } from "@/lib/auth";
-import { menusByRole } from "@/lib/menus";
+import { menuForUser } from "@/lib/menus";
+import { useTenantContext } from "@/lib/packs/registry";
 import { useCollection, addItem, nextId, resetStore } from "@/lib/store";
 import { usePrefs } from "@/lib/prefs";
 import { toast } from "sonner";
@@ -31,7 +32,15 @@ export function CommandPalette({
   const courses = useCollection("courses");
   const invoices = useCollection("invoices");
 
-  const items = user ? menusByRole[user.role] : [];
+  const tenantCtx = useTenantContext();
+  const items = user
+    ? menuForUser(user, {
+        experience: tenantCtx.profile?.experience ?? "classic",
+        packs: tenantCtx.packs,
+        familyOperated: tenantCtx.familyOperated,
+        graduated: tenantCtx.graduated,
+      })
+    : [];
 
   const close = () => onOpenChange(false);
 

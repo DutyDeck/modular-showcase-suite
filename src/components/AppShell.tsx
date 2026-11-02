@@ -4,6 +4,7 @@ import * as Icons from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { menuForUser, roleLabel } from "@/lib/menus";
 import { useEnabledModules } from "@/lib/modules";
+import { useTenantContext } from "@/lib/packs/registry";
 import { useCollection } from "@/lib/store";
 import { brandingKey } from "@/lib/mockData";
 import { readableOn } from "@/lib/branding";
@@ -20,6 +21,7 @@ import {
 import { CommandPalette, useCommandPaletteHotkey } from "@/components/CommandPalette";
 import { CopilotDrawer, CopilotLauncher } from "@/components/CopilotDrawer";
 import { ModuleGate } from "@/components/ModuleGate";
+import { FamilyAccountBanner } from "@/components/packs/FamilyAccount";
 import { usePrefs } from "@/lib/prefs";
 import { BrandLogo } from "@/components/BrandLogo";
 
@@ -93,6 +95,7 @@ export function AppShell() {
   }, [mobileOpen]);
 
   const enabled = useEnabledModules(user?.institution ?? "");
+  const tenantCtx = useTenantContext();
   const brandings = useCollection("institutionBrandings");
   const demoAll = useCollection("demoSettings");
 
@@ -103,7 +106,12 @@ export function AppShell() {
   // Global-admin demo control: features hidden from the sidebar (Users & Roles).
   const hiddenNav = demoAll.find((s) => s.id === "demo")?.hiddenNav ?? [];
 
-  const items = menuForUser(user).filter(
+  const items = menuForUser(user, {
+    experience: tenantCtx.profile?.experience ?? "classic",
+    packs: tenantCtx.packs,
+    familyOperated: tenantCtx.familyOperated,
+    graduated: tenantCtx.graduated,
+  }).filter(
     (item) => (!item.moduleId || enabled.has(item.moduleId)) && !hiddenNav.includes(item.to),
   );
   const groups: Record<string, typeof items> = {};
@@ -357,6 +365,7 @@ export function AppShell() {
         </header>
 
         <main className="flex-1 p-3 sm:p-5 md:p-8 max-w-[1600px] w-full mx-auto">
+          <FamilyAccountBanner />
           <ModuleGate>
             <Outlet />
           </ModuleGate>
