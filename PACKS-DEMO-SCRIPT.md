@@ -1,6 +1,8 @@
 # Institution Packs — demo script
 
-All demo accounts use password `demo`. On the login page, pick a tab: **Core platform · Swim Club · Intl School · University & College**. Seeded data assumes the demo date is **2 Nov 2026**. Click **Reset demo** for a clean run.
+All demo accounts use password `demo`. On the login page, pick a tab: **Core platform · Swim Club · Intl School · University & College**. Seeded data assumes the demo date is **2 Nov 2026**. For a clean run, open the account menu (your avatar, top right) and click **Reset demo data**.
+
+In the app, configuration pages (Institution Profile, Settings, Branding, Integrations and others) sit under **Administration** in the sidebar, which starts collapsed. Pages with more than five tabs keep the extra tabs under **More**.
 
 ## The model in one sentence
 Three independent dimensions decide what a tenant sees:
@@ -24,7 +26,7 @@ A pack never re-implements a module. It depends on the modules it needs and swit
   - Two calendars, plus **Intakes**: Aug 2027 (British/IB), Apr 2027 (CBSE), and rolling in-year entry.
   - Age-placement rules for each curriculum.
 - **Admissions:**
-  - Open the **Intakes** tab to see places against capacity.
+  - Open **More → Intakes** to see places against capacity.
   - Open an application to see the suggested year group by age (British cut-off 31 Aug, CBSE 31 Mar), then **Defer to next intake**.
   - **Enrol** creates a 1StudentID and opens a fee account with the deposit credited.
 - **Curricula & Houses:** award house points. **Exam Entries:** select drafts → **Enter selected** to issue candidate numbers.
@@ -94,7 +96,7 @@ Every automated email, SMS or WhatsApp message lands in **IT Administration → 
 - **Possible duplicates:** merge Ella Whitaker's two enquiries (walk-in and web form). Link Ashan Jayasuriya to his existing 1StudentID **S-3104**: he's a Meridian Colombo school leaver, so he keeps one ID from school to university.
 - **Quick enquiry:** type NIC `200915102233` and the duplicate panel fires live. The enquiry is auto-assigned to the counsellor on duty.
 - **My follow-ups:** click Send reminders, then check the Outbox.
-- **Targets & funnel:** pick Jan 2027 for the conversion funnel and each counsellor's progress against target.
+- **More → Targets & funnel:** pick Jan 2027 for the conversion funnel and each counsellor's progress against target.
 
 **Student Records (registrar@demo.com)**
 - The banner shows Arjun's passport expiring in 48 days. Click Remind, then upload a new passport version and Verify it.
@@ -103,9 +105,9 @@ Every automated email, SMS or WhatsApp message lands in **IT Administration → 
 
 **Fees (school@demo.com → Fees & Sponsors)**
 - **Bank reconciliation:** import the Emirates NBD sample statement. Lines come out auto-matched, sent for review or unmatched; match the review line by hand.
-- **Collection counter:** take a cash payment for Freya Morgan and print the receipt.
-- **Reminders:** Run reminders now.
-- **Cash flow:** view the 3-month projection, then the funding-body reconciliation.
+- **More → Collection counter:** take a cash payment for Freya Morgan and print the receipt.
+- **More → Reminders:** Run reminders now.
+- **More → Cash flow:** view the 3-month projection, then the funding-body reconciliation.
 - **college@demo.com:** one NSW Smart and Skilled bank payment matches 3 instalments at once.
 
 **Exams (registrar@demo.com → Exam Timetable)**

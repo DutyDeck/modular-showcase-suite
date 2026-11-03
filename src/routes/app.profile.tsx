@@ -39,7 +39,7 @@ function ProfilePage() {
     <div className="space-y-6">
       <PageHeader
         title="My Profile"
-        subtitle="Manage your global student identity and preferences."
+        subtitle="Your 1StudentID identity. Language, currency and dark mode are in the account menu (your avatar, top right)."
       />
 
       {user.role === "student" && user.dob && <GuardianshipCard />}
@@ -73,31 +73,10 @@ function ProfilePage() {
               {Object.entries(user.meta ?? {}).map(([k, v]) => (
                 <Field key={k} label={k} value={v} />
               ))}
-              <Field label="Region" value="Asia-Pacific" />
-              <Field label="Language" value="English (en-LK)" />
-              <Field label="Currency" value="USD" />
             </div>
           </div>
         </div>
       </Section>
-      <div className="grid md:grid-cols-3 gap-4">
-        {[
-          "Wellness profile",
-          "Emergency contacts",
-          "Linked devices",
-          "Consent & privacy",
-          "Security & MFA",
-          "Data export",
-        ].map((x) => (
-          <button
-            key={x}
-            className="p-4 rounded-lg border bg-card text-left hover:border-primary hover:shadow-soft transition-all"
-          >
-            <div className="font-medium text-sm">{x}</div>
-            <div className="text-[11px] text-muted-foreground mt-1">Manage</div>
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

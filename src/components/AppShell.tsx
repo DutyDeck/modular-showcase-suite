@@ -2,28 +2,21 @@ import { Link, useNavigate, useRouterState, Outlet } from "@tanstack/react-route
 import { useEffect, useState, type ComponentType } from "react";
 import * as Icons from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { menuForUser, roleLabel } from "@/lib/menus";
-import { useEnabledModules } from "@/lib/modules";
-import { useTenantContext } from "@/lib/packs/registry";
+import { roleLabel, sectionsFor, ADMIN_SECTION_LABEL } from "@/lib/menus";
+import { useNavItems } from "@/lib/navigation";
 import { useCollection } from "@/lib/store";
 import { brandingKey } from "@/lib/mockData";
 import { readableOn } from "@/lib/branding";
 import { cn } from "@/lib/utils";
-import { Avatar } from "@/components/Avatar";
-import {
-  NotificationBell,
-  ThemeToggle,
-  LanguageSwitcher,
-  CurrencySwitcher,
-  ResetDemoButton,
-  TenantProfileSwitcher,
-} from "@/components/HeaderControls";
+import { NotificationBell, AccountMenu } from "@/components/HeaderControls";
 import { CommandPalette, useCommandPaletteHotkey } from "@/components/CommandPalette";
 import { CopilotDrawer, CopilotLauncher } from "@/components/CopilotDrawer";
 import { ModuleGate } from "@/components/ModuleGate";
 import { FamilyAccountBanner } from "@/components/packs/FamilyAccount";
 import { usePrefs } from "@/lib/prefs";
 import { BrandLogo } from "@/components/BrandLogo";
+
+const COLLAPSED_KEY = "oneedu.sidebar.collapsedGroups.v2";
 
 function Icon({ name, className }: { name: string; className?: string }) {
   const icons = Icons as unknown as Record<string, ComponentType<{ className?: string }>>;
@@ -52,15 +45,16 @@ export function AppShell() {
   const [collapsed, setCollapsed] = useState(false);
   // Mobile drawer open/closed
   const [mobileOpen, setMobileOpen] = useState(false);
-  // Collapsed sidebar groups (persisted) — lets the presenter tuck away whole
-  // categories they don't want to surface in a given demo.
+  // Collapsed sidebar sections (persisted). Administration starts collapsed —
+  // configuration pages, not daily work.
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") return new Set();
+    const initial = new Set([ADMIN_SECTION_LABEL]);
+    if (typeof window === "undefined") return initial;
     try {
-      const raw = localStorage.getItem("oneedu.sidebar.collapsedGroups");
-      return new Set<string>(raw ? (JSON.parse(raw) as string[]) : []);
+      const raw = localStorage.getItem(COLLAPSED_KEY);
+      return raw ? new Set<string>(JSON.parse(raw) as string[]) : initial;
     } catch {
-      return new Set();
+      return initial;
     }
   });
   const toggleGroup = (g: string) =>
@@ -69,7 +63,7 @@ export function AppShell() {
       if (next.has(g)) next.delete(g);
       else next.add(g);
       try {
-        localStorage.setItem("oneedu.sidebar.collapsedGroups", JSON.stringify([...next]));
+        localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...next]));
       } catch {
         /* ignore */
       }
@@ -94,31 +88,19 @@ export function AppShell() {
     };
   }, [mobileOpen]);
 
-  const enabled = useEnabledModules(user?.institution ?? "");
-  const tenantCtx = useTenantContext();
+  const navItems = useNavItems();
   const brandings = useCollection("institutionBrandings");
-  const demoAll = useCollection("demoSettings");
 
   if (!user) return null;
 
   // Licensed white-label branding for this user's institute (if any).
   const branding = brandings.find((b) => b.institution === brandingKey(user));
-  // Global-admin demo control: features hidden from the sidebar (Users & Roles).
-  const hiddenNav = demoAll.find((s) => s.id === "demo")?.hiddenNav ?? [];
-
-  const items = menuForUser(user, {
-    experience: tenantCtx.profile?.experience ?? "classic",
-    packs: tenantCtx.packs,
-    familyOperated: tenantCtx.familyOperated,
-    graduated: tenantCtx.graduated,
-  }).filter(
-    (item) => (!item.moduleId || enabled.has(item.moduleId)) && !hiddenNav.includes(item.to),
+  // My Profile lives in the account menu (avatar), not the sidebar.
+  const sections = sectionsFor(
+    user,
+    navItems.filter((i) => i.to !== "/app/profile"),
   );
-  const groups: Record<string, typeof items> = {};
-  for (const item of items) {
-    const g = item.group ?? "Main";
-    (groups[g] ||= []).push(item);
-  }
+  const isActive = (to: string) => (to === "/app" ? path === "/app" : path.startsWith(to));
 
   const sidebar = (mode: "desktop" | "mobile") => {
     const open = mode === "mobile" ? true : !collapsed;
@@ -176,11 +158,13 @@ export function AppShell() {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
-          {Object.entries(groups).map(([group, list]) => {
-            const groupCollapsed = open && collapsedGroups.has(group);
+          {sections.map(({ key, label: group, items: list }) => {
+            // A collapsed section still opens while you're on one of its pages.
+            const groupCollapsed =
+              open && !!group && collapsedGroups.has(group) && !list.some((i) => isActive(i.to));
             return (
-              <div key={group}>
-                {open && (
+              <div key={key}>
+                {open && group && (
                   <button
                     onClick={() => toggleGroup(group)}
                     className="w-full flex items-center justify-between gap-2 px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition-colors"
@@ -198,8 +182,7 @@ export function AppShell() {
                 {!groupCollapsed && (
                   <ul className="space-y-0.5">
                     {list.map((item) => {
-                      const active =
-                        item.to === "/app" ? path === "/app" : path.startsWith(item.to);
+                      const active = isActive(item.to);
                       return (
                         <li key={item.to}>
                           <Link
@@ -329,38 +312,8 @@ export function AppShell() {
             >
               <Icons.Search className="h-4 w-4" />
             </button>
-            <TenantProfileSwitcher />
-            <LanguageSwitcher />
-            <CurrencySwitcher />
-            <ThemeToggle />
             <NotificationBell />
-            <ResetDemoButton />
-            <div className="flex items-center gap-2 sm:pl-2 sm:ml-1 sm:border-l">
-              <Avatar
-                name={user.name}
-                src={user.photo}
-                size={36}
-                tone="brand"
-                className="ring-2 ring-primary/20"
-              />
-              <div className="leading-tight hidden xl:block">
-                <div className="text-sm font-medium truncate max-w-[140px]">{user.name}</div>
-                <div className="text-[11px] text-muted-foreground truncate max-w-[140px]">
-                  {user.email}
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  logout();
-                  navigate({ to: "/login" });
-                }}
-                className="hidden sm:flex ml-1 p-2 rounded-md hover:bg-muted"
-                title="Sign out"
-                aria-label="Sign out"
-              >
-                <Icons.LogOut className="h-4 w-4" />
-              </button>
-            </div>
+            <AccountMenu />
           </div>
         </header>
 

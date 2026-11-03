@@ -215,7 +215,7 @@ function BrandingPage() {
           </Section>
 
           <Section
-            title="Brand colour & theme"
+            title="Brand colour & style"
             description="One colour, five on-brand gradient treatments — used for buttons, highlights and hero backgrounds."
           >
             <div className="flex items-center gap-3 flex-wrap">

@@ -11,7 +11,8 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { useAuth } from "@/lib/auth";
-import { menuForUser } from "@/lib/menus";
+import { useNavItems } from "@/lib/navigation";
+import { sectionsFor } from "@/lib/menus";
 import { useTenantContext } from "@/lib/packs/registry";
 import { useCollection, addItem, nextId, resetStore } from "@/lib/store";
 import { usePrefs } from "@/lib/prefs";
@@ -33,14 +34,15 @@ export function CommandPalette({
   const invoices = useCollection("invoices");
 
   const tenantCtx = useTenantContext();
-  const items = user
-    ? menuForUser(user, {
-        experience: tenantCtx.profile?.experience ?? "classic",
-        packs: tenantCtx.packs,
-        familyOperated: tenantCtx.familyOperated,
-        graduated: tenantCtx.graduated,
-      })
-    : [];
+  // Same destinations as the sidebar (module- and demo-filtered).
+  const items = useNavItems();
+  const sectionOf = new Map(
+    sectionsFor(user, items).flatMap((s) => s.items.map((i) => [i.to, s.label || "Home"] as const)),
+  );
+  // School / university / college tenants keep learners and fees in the SIS
+  // (Student Records, Fees & Sponsors), not the classic tutoring tables.
+  const segment = tenantCtx.profile?.experience === "segment";
+  const feesPath = segment ? "/app/fee-accounts" : "/app/finance";
 
   const close = () => onOpenChange(false);
 
@@ -62,7 +64,7 @@ export function CommandPalette({
               <CommandItem key={m.to} value={`go ${m.label}`} onSelect={() => go(m.to)}>
                 <Icon />
                 <span>{m.label}</span>
-                <CommandShortcut>{m.group ?? "Main"}</CommandShortcut>
+                <CommandShortcut>{sectionOf.get(m.to)}</CommandShortcut>
               </CommandItem>
             );
           })}
@@ -71,7 +73,7 @@ export function CommandPalette({
         <CommandSeparator />
 
         <CommandGroup heading="Quick actions">
-          {user?.role !== "student" && user?.role !== "parent" && (
+          {!segment && user?.role !== "student" && user?.role !== "parent" && (
             <CommandItem
               value="new student create"
               onSelect={() => {
@@ -98,13 +100,14 @@ export function CommandPalette({
           <CommandItem
             value="pay next invoice"
             onSelect={() => {
-              const due = invoices.find((i) => i.status === "Due");
+              // Segment tenants' balances live on the fee accounts page itself.
+              const due = segment || invoices.find((i) => i.status === "Due");
               if (!due) {
                 toast.info("No invoices currently due");
                 return;
               }
               close();
-              navigate({ to: "/app/finance" });
+              navigate({ to: feesPath });
             }}
           >
             <Icons.CreditCard />

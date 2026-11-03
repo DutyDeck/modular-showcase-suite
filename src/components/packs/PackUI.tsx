@@ -7,6 +7,12 @@ import { useState, type ReactNode } from "react";
 import * as Icons from "lucide-react";
 import { toast } from "sonner";
 import { Badge, Button } from "@/components/ui-kit";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useCollection } from "@/lib/store";
 import { PACK_BY_ID, loadPackStarter, useTenantContext, type PackId } from "@/lib/packs/registry";
@@ -18,7 +24,8 @@ export function LucideIcon({ name, className }: { name: string; className?: stri
   return <Cmp className={className} />;
 }
 
-/** Thin strip under the page header: which tenant, region and pack this is. */
+/** Thin strip under the page header: which pack and region this page is for.
+ *  (The institution itself is already named in the app header.) */
 export function PackContextBar({ pack, extra }: { pack?: PackId; extra?: ReactNode }) {
   const ctx = useTenantContext();
   const def = pack ? PACK_BY_ID[pack] : undefined;
@@ -35,16 +42,12 @@ export function PackContextBar({ pack, extra }: { pack?: PackId; extra?: ReactNo
           {def.name}
         </span>
       )}
-      <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 bg-card">
-        <Icons.Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-        {ctx.tenantName}
-      </span>
-      <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 bg-card">
+      <span
+        className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 bg-card text-muted-foreground"
+        title={`${INSTITUTION_TYPE_LABEL[ctx.type]} · ${ctx.tenantName} · fees are kept in ${ctx.currency}`}
+      >
         <span>{ctx.region.flag}</span>
-        {ctx.region.name} · ledger in {ctx.currency}
-      </span>
-      <span className="inline-flex items-center rounded-full border px-2.5 py-1 bg-card text-muted-foreground">
-        {INSTITUTION_TYPE_LABEL[ctx.type]}
+        {ctx.region.name}
       </span>
       {extra}
     </div>
@@ -109,7 +112,12 @@ export function PackEmpty({ pack, title, body }: { pack: PackId; title: string; 
   );
 }
 
-/** Simple underline tabs. */
+/** More than this many tabs → the first few stay visible, the rest go under "More". */
+const MAX_TABS = 5;
+const VISIBLE_WHEN_OVERFLOWING = 4;
+
+/** Simple underline tabs. Long tab rows fold their tail into a "More" menu so a
+ *  page never opens on a wall of tabs; the active tab is always shown. */
 export function Tabs<T extends string>({
   tabs,
   value,
@@ -119,9 +127,15 @@ export function Tabs<T extends string>({
   value: T;
   onChange: (v: T) => void;
 }) {
+  const overflowing = tabs.length > MAX_TABS;
+  const head = overflowing ? tabs.slice(0, VISIBLE_WHEN_OVERFLOWING) : tabs;
+  const rest = overflowing ? tabs.slice(VISIBLE_WHEN_OVERFLOWING) : [];
+  const activeInRest = rest.find((t) => t.id === value);
+  const shown = activeInRest ? [...head, activeInRest] : head;
+  const more = rest.filter((t) => t !== activeInRest);
   return (
     <div className="flex gap-1 border-b mb-4 overflow-x-auto">
-      {tabs.map((t) => (
+      {shown.map((t) => (
         <button
           key={t.id}
           onClick={() => onChange(t.id)}
@@ -140,6 +154,27 @@ export function Tabs<T extends string>({
           )}
         </button>
       ))}
+      {more.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="px-3 py-2 text-sm whitespace-nowrap border-b-2 -mb-px border-transparent text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+              More <Icons.ChevronDown className="h-3.5 w-3.5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {more.map((t) => (
+              <DropdownMenuItem key={t.id} onSelect={() => onChange(t.id)}>
+                {t.label}
+                {t.count !== undefined && (
+                  <span className="ml-auto text-[10px] rounded-full bg-muted px-1.5 py-0.5">
+                    {t.count}
+                  </span>
+                )}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 }

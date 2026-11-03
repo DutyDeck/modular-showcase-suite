@@ -790,6 +790,9 @@ export function menuForUser(user: DemoUser | null, ctx?: MenuContext): MenuItem[
   if (role === "student" && !user?.selfManaged) {
     menu = menu.filter((m) => m.to !== "/app/appraisals");
   }
+  // Multi-tenant management is the global admin's; an institute admin's own
+  // tenant lives in Institution Profile and Settings → Plan & limits.
+  if (instituteAdmin) menu = menu.filter((m) => m.to !== "/app/tenants");
 
   if (ctx?.experience === "segment" && role === "student" && ctx.graduated) {
     // Graduates keep their 1StudentID: record, transcript, fees and the alumni
@@ -828,4 +831,170 @@ export function menuForUser(user: DemoUser | null, ctx?: MenuContext): MenuItem[
   // Classic tenants: pack items and the new shared modules append. Shared
   // modules are off by default for classic tenants (ModulesPanel turns them on).
   return dedupe([...menu, ...(role === "admin" ? shared : []), ...packItems, ...foundation]);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Sidebar sections
+ *
+ * Menus are composed from core, shared-module and pack items, each carrying
+ * its own historical group. The sidebar re-files every item into ONE fixed
+ * set of sections, in a fixed order, so every role and pack reads the same
+ * way: Home → the pack → day-to-day work → people → money → insights → help
+ * → Administration (configuration, collapsed by default). Nothing is
+ * removed here — only placed. Swim menus are curated and keep their groups. */
+export type SectionKey =
+  | "home"
+  | "pack"
+  | "learning"
+  | "people"
+  | "money"
+  | "insights"
+  | "help"
+  | "admin";
+
+const SECTION_ORDER: SectionKey[] = [
+  "home",
+  "pack",
+  "learning",
+  "people",
+  "money",
+  "insights",
+  "help",
+  "admin",
+];
+
+/** The section that starts collapsed — configuration pages, not daily work. */
+export const ADMIN_SECTION_LABEL = "Administration";
+
+const SECTION_LABEL: Record<Role, Record<Exclude<SectionKey, "home" | "pack">, string>> = {
+  admin: {
+    learning: "Academics",
+    people: "People",
+    money: "Finance & growth",
+    insights: "Insights & compliance",
+    help: "Help",
+    admin: ADMIN_SECTION_LABEL,
+  },
+  teacher: {
+    learning: "Teaching",
+    people: "Students & development",
+    money: "Finance",
+    insights: "Insights",
+    help: "Help",
+    admin: ADMIN_SECTION_LABEL,
+  },
+  parent: {
+    learning: "Learning",
+    people: "Family",
+    money: "Fees",
+    insights: "Insights",
+    help: "Requests & help",
+    admin: ADMIN_SECTION_LABEL,
+  },
+  student: {
+    learning: "Learning",
+    people: "My record",
+    money: "Fees",
+    insights: "Insights",
+    help: "Requests & help",
+    admin: ADMIN_SECTION_LABEL,
+  },
+};
+
+/** Route → section, for every role (overridden per role below). */
+const SECTION_OF: Record<string, SectionKey> = {
+  "/app": "home",
+  "/app/messages": "home",
+  "/app/courses": "learning",
+  "/app/lms": "learning",
+  "/app/assignments": "learning",
+  "/app/grades": "learning",
+  "/app/grading": "learning",
+  "/app/teacher-classes": "learning",
+  "/app/timetable": "learning",
+  "/app/calendar": "learning",
+  "/app/attendance": "learning",
+  "/app/registers": "learning",
+  "/app/srb": "learning",
+  "/app/students": "people",
+  "/app/learners": "people",
+  "/app/children": "people",
+  "/app/admissions": "people",
+  "/app/appraisals": "people",
+  "/app/training": "people",
+  "/app/vetting": "people",
+  "/app/finance": "money",
+  "/app/pricing": "money",
+  "/app/billing": "money",
+  "/app/fee-accounts": "money",
+  "/app/my-courses": "money",
+  "/app/marketing": "money",
+  "/app/marketplace": "money",
+  "/app/reports": "insights",
+  "/app/ai-insights": "insights",
+  "/app/returns": "insights",
+  "/app/compliance": "insights",
+  "/app/requests": "help",
+  "/app/it": "help",
+  "/app/profile": "help",
+  "/app/institution": "admin",
+  "/app/settings": "admin",
+  "/app/branding": "admin",
+  "/app/integrations": "admin",
+  "/app/group": "admin",
+  "/app/migration": "admin",
+  "/app/tenants": "admin",
+  "/app/users": "admin",
+};
+
+const SECTION_OVERRIDE: Partial<Record<Role, Record<string, SectionKey>>> = {
+  // Approvals are part of the admin's and teacher's daily work; IT is config.
+  admin: { "/app/requests": "people", "/app/it": "admin" },
+  teacher: { "/app/requests": "learning" },
+  // A family's record book and a student's own record book sit with the record.
+  parent: { "/app/srb": "people" },
+  student: { "/app/srb": "people" },
+};
+
+const PACK_GROUPS = new Set(["School", "Higher Education", "College", "Swim Club"]);
+
+export interface MenuSection {
+  key: string;
+  /** Header shown above the section ("" = no header). */
+  label: string;
+  items: MenuItem[];
+}
+
+/** Arrange a (filtered) menu into the fixed sidebar sections. */
+export function sectionsFor(user: DemoUser | null, items: MenuItem[]): MenuSection[] {
+  // Swim menus are curated per persona — keep their own grouping.
+  if (isSwimUser(user)) {
+    const out: MenuSection[] = [];
+    for (const it of items) {
+      const g = it.group ?? "Main";
+      let s = out.find((x) => x.key === g);
+      if (!s) out.push((s = { key: g, label: g, items: [] }));
+      s.items.push(it);
+    }
+    return out;
+  }
+  const role = user?.role ?? "student";
+  const buckets = new Map<string, MenuSection & { order: number }>();
+  for (const it of items) {
+    const isPack = PACK_GROUPS.has(it.group ?? "");
+    const key: SectionKey = isPack
+      ? "pack"
+      : (SECTION_OVERRIDE[role]?.[it.to] ?? SECTION_OF[it.to] ?? "learning");
+    const id = isPack ? `pack:${it.group}` : key;
+    let b = buckets.get(id);
+    if (!b) {
+      const label =
+        key === "home" ? "" : key === "pack" ? (it.group as string) : SECTION_LABEL[role][key];
+      b = { key: id, label, items: [], order: SECTION_ORDER.indexOf(key) };
+      buckets.set(id, b);
+    }
+    b.items.push(it);
+  }
+  // Stable sort keeps packs in composition order and items in menu order.
+  return [...buckets.values()].sort((a, b) => a.order - b.order).map(({ order: _o, ...s }) => s);
 }

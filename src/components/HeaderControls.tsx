@@ -3,26 +3,40 @@ import { useNavigate } from "@tanstack/react-router";
 import {
   Bell,
   Moon,
-  Sun,
   Languages,
   CircleDollarSign,
   RotateCcw,
   Sparkles,
-  Check,
   CalendarCheck,
   Wallet,
   Award,
   GraduationCap,
-  Building2,
+  User,
+  Settings,
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
+import { Avatar } from "@/components/Avatar";
+import { roleLabel } from "@/lib/menus";
 import { usePrefs, LOCALE_LABEL, CURRENCY_LABEL, type Locale, type Currency } from "@/lib/prefs";
 import { resetStore } from "@/lib/store";
 import { notifications, swimNotifications, isSwimUser } from "@/lib/mockData";
 import { useAuth } from "@/lib/auth";
-import { setEnabledModules, useEnabledModules, MODULES, type ModuleId } from "@/lib/modules";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 const ICON_FOR_TYPE: Record<string, any> = {
   grade: Award,
@@ -119,231 +133,120 @@ export function NotificationBell() {
   );
 }
 
-export function ThemeToggle() {
-  const { theme, setTheme } = usePrefs();
-  return (
-    <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="h-9 w-9 rounded-md hover:bg-muted flex items-center justify-center"
-      aria-label="Toggle theme"
-      title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-    >
-      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-    </button>
-  );
-}
-
-export function LanguageSwitcher() {
-  const { locale, setLocale } = usePrefs();
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          className="h-9 w-9 rounded-md hover:bg-muted flex items-center justify-center"
-          aria-label="Language"
-          title="Language"
-        >
-          <Languages className="h-4 w-4" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-44 p-1">
-        {(Object.keys(LOCALE_LABEL) as Locale[]).map((l) => (
-          <button
-            key={l}
-            onClick={() => setLocale(l)}
-            className={cn(
-              "w-full text-left px-3 py-2 text-sm rounded-md flex items-center justify-between hover:bg-muted",
-              l === locale && "bg-muted/60",
-            )}
-          >
-            {LOCALE_LABEL[l]}
-            {l === locale && <Check className="h-3.5 w-3.5 text-primary" />}
-          </button>
-        ))}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-export function CurrencySwitcher() {
-  const { currency, setCurrency } = usePrefs();
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          className="h-9 px-2 rounded-md hover:bg-muted flex items-center gap-1 text-xs font-medium"
-          aria-label="Currency"
-        >
-          <CircleDollarSign className="h-4 w-4" />
-          <span className="hidden sm:inline">{currency}</span>
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-44 p-1">
-        {(Object.keys(CURRENCY_LABEL) as Currency[]).map((c) => (
-          <button
-            key={c}
-            onClick={() => setCurrency(c)}
-            className={cn(
-              "w-full text-left px-3 py-2 text-sm rounded-md flex items-center justify-between hover:bg-muted",
-              c === currency && "bg-muted/60",
-            )}
-          >
-            {CURRENCY_LABEL[c]}
-            {c === currency && <Check className="h-3.5 w-3.5 text-primary" />}
-          </button>
-        ))}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-const ENTITLEMENT_PROFILES: Array<{
-  id: string;
-  label: string;
-  plan: "Starter" | "Growth" | "Enterprise";
-  hint: string;
-  modules: ModuleId[];
-}> = [
-  {
-    id: "starter",
-    label: "Starter",
-    plan: "Starter",
-    hint: "Roster, attendance, comms only",
-    modules: [
-      "core",
-      "students",
-      "courses",
-      "attendance",
-      "calendar",
-      "teaching",
-      "family",
-      "messages",
-      "users",
-    ],
-  },
-  {
-    id: "growth",
-    label: "Growth",
-    plan: "Growth",
-    hint: "Adds LMS, grades, finance",
-    modules: [
-      "core",
-      "students",
-      "courses",
-      "attendance",
-      "calendar",
-      "lms",
-      "assignments",
-      "grades",
-      "srb",
-      "teaching",
-      "training",
-      "family",
-      "finance",
-      "marketplace",
-      "messages",
-      "reports",
-      "users",
-    ],
-  },
-  {
-    id: "enterprise",
-    label: "Enterprise",
-    plan: "Enterprise",
-    hint: "Everything · AI, multi-tenant, compliance",
-    modules: MODULES.map((m) => m.id),
-  },
-];
-
-const PLAN_DOT: Record<string, string> = {
-  Starter: "bg-muted-foreground",
-  Growth: "bg-info",
-  Enterprise: "bg-primary",
-};
-
-export function TenantProfileSwitcher() {
-  const { user } = useAuth();
-  const enabled = useEnabledModules(user?.institution ?? "");
+/**
+ * The account menu (avatar) — the ONE place for personal things: profile,
+ * display preferences (language, currency, appearance), demo reset, sign out.
+ * Keeps the header to search · notifications · you.
+ */
+export function AccountMenu() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { locale, setLocale, currency, setCurrency, theme, setTheme } = usePrefs();
   if (!user) return null;
-
-  // Match profile by exact module set, fall back to "Custom".
-  const currentIds = Array.from(enabled).sort().join(",");
-  const active = ENTITLEMENT_PROFILES.find((p) => [...p.modules].sort().join(",") === currentIds);
-
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
         <button
-          className="h-9 px-2 sm:px-2.5 rounded-md hover:bg-muted flex items-center gap-1.5 text-xs font-medium"
-          aria-label="Tenant entitlement profile"
-          title="Demo: tenant entitlement profile"
+          className="flex items-center gap-2 rounded-md sm:pl-2 sm:ml-1 sm:border-l hover:bg-muted/60 p-1"
+          aria-label="Account menu"
         >
-          <Building2 className="h-4 w-4" />
-          <span className="hidden sm:inline">{active?.label ?? "Custom"}</span>
-          <span
-            className={cn(
-              "h-1.5 w-1.5 rounded-full",
-              active ? PLAN_DOT[active.plan] : "bg-warning",
-            )}
+          <Avatar
+            name={user.name}
+            src={user.photo}
+            size={34}
+            tone="brand"
+            className="ring-2 ring-primary/20"
           />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 p-1">
-        <div className="px-3 py-2 border-b mb-1">
-          <div className="text-xs font-semibold">Demo: tenant profile</div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
-            Applies an entitlement preset to{" "}
-            <span className="font-medium text-foreground">{user.institution}</span>. Sidebar updates
-            instantly.
+          <div className="leading-tight hidden xl:block text-left">
+            <div className="text-sm font-medium truncate max-w-[140px]">{user.name}</div>
+            <div className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+              {roleLabel[user.role]}
+            </div>
           </div>
-        </div>
-        {ENTITLEMENT_PROFILES.map((p) => {
-          const isActive = active?.id === p.id;
-          return (
-            <button
-              key={p.id}
-              onClick={() => {
-                setEnabledModules(user.institution, p.modules);
-                toast.success(`Applied ${p.label} profile`);
-              }}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-md hover:bg-muted flex items-start gap-2",
-                isActive && "bg-muted/60",
-              )}
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="font-normal">
+          <div className="text-sm font-medium truncate">{user.name}</div>
+          <div className="text-[11px] text-muted-foreground truncate">{user.email}</div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => navigate({ to: "/app/profile" })}>
+          <User /> My profile
+        </DropdownMenuItem>
+        {user.role === "admin" && (
+          <DropdownMenuItem onSelect={() => navigate({ to: "/app/settings" })}>
+            <Settings /> Settings
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Languages /> Language
+            <span className="ml-auto text-[11px] text-muted-foreground">
+              {LOCALE_LABEL[locale]}
+            </span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup value={locale} onValueChange={(v) => setLocale(v as Locale)}>
+              {(Object.keys(LOCALE_LABEL) as Locale[]).map((l) => (
+                <DropdownMenuRadioItem key={l} value={l}>
+                  {LOCALE_LABEL[l]}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <CircleDollarSign /> Currency
+            <span className="ml-auto text-[11px] text-muted-foreground">{currency}</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup
+              value={currency}
+              onValueChange={(v) => setCurrency(v as Currency)}
             >
-              <span className={cn("mt-1.5 h-1.5 w-1.5 rounded-full shrink-0", PLAN_DOT[p.plan])} />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium flex items-center justify-between gap-2">
-                  {p.label}
-                  {isActive && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                </div>
-                <div className="text-[10px] text-muted-foreground">{p.hint}</div>
-              </div>
-            </button>
-          );
-        })}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-export function ResetDemoButton() {
-  return (
-    <button
-      onClick={() => {
-        if (
-          typeof window === "undefined" ||
-          window.confirm("Reset all demo data? This wipes your in-app edits.")
-        ) {
-          resetStore();
-          toast.success("Demo data reset");
-        }
-      }}
-      className="h-9 w-9 rounded-md hover:bg-muted flex items-center justify-center"
-      aria-label="Reset demo data"
-      title="Reset demo data"
-    >
-      <RotateCcw className="h-4 w-4" />
-    </button>
+              {(Object.keys(CURRENCY_LABEL) as Currency[]).map((c) => (
+                <DropdownMenuRadioItem key={c} value={c}>
+                  {CURRENCY_LABEL[c]}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuItem
+          onSelect={(e) => {
+            e.preventDefault(); // keep the menu open while toggling
+            setTheme(theme === "dark" ? "light" : "dark");
+          }}
+        >
+          <Moon /> Dark mode
+          <span className="ml-auto text-[11px] text-muted-foreground">
+            {theme === "dark" ? "On" : "Off"}
+          </span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onSelect={() => {
+            if (window.confirm("Reset all demo data? This wipes your in-app edits.")) {
+              resetStore();
+              toast.success("Demo data reset");
+            }
+          }}
+        >
+          <RotateCcw /> Reset demo data
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={() => {
+            logout();
+            navigate({ to: "/login" });
+          }}
+        >
+          <LogOut /> Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

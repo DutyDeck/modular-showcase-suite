@@ -73,7 +73,7 @@ export function ModulesPanel() {
       title="Modules & Entitlements"
       description={
         isInstituteScoped
-          ? `Modules enabled for ${effectiveTenantName}. Cross-tenant module entitlement is reserved for the global admin.`
+          ? `Modules enabled for ${effectiveTenantName}.`
           : "Toggle which modules are available to each tenant. Sidebar and routes update immediately for users in that tenant."
       }
       actions={
